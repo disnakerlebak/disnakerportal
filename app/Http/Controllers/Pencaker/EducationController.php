@@ -1,0 +1,107 @@
+<?php
+
+namespace App\Http\Controllers\Pencaker;
+
+use App\Http\Controllers\Controller;
+use App\Models\Education;
+use App\Models\JobseekerProfile;
+use App\Models\CardApplication;
+use Illuminate\Http\Request;
+
+class EducationController extends Controller
+{
+    public function index(Request $request)
+    {
+        $profile = JobseekerProfile::where('user_id', $request->user()->id)->first();
+        $educations = $profile ? $profile->educations : collect();
+        $isLocked = $this->isEditingLocked($request->user()->id);
+        return view('pencaker.education.index', compact('educations', 'isLocked'));
+    }
+
+    public function create()
+    {
+        return view('pencaker.education.form', ['education' => new Education()]);
+    }
+
+    public function store(Request $request)
+    {
+        if ($this->isEditingLocked($request->user()->id)) {
+            return back()->with('error', 'Menambah pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
+        }
+        $validated = $request->validate([
+            'tingkat' => 'required|string|max:50',
+            'nama_institusi' => 'required|string|max:255',
+            'jurusan' => 'nullable|string|max:255',
+            'tahun_mulai' => 'nullable|digits:4',
+            'tahun_selesai' => 'nullable|digits:4|gte:tahun_mulai',
+            'ijazah_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        $profile = JobseekerProfile::firstOrCreate(['user_id' => $request->user()->id]);
+
+        if ($request->hasFile('ijazah_file')) {
+            $validated['ijazah_file'] = $request->file('ijazah_file')->store('ijazah', 'public');
+        }
+
+        $profile->educations()->create($validated);
+
+        return redirect()->route('pencaker.education.index')->with('success', 'Riwayat pendidikan berhasil ditambahkan.');
+    }
+
+    public function edit(Education $education)
+    {
+        $this->authorizeEducation($education);
+        return view('pencaker.education.form', compact('education'));
+    }
+
+    public function update(Request $request, Education $education)
+    {
+        $this->authorizeEducation($education);
+        if ($this->isEditingLocked($request->user()->id)) {
+            return back()->with('error', 'Mengubah pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
+        }
+
+        $validated = $request->validate([
+            'tingkat' => 'required|string|max:50',
+            'nama_institusi' => 'required|string|max:255',
+            'jurusan' => 'nullable|string|max:255',
+            'tahun_mulai' => 'nullable|digits:4',
+            'tahun_selesai' => 'nullable|digits:4|gte:tahun_mulai',
+            'ijazah_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('ijazah_file')) {
+            $validated['ijazah_file'] = $request->file('ijazah_file')->store('ijazah', 'public');
+        }
+
+        $education->update($validated);
+
+        return redirect()->route('pencaker.education.index')->with('success', 'Riwayat pendidikan berhasil diperbarui.');
+    }
+    public function show(Education $education)
+    {   
+        return redirect()->route('pencaker.education.index');
+    }
+    public function destroy(Education $education)
+    {
+        $this->authorizeEducation($education);
+        if ($this->isEditingLocked(auth()->id())) {
+            return back()->with('error', 'Menghapus pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
+        }
+        $education->delete();
+        return back()->with('success', 'Riwayat pendidikan dihapus.');
+    }
+
+    private function authorizeEducation(Education $education)
+    {
+        if ($education->profile->user_id !== auth()->id()) {
+            abort(403);
+        }
+    }
+
+    private function isEditingLocked(int $userId): bool
+    {
+        $last = CardApplication::where('user_id', $userId)->latest()->first();
+        return $last && in_array($last->status, ['Menunggu Verifikasi', 'Disetujui']);
+    }
+}

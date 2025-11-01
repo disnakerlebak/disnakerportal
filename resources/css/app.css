@@ -1,0 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+html,
+body {
+    font-family: "Inter", sans-serif;
+    background-color: #0f172a; /* slate-900 */
+    color: #f1f5f9; /* slate-100 */
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "./forms.css";
