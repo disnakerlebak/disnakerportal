@@ -1,10 +1,10 @@
 @extends('layouts.admin')
-@section('title', 'Dashboard')
+@section('title', 'Dashboard Admin')
 
 @section('content')
 <div class="py-10">
         <div class="max-w-6xl mx-auto px-6 space-y-8">
-        <h2 class="text-2xl font-semibold text-gray-100">Dashboard Admin Disnaker</h2>
+        <!-- <h2 class="text-2xl font-semibold text-gray-100">Dashboard Admin Disnaker</h2> -->
             {{-- Statistik singkat --}}
             <div class="grid sm:grid-cols-3 mt-3 md:gap-8">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center transition hover:scale-[1.02]">

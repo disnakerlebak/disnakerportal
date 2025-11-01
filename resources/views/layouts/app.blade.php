@@ -1,92 +1,13 @@
+{{-- TEMPORARY DISABLE DEFAULT APP LAYOUT --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-
-        <title>{{ config('app.name', 'Laravel') }}</title>
-
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
-
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
-
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-        </div>
-        
-        <!-- Toastify -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="//unpkg.com/alpinejs" defer></script>
-<script>
-    @if (session('success'))
-        Toastify({
-            text: "{{ session('success') }}",
-            duration: 3500,
-            close: true,
-            gravity: "bottom", // top or bottom
-            position: "right", // left, center or right
-            backgroundColor: "#16a34a", // Tailwind green-600
-            stopOnFocus: true
-        }).showToast();
-    @endif
-
-    @if (session('error'))
-        Toastify({
-            text: "{{ session('error') }}",
-            duration: 3500,
-            close: true,
-            gravity: "bottom",
-            position: "right",
-            backgroundColor: "#dc2626", // Tailwind red-600
-            stopOnFocus: true
-        }).showToast();
-    @endif
-
-    @if (session('warning'))
-        Toastify({
-            text: "{{ session('warning') }}",
-            duration: 3500,
-            close: true,
-            gravity: "bottom",
-            position: "right",
-            backgroundColor: "#facc15", // yellow-400
-            stopOnFocus: true
-        }).showToast();
-    @endif
-
-    @if (session('info'))
-        Toastify({
-            text: "{{ session('info') }}",
-            duration: 3500,
-            close: true,
-            gravity: "bottom",
-            position: "right",
-            backgroundColor: "#2563eb", // blue-600
-            stopOnFocus: true
-        }).showToast();
-    @endif
-</script>
-
-
- </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Layout Disabled</title>
+</head>
+<body style="background:#111; color:#f33; font-family:monospace; padding:2rem;">
+    <h2>⚠️ Layout app.blade.php is disabled.</h2>
+    <p>This layout should not be used anymore. Check which view is still calling &lt;x-app-layout&gt; or @extends('layouts.app')</p>
+    <p>View source: <code>{{ __FILE__ }}</code></p>
+</body>
 </html>

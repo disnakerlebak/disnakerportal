@@ -5,8 +5,7 @@
 <div class="max-w-7xl mx-auto p-6 space-y-6">
     
     {{-- ===== Filter ===== --}}
-    {{-- ===== Filter ===== --}}
-<form method="GET" class="flex flex-wrap gap-3 items-center">
+    <form method="GET" class="flex flex-wrap gap-3 items-center">
     <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama / email"
            class="w-64 max-w-full rounded-lg border-gray-700 dark:bg-gray-900 dark:text-gray-100 px-3 py-2">
 

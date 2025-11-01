@@ -1,9 +1,9 @@
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.pencaker')
+@section('title', 'Dashboard')
+@section('content')
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">
             Edit Riwayat Pendidikan
         </h2>
-    </x-slot>
 
     <div class="max-w-3xl mx-auto p-6 space-y-6">
         <form method="POST" action="{{ route('pencaker.education.update', $education) }}" enctype="multipart/form-data">
@@ -62,4 +62,4 @@
             </div>
         </form>
     </div>
-</x-app-layout>
+@endsection

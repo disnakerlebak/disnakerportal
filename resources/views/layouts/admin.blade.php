@@ -94,7 +94,6 @@
       <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Verifikasi AK1</span>
       <span class="tooltip-text" x-show="sidebarCollapsed">Verifikasi AK1</span>
     </a>
-
     <!-- Alasan Penolakan -->
     <a href="{{ route('admin.rejection-reasons.index') }}"
    class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-700 transition tooltip
@@ -112,15 +111,18 @@
          class="mt-3 mb-1 text-[10px] font-semibold text-gray-400 tracking-wider uppercase">User Management</div>
 
     <!-- Kelola Admin -->
-    <a href="#"
-       class="{{ $linkBase }} text-gray-400 opacity-60 cursor-not-allowed tooltip">
+    @if(Auth::check() && Auth::user()->role === 'superadmin')
+    <!-- Kelola Admin (Superadmin only) -->
+    <a href="{{ route('admin.manage.index') }}"
+       class="{{ $linkBase }} {{ request()->routeIs('admin.manage.*') ? 'bg-gray-700 text-blue-400' : 'text-gray-300' }} tooltip">
       <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
-      </svg> 
+              d="M16 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM8 11c1.657 0 3-1.343 3-3S9.657 5 8 5 5 6.343 5 8s1.343 3 3 3zm0 2c-2.33 0-7 1.167-7 3.5V19a2 2 0 002 2h10a2 2 0 002-2v-2.5C15 14.167 10.33 13 8 13zm8 0c-.29 0-.62.01-.97.03 1.22.84 1.97 1.97 1.97 3.47V19c0 .35-.06.69-.17 1h4.17a2 2 0 002-2v-1.5c0-2.333-4.67-3.5-7-3.5z"/>
+      </svg>
       <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Kelola Admin</span>
       <span class="tooltip-text" x-show="sidebarCollapsed">Kelola Admin</span>
     </a>
+    @endif
 
     <!-- Verifikasi Perusahaan -->
     <a href="#"

@@ -1,5 +1,7 @@
-<x-app-layout>
-    <x-slot name="header"><h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">Detail Pencaker</h2></x-slot>
+@extends('layouts.admin')
+@section('title', 'Dashboard')
+@section('content')
+    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">Detail Pencaker</h2>
     <div class="max-w-5xl mx-auto p-6 grid md:grid-cols-2 gap-6">
         <div class="space-y-2">
             <div><b>Nama:</b> {{ $profile->nama_lengkap ?? $user->name }}</div>
@@ -24,4 +26,4 @@
             </ul>
         </div>
     </div>
-</x-app-layout>
+@endsection

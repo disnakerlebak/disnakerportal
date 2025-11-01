@@ -1,8 +1,10 @@
 {{-- resources/views/admin/pencaker/index.blade.php --}}
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.admin')
+@section('title', 'Dashboard')
+@section('content')
+    
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">Pencari Kerja Terdaftar</h2>
-    </x-slot>
+    
 
     <div class="py-8 max-w-6xl mx-auto px-6" x-data="{ open:false, sel:{} }">
         {{-- Tabel --}}
@@ -117,4 +119,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection

@@ -1,9 +1,11 @@
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.admin')
+@section('title', 'Dashboard')
+@section('content')
+    
         <h2 class="font-semibold text-xl text-gray-200">
             Detail Pengajuan AK1 — {{ $application->user->name }}
         </h2>
-    </x-slot>
+    
 
     <div class="max-w-7xl mx-auto p-6 space-y-6">
 
@@ -175,4 +177,4 @@
         </div>
 
     </div>
-</x-app-layout>
+@endsection

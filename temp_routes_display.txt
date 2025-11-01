@@ -37,15 +37,14 @@ Route::get('/unauthorized', function () {
 // Dashboard switcher per-role
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    if (!$user) return redirect()->route('login');
 
     return match ($user->role) {
-        'superadmin' => redirect()->route('admin.manage.index'),
-        'admin'      => redirect()->route('admin.dashboard'),
-        'pencaker'   => redirect()->route('pencaker.dashboard'),
-        default      => redirect()->route('login'),
+        'admin'       => redirect()->route('admin.dashboard'),
+        'perusahaan'  => redirect()->route('perusahaan.dashboard'),
+        'pencaker'    => redirect()->route('pencaker.dashboard'),
+        default       => view('dashboard'),
     };
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 /* ===================== ADMIN ===================== */
 Route::middleware(['auth', 'role:admin'])
@@ -136,14 +135,13 @@ Route::get('/test-pdf', function () {
 require __DIR__ . '/auth.php';
 
 /* ===================== SUPERADMIN - ADMIN MANAGEMENT ===================== */
-Route::middleware(['auth', 'role:superadmin'])
-    ->prefix('admin/manage')
-    ->name('admin.manage.')
-    ->group(function () {
-        Route::get('/', [AdminManagementController::class, 'index'])->name('index');
-        Route::post('/store', [AdminManagementController::class, 'store'])->name('store');
-        Route::post('/update/{id}', [AdminManagementController::class, 'update'])->name('update');
-        Route::post('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('toggle');
-        Route::delete('/{id}', [AdminManagementController::class, 'destroy'])->name('destroy');
-    });
+Route::middleware(['auth', 'role:superadmin'])->prefix('admin/manage')->group(function () {
+    Route::get('/', [AdminManagementController::class, 'index'])->name('admin.manage.index');
+    Route::post('/store', [AdminManagementController::class, 'store'])->name('admin.manage.store');
+    Route::post('/update/{id}', [AdminManagementController::class, 'update'])->name('admin.manage.update');
+    Route::delete('/delete/{id}', [AdminManagementController::class, 'destroy'])->name('admin.manage.destroy');
+    Route::patch('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('admin.manage.toggle');
+    
+});
+
 

@@ -136,14 +136,12 @@ Route::get('/test-pdf', function () {
 require __DIR__ . '/auth.php';
 
 /* ===================== SUPERADMIN - ADMIN MANAGEMENT ===================== */
-Route::middleware(['auth', 'role:superadmin'])
-    ->prefix('admin/manage')
-    ->name('admin.manage.')
-    ->group(function () {
-        Route::get('/', [AdminManagementController::class, 'index'])->name('index');
-        Route::post('/store', [AdminManagementController::class, 'store'])->name('store');
-        Route::post('/update/{id}', [AdminManagementController::class, 'update'])->name('update');
-        Route::post('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('toggle');
-        Route::delete('/{id}', [AdminManagementController::class, 'destroy'])->name('destroy');
-    });
+Route::middleware(['auth', 'role:superadmin'])->prefix('admin/manage')->group(function () {
+    Route::get('/', [AdminManagementController::class, 'index'])->name('admin.manage.index');
+    Route::post('/store', [AdminManagementController::class, 'store'])->name('admin.manage.store');
+    Route::post('/update/{id}', [AdminManagementController::class, 'update'])->name('admin.manage.update');
+    Route::delete('/delete/{id}', [AdminManagementController::class, 'destroy'])->name('admin.manage.destroy');
+    Route::patch('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('admin.manage.toggle');
+    
+});
 
