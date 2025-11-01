@@ -1,0 +1,457 @@
+@extends('layouts.admin')
+@section('title', 'Verifikasi AK1')
+
+@section('content')
+<div class="max-w-7xl mx-auto p-6 space-y-6">
+    
+    {{-- ===== Filter ===== --}}
+    <form method="GET" class="flex flex-wrap gap-3 items-center">
+    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama / email"
+           class="w-64 max-w-full rounded-lg border-gray-700 dark:bg-gray-900 dark:text-gray-100 px-3 py-2">
+
+    <select name="status" class="rounded-lg border-gray-700 dark:bg-gray-900 dark:text-gray-100 px-3 py-2">
+        @php
+            $statuses = ['Menunggu Verifikasi', 'Revisi Diminta', 'Disetujui', 'Ditolak'];
+            $selected = request('status', 'Menunggu Verifikasi');
+        @endphp
+        <option value="">Semua Status</option>
+        @foreach ($statuses as $s)
+            <option value="{{ $s }}" @selected($selected === $s)>{{ $s }}</option>
+        @endforeach
+    </select>
+
+    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Filter</button>
+
+    @if(request()->hasAny(['q','status']) && (request('q')||request('status')))
+        <a href="{{ route('admin.ak1.index') }}"
+           class="px-3 py-2 rounded-lg border border-gray-600 text-gray-200">Reset</a>
+    @endif
+</form>
+
+
+    {{-- ===== Tabel Daftar Pengajuan ===== --}}
+    <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+            <table class="min-w-full text-sm text-gray-300 whitespace-nowrap">
+                <thead class="bg-gray-700 text-gray-100 uppercase text-xs">
+                    <tr>
+                        <th class="p-3 text-center">Pemohon</th>
+                        <th class="p-3 text-center">Tanggal</th>
+                        <th class="p-3 text-center">Status</th>
+                        <th class="p-3 text-center">Keterangan</th>
+                        <th class="p-3 text-center">Nomor AK/1</th>
+                        <th class="p-3 text-center">Ditangani Oleh</th>
+                        <th class="p-3 text-center">Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody class="text-gray-300">
+                    @forelse ($apps as $app)
+                        @php
+                        $badgeClass = match($app->status) {
+                        'Menunggu Verifikasi' => 'bg-gray-700 text-gray-300',
+                        'Menunggu Revisi Verifikasi' => 'bg-blue-700 text-blue-100',
+                        'Revisi Diminta' => 'bg-yellow-700 text-yellow-100',
+                        'Disetujui' => 'bg-green-700 text-green-100',
+                        'Ditolak' => 'bg-red-700 text-red-100',
+                        default => 'bg-gray-700 text-gray-300',
+                          };
+
+                            $latestLog = $app->logs->first();
+                            $catatan = '';
+                            if (in_array($app->status, ['Ditolak', 'Revisi Diminta']) && $latestLog?->notes) {
+                                $catatan = $latestLog->notes;
+                            }
+                        @endphp
+
+                        <tr class="border-b border-gray-700 hover:bg-gray-700/40 transition">
+                            {{-- Pemohon --}}
+                            <td class="p-3 align-top">
+                                <div class="font-medium">{{ $app->user->name }}</div>
+                                <div class="text-xs text-gray-400">{{ $app->user->email }}</div>
+                            </td>
+
+                            {{-- Tanggal --}}
+                            <td class="p-3 align-top text-center">
+                            {{ indoDateOnly($app->created_at) ?? '-' }}
+                            </td>
+
+                            {{-- Status --}}
+                            <td class="p-3 align-top text-center">
+                                <span class="px-2 py-1 rounded text-xs font-medium {{ $badgeClass }}">
+                                    {{ $app->status }}
+                                </span>
+                            </td>
+
+                            {{-- Keterangan --}}
+                            <td class="p-3 align-top text-sm">
+                                @if($app->status === 'Ditolak')
+                                    <span class="text-red-400">{{ $catatan ?: '—' }}</span>
+                                @elseif($app->status === 'Revisi Diminta')
+                                    <span class="text-yellow-400">{{ $catatan ?: '—' }}</span>
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
+
+                            {{-- Nomor AK/1 --}}
+                            <td class="p-3 align-top text-center">
+                                {{ $app->nomor_ak1 ?? '-' }}
+                            </td>
+
+                            {{-- Ditangani Oleh --}}
+                            <td class="p-3 align-top">
+                                @if($app->lastHandler?->actor?->name)
+                                    <div class="font-medium">{{ $app->lastHandler->actor->name }}</div>
+                                    <div class="text-xs text-gray-400">
+                                        {{ ucfirst(str_replace('_',' ',$app->lastHandler->action)) }}
+                                        · {{ $app->lastHandler->created_at?->format('d M Y H:i') }}
+                                    </div>
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
+
+                            {{-- Aksi --}}
+                            <td class="p-3 align-top text-center relative">
+                                <div class="flex items-center justify-center">
+
+                                    {{-- Dropdown Aksi Modern --}}
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open"
+                                                class="p-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white text-sm transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="5" r="1"/>
+                                                <circle cx="12" cy="12" r="1"/>
+                                                <circle cx="12" cy="19" r="1"/>
+                                            </svg>
+                                        </button>
+
+                                        {{-- Dropdown Menu --}}
+                                        <div x-show="open" @click.away="open = false"
+                                            x-transition:enter="transition ease-out duration-150"
+                                            x-transition:enter-start="opacity-0 transform scale-95"
+                                            x-transition:enter-end="opacity-100 transform scale-100"
+                                            x-transition:leave="transition ease-in duration-100"
+                                            x-transition:leave-start="opacity-100 transform scale-100"
+                                            x-transition:leave-end="opacity-0 transform scale-95"
+                                            class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg ring-1 ring-black/30 z-30 overflow-hidden text-left divide-y divide-gray-700">
+
+                                            {{-- 👁️ Detail --}}
+                                            <button onclick="showDetail({{ $app->id }})"
+                                                    class="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-blue-700/20 flex items-center gap-2 transition">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                                Detail
+                                            </button>
+
+                                            {{-- ✅ Setujui --}}
+                                            @if(in_array($app->status, ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi']))
+                                                <form method="POST" action="{{ route('admin.ak1.approve', $app) }}">
+                                                    @csrf
+                                                    <button class="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-700/20 flex items-center gap-2 transition">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                        Setujui
+                                                    </button>
+                                                </form>
+
+                                                {{-- ❌ Tolak --}}
+                                                <button onclick="openRejectModal({{ $app->id }})"
+                                                        class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-700/20 flex items-center gap-2 transition">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                    Tolak
+                                                </button>
+
+                                                {{-- ⚠️ Revisi --}}
+                                                <button onclick="openRevisionModal({{ $app->id }})"
+                                                        class="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-yellow-700/20 flex items-center gap-2 transition">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17h2m-1-12a9 9 0 11-9 9 9 9 0 019-9z" />
+                                                    </svg>
+                                                    Revisi
+                                                </button>
+                                            @endif
+
+                                            {{-- ⬇️ Unduh Kartu --}}
+                                            @if ($app->status === 'Disetujui' && $app->nomor_ak1)
+                                                <a href="{{ route('admin.ak1.cetak', $app->id) }}" target="_blank"
+                                                  class="block px-4 py-2 text-sm text-indigo-400 hover:bg-indigo-700/20 flex items-center gap-2 transition">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                              d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                    Unduh Kartu
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="p-6 text-center text-gray-500">
+                                Belum ada pengajuan.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pagination --}}
+        <div class="p-4">
+            {{ $apps->withQueryString()->links() }}
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail -->
+<div id="detailModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center">
+  <div class="bg-gray-900 w-11/12 max-w-4xl p-6 rounded-xl shadow-lg relative text-gray-100">
+    <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200">
+      ✕
+    </button>
+    <div id="modalContent" class="overflow-y-auto max-h-[75vh]"></div>
+  </div>
+</div>
+<!-- Modal Tolak -->
+<div id="rejectModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+  <div class="bg-gray-900 w-full max-w-md p-6 rounded-xl shadow-lg text-gray-100 relative">
+    <h3 class="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">Tolak Pengajuan</h3>
+    <form id="rejectForm" method="POST">
+      @csrf
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Pilih Alasan Penolakan:</label>
+        <select name="reason_id" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200">
+          @foreach($rejectionReasons as $reason)
+            <option value="{{ $reason->id }}">{{ $reason->title }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Catatan Tambahan (opsional):</label>
+        <textarea name="notes" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200"></textarea>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeRejectModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
+        <button type="submit" class="px-3 py-1.5 rounded bg-red-700 hover:bg-red-800">Tolak</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Modal Revisi -->
+<div id="revisionModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+  <div class="bg-gray-900 w-full max-w-md p-6 rounded-xl shadow-lg text-gray-100 relative">
+    <h3 class="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">Minta Revisi Pengajuan</h3>
+    <form id="revisionForm" method="POST">
+      @csrf
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Catatan Revisi:</label>
+        <textarea name="notes" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200" required></textarea>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeRevisionModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
+        <button type="submit" class="px-3 py-1.5 rounded bg-yellow-600 hover:bg-yellow-700">Kirim</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+function closeModal() {
+  document.getElementById('detailModal').classList.add('hidden');
+}
+</script>
+
+@endsection
+
+
+    {{-- Prompt alasan sederhana untuk tolak/revisi --}}
+    <script>
+        function handleReason(form, message) {
+            const reason = prompt(message);
+            if (reason === null) return false;        // batal
+            if (reason.trim() === '') {
+                alert('Alasan tidak boleh kosong.');
+                return false;
+            }
+            form.querySelector('input[name="notes"]').value = reason.trim();
+            return true;
+        }
+
+        /*script ajax detail pencaker*/
+
+        async function showDetail(id) {
+        const modal = document.getElementById('detailModal');
+        const body  = document.getElementById('modalContent');
+
+  modal.classList.remove('hidden');
+  body.innerHTML = "<p class='text-gray-400'>Memuat data...</p>";
+
+  try {
+    const res = await fetch(`/admin/ak1/${id}/detail`, { headers: { 'Accept': 'application/json' }});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+    const profile = data.profile || {};
+    const app = data.application || {};
+
+    // Gambar & dokumen
+    const foto = app.foto_closeup
+        ? `<img src="/storage/${app.foto_closeup}" class="w-40 h-48 object-cover rounded-lg border border-gray-600 shadow-md">`
+        : `<div class="w-40 h-48 flex items-center justify-center border border-gray-700 rounded-lg text-gray-500">Tidak ada foto</div>`;
+
+    const ktp = app.ktp_file
+        ? `<img src="/storage/${app.ktp_file}" class="h-28 w-auto rounded border border-gray-700 shadow cursor-pointer" onclick="window.open('/storage/${app.ktp_file}', '_blank')">`
+        : `<div class="h-28 w-40 flex items-center justify-center border border-gray-700 rounded-lg text-gray-500">Tidak ada file</div>`;
+
+    const ijazah = app.ijazah_file
+        ? `<img src="/storage/${app.ijazah_file}" class="h-28 w-auto rounded border border-gray-700 shadow cursor-pointer" onclick="window.open('/storage/${app.ijazah_file}', '_blank')">`
+        : `<div class="h-28 w-40 flex items-center justify-center border border-gray-700 rounded-lg text-gray-500">Tidak ada file</div>`;
+
+    body.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div>
+          ${foto}
+        </div>
+
+        <div class="md:col-span-2 space-y-3">
+          <h3 class="font-semibold text-lg mb-2 border-b border-gray-700 pb-1">Data Diri</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
+            <p><strong>Nama:</strong> ${profile.nama_lengkap ?? '-'}</p>
+            <p><strong>NIK:</strong> ${profile.nik ?? '-'}</p>
+            <p><strong>Tempat Lahir:</strong> ${profile.tempat_lahir ?? '-'}</p>
+            <p><strong>Tanggal Lahir:</strong> ${profile.tanggal_lahir ?? '-'}</p>
+            <p><strong>Jenis Kelamin:</strong> ${profile.jenis_kelamin ?? '-'}</p>
+            <p><strong>Status:</strong> ${profile.status_perkawinan ?? '-'}</p>
+            <p><strong>Agama:</strong> ${profile.agama ?? '-'}</p>
+            <p><strong>Alamat:</strong> ${profile.alamat_lengkap ?? '-'}</p>
+            <p><strong>Nomor AK1:</strong> ${app.nomor_ak1 ?? '<span class="text-gray-400">Belum diterbitkan</span>'}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-700 pt-4 mt-4">
+        <h3 class="font-semibold text-lg mb-2">Riwayat Pendidikan</h3>
+        ${
+          (data.educations && data.educations.length)
+          ? `<ul class="list-disc ml-6 space-y-1 text-sm">
+              ${data.educations.map(e => (
+                `<li>${e.tingkat} — ${e.nama_institusi} (${e.tahun_mulai}-${e.tahun_selesai})</li>`
+              )).join('')}
+             </ul>`
+          : '<p class="text-gray-400 text-sm">Tidak ada data</p>'
+        }
+      </div>
+
+      <div class="border-t border-gray-700 pt-4 mt-4">
+        <h3 class="font-semibold text-lg mb-2">Riwayat Pelatihan</h3>
+        ${
+          (data.trainings && data.trainings.length)
+          ? `<ul class="list-disc ml-6 space-y-1 text-sm">
+              ${data.trainings.map(t => (
+                `<li>${t.jenis_pelatihan} — ${t.lembaga_pelatihan} (${t.tahun})</li>`
+              )).join('')}
+             </ul>`
+          : '<p class="text-gray-400 text-sm">Tidak ada data</p>'
+        }
+      </div>
+
+      <div class="border-t border-gray-700 pt-4 mt-4">
+        <h3 class="font-semibold text-lg mb-3">Dokumen Terunggah</h3>
+        <div class="flex flex-wrap gap-4">
+          <div>
+            <p class="text-sm mb-2 font-medium text-gray-300">KTP</p>
+            ${ktp}
+          </div>
+          <div>
+            <p class="text-sm mb-2 font-medium text-gray-300">Ijazah</p>
+            ${ijazah}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    console.error(err);
+    body.innerHTML = `<p class="text-red-400">Gagal memuat detail.</p>`;
+  }
+}
+
+function closeModal() {
+  document.getElementById('detailModal').classList.add('hidden');
+}
+
+// Script tombol aksi
+
+  // === Dropdown toggle ===
+  function toggleDropdown(id) {
+    const target = document.getElementById(`dropdown-${id}`);
+    document.querySelectorAll('.action-dropdown').forEach(el => {
+      if (el !== target) el.classList.add('hidden');
+    });
+    target.classList.toggle('hidden');
+  }
+
+  // === Tutup dropdown jika klik di luar, tapi biarkan tombol modal tetap jalan ===
+  document.addEventListener('click', (e) => {
+    const isDropdownButton = e.target.closest('.action-dropdown-wrap');
+    const isModalButton = e.target.closest('.open-reject') || e.target.closest('.open-revision');
+    if (!isDropdownButton && !isModalButton) {
+      document.querySelectorAll('.action-dropdown').forEach(el => el.classList.add('hidden'));
+    }
+  });
+
+  // === Modal Reject ===
+  function openRejectModal(id) {
+    // tutup dropdown aktif biar rapi
+    document.querySelectorAll('.action-dropdown').forEach(el => el.classList.add('hidden'));
+
+    const modal = document.getElementById('rejectModal');
+    const form = document.getElementById('rejectForm');
+    form.action = `/admin/ak1/${id}/reject`;
+    modal.classList.remove('hidden');
+  }
+
+  function closeRejectModal() {
+    document.getElementById('rejectModal').classList.add('hidden');
+  }
+
+  // === Modal Revision ===
+  function openRevisionModal(id) {
+    // tutup dropdown aktif biar rapi
+    document.querySelectorAll('.action-dropdown').forEach(el => el.classList.add('hidden'));
+
+    const modal = document.getElementById('revisionModal');
+    const form = document.getElementById('revisionForm');
+    form.action = `/admin/ak1/${id}/revision`;
+    modal.classList.remove('hidden');
+  }
+
+  function closeRevisionModal() {
+    document.getElementById('revisionModal').classList.add('hidden');
+  }
+
+  // === Tutup modal kalau klik area luar ===
+  // window.addEventListener('click', (e) => {
+  //   ['rejectModal', 'revisionModal'].forEach(id => {
+  //     const modal = document.getElementById(id);
+  //     if (!modal.classList.contains('hidden') && !modal.querySelector('form').contains(e.target)) {
+  //       modal.classList.add('hidden');
+  //     }
+  //   });
+  // });
+    </script>
+
+

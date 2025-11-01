@@ -67,6 +67,7 @@ Route::middleware(['auth', 'role:admin'])
         // Daftar Pencari Kerja (kalau ada)
         Route::get('/pencaker', [JobseekerController::class, 'index'])->name('pencaker.index');
         Route::get('/pencaker/{user}', [JobseekerController::class, 'show'])->name('pencaker.show');
+        Route::get('/pencaker/{user}/detail', [JobseekerController::class, 'ajaxDetail'])->name('pencaker.detail');
 
         // routes/detail ak1
         Route::get('/ak1/{application}/detail', [CardVerificationController::class, 'ajaxDetail'])
@@ -146,4 +147,3 @@ Route::middleware(['auth', 'role:superadmin'])
         Route::post('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('toggle');
         Route::delete('/{id}', [AdminManagementController::class, 'destroy'])->name('destroy');
     });
-

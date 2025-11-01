@@ -3,7 +3,7 @@
 @section('title', 'Daftar Pencaker Disetujui')
 
 @section('content')
-<div class="py-8 max-w-6xl mx-auto px-6" x-data="{ open:false, detail:{} }">
+<div class="py-8 max-w-6xl mx-auto px-6" x-data="{ open:false, html:'', loading:false, load(url){ this.open=true; this.loading=true; this.html=''; fetch(url, {headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.text()).then(t=>{ this.html=t; }).catch(()=>{ this.html='<div class=\'p-6 text-red-300\'>Gagal memuat detail.</div>'; }).finally(()=>{ this.loading=false; }); } }">
 
   <div class="flex justify-between items-center mb-4">
     <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">
@@ -43,31 +43,8 @@
               <td class="p-3">{{ $p->pendidikan_terakhir ?? '-' }}</td>
               <td class="p-3">{{ $p->kecamatan ?? '-' }}</td>
               <td class="p-3 text-center">
-                <button
-                  type="button"
-                  class="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
-                  @click="
-                    detail = {
-                      nama: '{{ $p->nama_lengkap ?? $u->name }}',
-                      nik: '{{ $p->nik ?? '-' }}',
-                      ttl: '{{ trim(($p->tempat_lahir ?? '').', '.($p->tanggal_lahir ?? '')) }}',
-                      jk: '{{ $p->jenis_kelamin ?? '-' }}',
-                      agama: '{{ $p->agama ?? '-' }}',
-                      status: '{{ $p->status_perkawinan ?? '-' }}',
-                      pendidikan: '{{ $p->pendidikan_terakhir ?? '-' }}',
-                      alamat: '{{ $p->alamat_lengkap ?? '-' }}',
-                      kecamatan: '{{ $p->kecamatan ?? '-' }}',
-                      hp: '{{ $p->no_hp ?? '-' }}',
-                      email: '{{ $u->email }}',
-                      foto: '{{ $foto }}',
-                      ktp: '{{ $ktp }}',
-                      ijazah: '{{ $ijz }}'
-                    };
-                    open = true;
-                  "
-                >
-                  Detail
-                </button>
+                <button type="button" class="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                        @click="load('{{ route('admin.pencaker.detail', $u->id) }}')">Detail</button>
               </td>
             </tr>
           @empty
@@ -82,47 +59,19 @@
     </div>
   </div>
 
-  {{-- MODAL DETAIL --}}
-  <div
-    x-show="open"
-    x-transition.opacity
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-  >
-    <div @click.outside="open=false"
-         class="bg-gray-900 w-full max-w-3xl rounded-2xl shadow-lg overflow-hidden">
-
-      <div class="grid md:grid-cols-[200px,1fr] gap-6 p-6">
-        <div class="flex flex-col items-center">
-          <img :src="detail.foto" alt="Foto" class="w-48 h-56 object-cover rounded-lg border border-gray-700">
-          <div class="mt-3 flex gap-2">
-            <template x-if="detail.ktp">
-              <a :href="detail.ktp" target="_blank" class="text-xs px-3 py-1 bg-slate-700 rounded">Lihat KTP</a>
-            </template>
-            <template x-if="detail.ijazah">
-              <a :href="detail.ijazah" target="_blank" class="text-xs px-3 py-1 bg-slate-700 rounded">Lihat Ijazah</a>
-            </template>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="text-xl font-semibold mb-4" x-text="detail.nama"></h3>
-          <div class="grid sm:grid-cols-2 gap-y-2 text-sm">
-            <div><span class="text-gray-400">NIK</span> : <span x-text="detail.nik"></span></div>
-            <div><span class="text-gray-400">TTL</span> : <span x-text="detail.ttl"></span></div>
-            <div><span class="text-gray-400">JK</span> : <span x-text="detail.jk"></span></div>
-            <div><span class="text-gray-400">Agama</span> : <span x-text="detail.agama"></span></div>
-            <div><span class="text-gray-400">Status</span> : <span x-text="detail.status"></span></div>
-            <div><span class="text-gray-400">Pendidikan</span> : <span x-text="detail.pendidikan"></span></div>
-            <div class="sm:col-span-2"><span class="text-gray-400">Alamat</span> : <span x-text="detail.alamat"></span></div>
-            <div><span class="text-gray-400">Kecamatan</span> : <span x-text="detail.kecamatan"></span></div>
-            <div><span class="text-gray-400">No. HP</span> : <span x-text="detail.hp"></span></div>
-            <div><span class="text-gray-400">Email</span> : <span x-text="detail.email"></span></div>
-          </div>
-        </div>
+  {{-- MODAL DETAIL (AJAX) --}}
+  <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+       @keydown.escape.window="open=false">
+    <div @click.outside="open=false" class="bg-gray-900 w-full max-w-5xl rounded-2xl shadow-lg overflow-hidden border border-gray-700">
+      <div class="flex items-center justify-between px-6 py-3 border-b border-gray-800 sticky top-0 bg-gray-900 z-10">
+        <h3 class="text-lg font-semibold text-gray-100">Detail Pencaker</h3>
+        <button class="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600" @click="open=false">Tutup</button>
       </div>
-
-      <div class="flex justify-end gap-2 bg-gray-800 px-6 py-3">
-        <button class="px-4 py-2 rounded bg-slate-600 hover:bg-slate-700" @click="open=false">Tutup</button>
+      <div class="max-h-[85vh] overflow-y-auto">
+        <template x-if="loading">
+          <div class="p-6 text-gray-300">Memuat...</div>
+        </template>
+        <div class="p-6" x-html="html"></div>
       </div>
     </div>
   </div>

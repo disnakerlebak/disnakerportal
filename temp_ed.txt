@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Education extends Model
+{
+    use HasFactory;
+
+     protected $table = 'educations';
+
+    protected $fillable = [
+        'jobseeker_profile_id',
+        'tingkat',
+        'nama_institusi',
+        'jurusan',
+        'tahun_mulai',
+        'tahun_selesai',
+        'ijazah_file'
+    ];
+
+    public function profile()
+    {
+        return $this->belongsTo(JobseekerProfile::class, 'jobseeker_profile_id', 'id');
+    }
+}
+
+
