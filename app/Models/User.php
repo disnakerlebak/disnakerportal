@@ -12,6 +12,21 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    // Role constants
+    public const ROLE_SUPERADMIN = 'superadmin';
+    public const ROLE_ADMIN_VERIFIKATOR = 'admin_verifikator';
+    public const ROLE_ADMIN_LOKER = 'admin_loker';
+    public const ROLE_ADMIN_STATISTIK = 'admin_statistik';
+    public const ROLE_PENCAKER = 'pencaker';
+
+    public const ROLES = [
+        self::ROLE_SUPERADMIN,
+        self::ROLE_ADMIN_VERIFIKATOR,
+        self::ROLE_ADMIN_LOKER,
+        self::ROLE_ADMIN_STATISTIK,
+        self::ROLE_PENCAKER,
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -65,4 +80,3 @@ public function cardApplications()
 
 
 }
-

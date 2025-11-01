@@ -28,6 +28,11 @@ use App\Http\Controllers\Admin\JobseekerController;
 // Halaman utama
 Route::get('/', fn () => view('welcome'));
 
+// Unauthorized page
+Route::get('/unauthorized', function () {
+    return response('Access Denied.', 403);
+})->name('unauthorized');
+
 // Dashboard switcher per-role
 Route::get('/dashboard', function () {
     $user = auth()->user();
