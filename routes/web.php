@@ -41,21 +41,22 @@ Route::get('/dashboard', function () {
 
     return match ($user->role) {
         'superadmin' => redirect()->route('admin.manage.index'),
-        'admin'      => redirect()->route('admin.dashboard'),
+        'admin_ak1'  => redirect()->route('admin.dashboard'),
+        'perusahaan' => redirect()->route('perusahaan.dashboard'),
         'pencaker'   => redirect()->route('pencaker.dashboard'),
         default      => redirect()->route('login'),
     };
 })->middleware(['auth'])->name('dashboard');
 
 /* ===================== ADMIN ===================== */
-Route::middleware(['auth', 'role:admin'])
+Route::middleware(['auth', 'role:admin,admin_ak1,superadmin'])
     ->prefix('admin')
     ->as('admin.')
     ->group(function () {
         // Dashboard Admin
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-               // Verifikasi AK1
+        // Verifikasi AK1
         Route::get('/ak1', [CardVerificationController::class, 'index'])->name('ak1.index');
         Route::get('/ak1/{application}', [CardVerificationController::class, 'show'])->name('ak1.show');
         Route::post('/ak1/{application}/approve', [CardVerificationController::class, 'approve'])->name('ak1.approve');
@@ -64,24 +65,24 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/ak1/{application}/printed', [CardVerificationController::class, 'markPrinted'])->name('ak1.printed');
         Route::post('/ak1/{application}/picked-up', [CardVerificationController::class, 'markPickedUp'])->name('ak1.picked');
 
-        // Daftar Pencari Kerja (kalau ada)
+        // Daftar Pencari Kerja
         Route::get('/pencaker', [JobseekerController::class, 'index'])->name('pencaker.index');
         Route::get('/pencaker/{user}', [JobseekerController::class, 'show'])->name('pencaker.show');
         Route::get('/pencaker/{user}/detail', [JobseekerController::class, 'ajaxDetail'])->name('pencaker.detail');
 
-        // routes/detail ak1
+        // Detail AK1
         Route::get('/ak1/{application}/detail', [CardVerificationController::class, 'ajaxDetail'])
-        ->name('admin.ak1.ajaxDetail');
+            ->name('admin.ak1.ajaxDetail');
 
-        // Cetak PDF Kartu Pencaker
+        // Cetak PDF
         Route::get('/ak1/{application}/cetak', [CardVerificationController::class, 'cetakPdf'])
-        ->name('ak1.cetak');
+            ->name('ak1.cetak');
 
-        // Alasan Penolakan (CRUD via modal AJAX)
-Route::resource('rejection-reasons', \App\Http\Controllers\Admin\RejectionReasonController::class)
-->except(['show']);
-
+        // Alasan Penolakan
+        Route::resource('rejection-reasons', \App\Http\Controllers\Admin\RejectionReasonController::class)
+            ->except(['show']);
     });
+
 
 
 /* ===================== PERUSAHAAN ===================== */
