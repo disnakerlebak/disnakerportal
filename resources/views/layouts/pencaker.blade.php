@@ -86,6 +86,9 @@
         </div>
     </div>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
     <script>
     const toggleButtons = document.querySelectorAll('.theme-toggle');
     const html = document.documentElement;
@@ -115,6 +118,72 @@
 
     syncIcon();
     toggleButtons.forEach(btn => btn.addEventListener('click', toggleTheme));
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        @if (session('success'))
+            Toastify({
+                text: {!! json_encode(session('success')) !!},
+                duration: 3500,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: "#16a34a",
+                stopOnFocus: true
+            }).showToast();
+        @endif
+
+        @if (session('error'))
+            Toastify({
+                text: {!! json_encode(session('error')) !!},
+                duration: 3500,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: "#dc2626",
+                stopOnFocus: true
+            }).showToast();
+        @endif
+
+        @if (session('warning'))
+            Toastify({
+                text: {!! json_encode(session('warning')) !!},
+                duration: 3500,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: "#f59e0b",
+                stopOnFocus: true
+            }).showToast();
+        @endif
+
+        @if (session('info'))
+            Toastify({
+                text: {!! json_encode(session('info')) !!},
+                duration: 3500,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: "#2563eb",
+                stopOnFocus: true
+            }).showToast();
+        @endif
+
+        @if ($errors->any())
+            @foreach ($errors->all() as $message)
+                Toastify({
+                    text: {!! json_encode($message) !!},
+                    duration: 4000,
+                    close: true,
+                    gravity: "bottom",
+                    position: "right",
+                    backgroundColor: "#f97316",
+                    stopOnFocus: true
+                }).showToast();
+            @endforeach
+        @endif
+    });
     </script>
     @stack('scripts')
 </body>

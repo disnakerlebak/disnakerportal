@@ -33,14 +33,9 @@ class EducationController extends Controller
             'jurusan' => 'nullable|string|max:255',
             'tahun_mulai' => 'nullable|digits:4',
             'tahun_selesai' => 'nullable|digits:4|gte:tahun_mulai',
-            'ijazah_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
         $profile = JobseekerProfile::firstOrCreate(['user_id' => $request->user()->id]);
-
-        if ($request->hasFile('ijazah_file')) {
-            $validated['ijazah_file'] = $request->file('ijazah_file')->store('ijazah', 'public');
-        }
 
         $profile->educations()->create($validated);
 
@@ -69,12 +64,7 @@ class EducationController extends Controller
             'jurusan' => 'nullable|string|max:255',
             'tahun_mulai' => 'nullable|digits:4',
             'tahun_selesai' => 'nullable|digits:4|gte:tahun_mulai',
-            'ijazah_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
-
-        if ($request->hasFile('ijazah_file')) {
-            $validated['ijazah_file'] = $request->file('ijazah_file')->store('ijazah', 'public');
-        }
 
         $education->update($validated);
 

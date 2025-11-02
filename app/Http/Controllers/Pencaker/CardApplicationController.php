@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\{
     JobseekerProfile,
@@ -28,10 +29,23 @@ class CardApplicationController extends Controller
         $educations = Education::whereHas('profile', fn($q) => $q->where('user_id', $user->id))->get();
         $trainings = Training::whereHas('profile', fn($q) => $q->where('user_id', $user->id))->get();
 
-        $application = CardApplication::with('documents')
+        $application = CardApplication::with([
+                'documents',
+                'logs' => fn($q) => $q->latest(),
+            ])
             ->where('user_id', $user->id)
             ->latest()
             ->first();
+
+        $lastApp = CardApplication::with('documents')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->skip(1)
+            ->first();
+
+        if ($application && $application->status === 'Menunggu Verifikasi' && !$application->documents->count()) {
+            $application = $lastApp ?: $application;
+        }
 
         return view('pencaker.card.index', compact(
             'profile', 'educations', 'trainings', 'application'
@@ -45,7 +59,8 @@ class CardApplicationController extends Controller
     {
         $user = $request->user();
 
-        $lastApp = CardApplication::where('user_id', $user->id)
+        $lastApp = CardApplication::with('documents')
+            ->where('user_id', $user->id)
             ->latest()
             ->first();
 
@@ -54,53 +69,86 @@ class CardApplicationController extends Controller
             return back()->with('error', 'Pengajuan Anda sebelumnya masih diproses atau sudah disetujui. Tidak dapat mengajukan ulang saat ini.');
         }
 
-        // 🧩 Validasi hanya untuk file yang benar-benar diunggah
-        $validated = $request->validate([
-            'foto_closeup' => $request->hasFile('foto_closeup') ? 'image|max:2048' : 'nullable',
-            'ktp_file'     => $request->hasFile('ktp_file') ? 'mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable',
-            'ijazah_file'  => $request->hasFile('ijazah_file') ? 'mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable',
-        ]);
+        $requiredDocs = [
+            'foto_closeup' => [
+                'label' => 'Foto close-up',
+                'rule'  => 'image|max:2048',
+                'folder'=> 'ak1/foto',
+            ],
+            'ktp_file' => [
+                'label' => 'Scan KTP',
+                'rule'  => 'mimes:jpg,jpeg,png,pdf|max:2048',
+                'folder'=> 'ak1/ktp',
+            ],
+            'ijazah_file' => [
+                'label' => 'Scan Ijazah Terakhir',
+                'rule'  => 'mimes:jpg,jpeg,png,pdf|max:2048',
+                'folder'=> 'ak1/ijazah',
+            ],
+        ];
+
+        $isResubmission = $request->has('is_resubmission') && $lastApp && in_array($lastApp->status, ['Ditolak', 'Revisi Diminta']);
+
+        $existingDocs = $isResubmission
+            ? $lastApp->documents->keyBy('type')
+            : collect();
+
+        $baseRules = [];
+        foreach ($requiredDocs as $field => $meta) {
+            if ($request->hasFile($field)) {
+                $baseRules[$field] = 'required|' . $meta['rule'];
+            } elseif (!$isResubmission) {
+                // Pengajuan pertama harus mengunggah semua berkas wajib
+                $baseRules[$field] = 'required|' . $meta['rule'];
+            }
+        }
+
+        $validator = Validator::make($request->all(), $baseRules);
+
+        $validator->after(function ($validator) use ($requiredDocs, $request, $existingDocs, $isResubmission) {
+            foreach ($requiredDocs as $field => $meta) {
+                $hasNew = $request->hasFile($field);
+                $hasOld = $existingDocs->has($field);
+                if (!$hasNew && (!$isResubmission || !$hasOld)) {
+                    $validator->errors()->add($field, "Dokumen {$meta['label']} wajib diunggah.");
+                }
+            }
+        });
+
+        $validator->validate();
 
         try {
             DB::beginTransaction();
 
-            // 🧱 Buat atau perbarui pengajuan baru
-            $application = CardApplication::create([
-                'user_id' => $user->id,
-                // Jika sebelumnya revisi → ubah ke status menunggu verifikasi ulang
-                'status' => ($lastApp && $lastApp->status === 'Revisi Diminta')
-                    ? 'Menunggu Revisi Verifikasi'
-                    : 'Menunggu Verifikasi',
-                'tanggal_pengajuan' => now(),
-            ]);
+            if ($isResubmission) {
+                $lastApp->update([
+                    'status' => 'Menunggu Revisi Verifikasi',
+                ]);
 
-            // 📦 Daftar dokumen
-            $dokumenList = [
-                'foto_closeup' => 'ak1/foto',
-                'ktp_file'     => 'ak1/ktp',
-                'ijazah_file'  => 'ak1/ijazah',
-            ];
+                $application = $lastApp->fresh('documents');
+            } else {
+                $application = CardApplication::create([
+                    'user_id'           => $user->id,
+                    'status'            => 'Menunggu Verifikasi',
+                ]);
+                $application->load('documents');
+            }
 
-            foreach ($dokumenList as $input => $folder) {
-                // Kalau file baru diunggah → simpan baru
+            foreach ($requiredDocs as $input => $meta) {
+                $folder = $meta['folder'];
                 if ($request->hasFile($input)) {
                     $storedPath = $request->file($input)->store($folder, 'public');
-                    CardApplicationDocument::create([
-                        'card_application_id' => $application->id,
-                        'type' => $input,
-                        'file_path' => $storedPath,
-                    ]);
-                }
-                // Kalau file tidak diunggah ulang, tapi ada dari revisi sebelumnya → duplikasi path lama
-                elseif ($lastApp) {
-                    $oldDoc = $lastApp->documents()->where('type', $input)->first();
-                    if ($oldDoc) {
-                        CardApplicationDocument::create([
-                            'card_application_id' => $application->id,
-                            'type' => $oldDoc->type,
-                            'file_path' => $oldDoc->file_path,
-                        ]);
+                    if ($existingDocs->has($input)) {
+                        Storage::disk('public')->delete($existingDocs[$input]->file_path);
                     }
+
+                    $application->documents()->updateOrCreate(
+                        ['type' => $input],
+                        ['file_path' => $storedPath]
+                    );
+                } elseif (!$isResubmission) {
+                    // seharusnya tidak terjadi karena validasi, tapi sebagai pengaman
+                    throw new \RuntimeException("Dokumen {$input} belum diunggah");
                 }
             }
 

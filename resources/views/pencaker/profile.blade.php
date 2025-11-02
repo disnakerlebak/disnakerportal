@@ -19,7 +19,7 @@
 
     <h1 class="text-2xl font-semibold text-gray-100 mb-6">Profil Pencaker</h1>
 
-    @if (session('success'))
+    <!-- @if (session('success'))
         <div class="mb-4 rounded-lg bg-green-600/20 border border-green-600 text-green-100 px-4 py-3">
             {{ session('success') }}
         </div>
@@ -40,7 +40,7 @@
                 @endforeach
             </ul>
         </div>
-    @endif
+    @endif -->
 
     <div class="space-y-4">
 
@@ -551,7 +551,7 @@
                             class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
                                    dark:bg-gray-900 dark:text-gray-100">
                         <option value="">Pilih</option>
-                        @foreach (['SD','SMP','SMA/SMK','D3','S1','S2','S3'] as $p)
+                        @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $p)
                             <option value="{{ $p }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir ?? '') == $p)>
                                 {{ $p }}
                             </option>
@@ -652,12 +652,6 @@
         </div>
     </div>
 
-    <div>
-        <label class="block text-sm text-gray-500">Upload Ijazah (opsional)</label>
-        <input type="file" name="ijazah_file"
-               class="mt-1 w-full text-sm text-gray-300 border border-gray-700 rounded-lg p-2
-                      bg-gray-900 focus:ring-2 focus:ring-indigo-500">
-    </div>
 </x-modal-form>
 
 {{-- Modal: Edit Pendidikan --}}
@@ -710,19 +704,6 @@
             </div>
         </div>
 
-        <div>
-            <label class="block text-sm text-gray-500">Upload Ijazah (opsional)</label>
-            <input type="file" name="ijazah_file"
-                   class="mt-1 w-full text-sm text-gray-300 border border-gray-700 rounded-lg p-2
-                          bg-gray-900 focus:ring-2 focus:ring-indigo-500">
-            @if ($edu->ijazah_file)
-                <p class="text-xs text-gray-400 mt-1">
-                    File saat ini:
-                    <a href="{{ asset('storage/'.$edu->ijazah_file) }}" target="_blank"
-                       class="text-blue-400 underline">Lihat Ijazah</a>
-                </p>
-            @endif
-        </div>
     </x-modal-form>
 @endforeach
 

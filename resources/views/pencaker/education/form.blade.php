@@ -41,15 +41,6 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-1">Upload Ijazah (opsional)</label>
-                    <input type="file" name="ijazah_file" class="w-full border rounded p-2">
-                    @if($education->ijazah_file)
-                        <p class="text-sm mt-1">File saat ini:
-                            <a href="{{ asset('storage/'.$education->ijazah_file) }}" target="_blank" class="text-blue-600">Lihat</a>
-                        </p>
-                    @endif
-                </div>
             </div>
 
             <div class="mt-6 flex justify-between">

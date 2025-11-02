@@ -2,7 +2,7 @@
 @section('title', 'Verifikasi AK1')
 
 @section('content')
-<div class="max-w-7xl mx-auto p-6 space-y-6">
+<div class="w-full px-4 sm:px-6 lg:px-8 space-y-6">
     
     {{-- ===== Filter ===== --}}
     <form method="GET" class="flex flex-wrap gap-3 items-center">
@@ -11,7 +11,7 @@
 
     <select name="status" class="rounded-lg border-gray-700 dark:bg-gray-900 dark:text-gray-100 px-3 py-2">
         @php
-            $statuses = ['Menunggu Verifikasi', 'Revisi Diminta', 'Disetujui', 'Ditolak'];
+            $statuses = ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta', 'Disetujui', 'Ditolak'];
             $selected = request('status', 'Menunggu Verifikasi');
         @endphp
         <option value="">Semua Status</option>
@@ -30,18 +30,18 @@
 
 
     {{-- ===== Tabel Daftar Pengajuan ===== --}}
-    <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
-        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-            <table class="min-w-full text-sm text-gray-300 whitespace-nowrap">
-                <thead class="bg-gray-700 text-gray-100 uppercase text-xs">
+    <div class="bg-gray-800 border border-gray-700 rounded-lg">
+        <div class="w-full overflow-x-auto overflow-y-hidden">
+            <table class="min-w-[1100px] w-full text-sm text-gray-300">
+                <thead class="bg-gray-700 text-gray-100 uppercase text-xs whitespace-nowrap">
                     <tr>
-                        <th class="p-3 text-center">Pemohon</th>
-                        <th class="p-3 text-center">Tanggal</th>
-                        <th class="p-3 text-center">Status</th>
-                        <th class="p-3 text-center">Keterangan</th>
-                        <th class="p-3 text-center">Nomor AK/1</th>
-                        <th class="p-3 text-center">Ditangani Oleh</th>
-                        <th class="p-3 text-center">Aksi</th>
+                        <th class="p-3 text-center whitespace-nowrap">Pemohon</th>
+                        <th class="p-3 text-center whitespace-nowrap">Tanggal</th>
+                        <th class="p-3 text-center whitespace-nowrap">Status</th>
+                        <th class="p-3 text-center whitespace-nowrap">Keterangan</th>
+                        <th class="p-3 text-center whitespace-nowrap">Nomor AK/1</th>
+                        <th class="p-3 text-center whitespace-nowrap">Ditangani Oleh</th>
+                        <th class="p-3 text-center whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
 
@@ -66,25 +66,25 @@
 
                         <tr class="border-b border-gray-700 hover:bg-gray-700/40 transition">
                             {{-- Pemohon --}}
-                            <td class="p-3 align-top">
+                            <td class="p-3 align-top whitespace-nowrap">
                                 <div class="font-medium">{{ $app->user->name }}</div>
                                 <div class="text-xs text-gray-400">{{ $app->user->email }}</div>
                             </td>
 
                             {{-- Tanggal --}}
-                            <td class="p-3 align-top text-center">
+                            <td class="p-3 align-top text-center whitespace-nowrap">
                             {{ indoDateOnly($app->created_at) ?? '-' }}
                             </td>
 
                             {{-- Status --}}
-                            <td class="p-3 align-top text-center">
+                            <td class="p-3 align-top text-center whitespace-nowrap">
                                 <span class="px-2 py-1 rounded text-xs font-medium {{ $badgeClass }}">
                                     {{ $app->status }}
                                 </span>
                             </td>
 
                             {{-- Keterangan --}}
-                            <td class="p-3 align-top text-sm">
+                            <td class="p-3 align-top text-sm whitespace-normal break-words max-w-md">
                                 @if($app->status === 'Ditolak')
                                     <span class="text-red-400">{{ $catatan ?: '—' }}</span>
                                 @elseif($app->status === 'Revisi Diminta')
@@ -95,12 +95,12 @@
                             </td>
 
                             {{-- Nomor AK/1 --}}
-                            <td class="p-3 align-top text-center">
+                            <td class="p-3 align-top text-center whitespace-nowrap">
                                 {{ $app->nomor_ak1 ?? '-' }}
                             </td>
 
                             {{-- Ditangani Oleh --}}
-                            <td class="p-3 align-top">
+                            <td class="p-3 align-top whitespace-nowrap">
                                 @if($app->lastHandler?->actor?->name)
                                     <div class="font-medium">{{ $app->lastHandler->actor->name }}</div>
                                     <div class="text-xs text-gray-400">

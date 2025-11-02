@@ -16,6 +16,7 @@ class CardApplication extends Model
         'user_id',
         'status',
         'nomor_ak1',
+        'tanggal_pengajuan',
     ];
 
     /**
