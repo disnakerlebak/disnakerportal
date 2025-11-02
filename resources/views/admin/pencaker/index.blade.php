@@ -41,7 +41,7 @@
               <td class="p-3">{{ $p->jenis_kelamin ?? '-' }}</td>
               <td class="p-3">{{ $usia }}</td>
               <td class="p-3">{{ $p->pendidikan_terakhir ?? '-' }}</td>
-              <td class="p-3">{{ $p->kecamatan ?? '-' }}</td>
+              <td class="p-3">{{ $p->domisili_kecamatan ?? '-' }}</td>
               <td class="p-3 text-center">
                 <button type="button" class="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
                         @click="load('{{ route('admin.pencaker.detail', $u->id) }}')">Detail</button>
