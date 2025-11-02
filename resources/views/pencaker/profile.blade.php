@@ -57,7 +57,15 @@
                 </svg>
             </button>
 
-            <div x-show="open === 1" x-collapse class="px-6 pb-6">
+            <div x-show="open === 1"
+                 x-collapse
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="px-6 pt-6 pb-8 space-y-4">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-gray-100">Data Diri Pencari Kerja</h2>
                     @if ($locked)
@@ -96,7 +104,7 @@
                     ];
                 @endphp
 
-                <div class="bg-gray-900/40 rounded-lg border border-gray-700/60">
+                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
                     <table class="w-full text-gray-100">
                         <tbody>
                             @foreach ($fields as $label => $value)
@@ -124,7 +132,15 @@
                 </svg>
             </button>
 
-            <div x-show="open === 2" x-collapse class="px-6 pb-6 space-y-4">
+            <div x-show="open === 2"
+                 x-collapse
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="px-6 pt-6 pb-8 space-y-4">
                 @if ($locked)
                     <div class="bg-yellow-600/20 border border-yellow-600 text-yellow-100 px-4 py-3 rounded">
                         Perubahan data pendidikan terkunci karena pengajuan AK1 berstatus Menunggu Verifikasi atau Disetujui.
@@ -143,9 +159,10 @@
                     </button>
                 @endif
 
-                <div class="overflow-x-auto">
-                    <table class="w-full border-collapse border border-gray-600 rounded-lg">
-                        <thead class="bg-gray-700 text-gray-100">
+                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-700 rounded-lg overflow-hidden">
+                            <thead class="bg-gray-700 text-gray-100">
                             <tr>
                                 <th class="border border-gray-600 p-2 text-left">Tingkat</th>
                                 <th class="border border-gray-600 p-2 text-left">Nama Sekolah / Institusi</th>
@@ -153,8 +170,8 @@
                                 <th class="border border-gray-600 p-2 text-center">Tahun</th>
                                 <th class="border border-gray-600 p-2 text-center w-32">Aksi</th>
                             </tr>
-                        </thead>
-                        <tbody class="text-gray-200">
+                            </thead>
+                            <tbody class="text-gray-200">
                             @forelse ($educations as $edu)
                                 <tr class="border-t border-gray-700">
                                     <td class="border border-gray-700 p-2">{{ $edu->tingkat }}</td>
@@ -188,8 +205,9 @@
                                     </td>
                                 </tr>
                             @endforelse
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -207,7 +225,15 @@
                 </svg>
             </button>
 
-            <div x-show="open === 3" x-collapse class="px-6 pb-6 space-y-4">
+            <div x-show="open === 3"
+                 x-collapse
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="px-6 pt-6 pb-8 space-y-4">
                 @if ($locked)
                     <div class="bg-yellow-600/20 border border-yellow-600 text-yellow-100 px-4 py-3 rounded">
                         Perubahan data pelatihan terkunci karena pengajuan AK1 berstatus Menunggu Verifikasi atau Disetujui.
@@ -226,9 +252,10 @@
                     </button>
                 @endif
 
-                <div class="overflow-x-auto">
-                    <table class="w-full border-collapse border border-gray-600 rounded-lg">
-                        <thead class="bg-gray-700 text-gray-100">
+                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-700 rounded-lg overflow-hidden">
+                            <thead class="bg-gray-700 text-gray-100">
                             <tr>
                                 <th class="border border-gray-600 p-2 text-left">Jenis Pelatihan</th>
                                 <th class="border border-gray-600 p-2 text-left">Lembaga</th>
@@ -236,8 +263,8 @@
                                 <th class="border border-gray-600 p-2 text-center">Sertifikat</th>
                                 <th class="border border-gray-600 p-2 text-center w-32">Aksi</th>
                             </tr>
-                        </thead>
-                        <tbody class="text-gray-200">
+                            </thead>
+                            <tbody class="text-gray-200">
                             @forelse ($trainings as $train)
                                 <tr class="border-t border-gray-700">
                                     <td class="border border-gray-700 p-2">{{ $train->jenis_pelatihan }}</td>
@@ -279,8 +306,9 @@
                                     </td>
                                 </tr>
                             @endforelse
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -298,15 +326,24 @@
                 </svg>
             </button>
 
-            <div x-show="open === 4" x-collapse class="px-6 pb-6 space-y-4">
+            <div x-show="open === 4"
+                 x-collapse
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="px-6 pt-6 pb-8 space-y-4">
                 <button data-modal-open="modalWorkCreate"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                     + Tambah Riwayat Kerja
                 </button>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full border-collapse border border-gray-600 rounded-lg">
-                        <thead class="bg-gray-700 text-gray-100">
+                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-700 rounded-lg overflow-hidden">
+                            <thead class="bg-gray-700 text-gray-100">
                             <tr>
                                 <th class="border border-gray-600 p-2 text-left">Perusahaan</th>
                                 <th class="border border-gray-600 p-2 text-left">Jabatan</th>
@@ -314,8 +351,8 @@
                                 <th class="border border-gray-600 p-2 text-center">Surat Pengalaman</th>
                                 <th class="border border-gray-600 p-2 text-center w-32">Aksi</th>
                             </tr>
-                        </thead>
-                        <tbody class="text-gray-200">
+                            </thead>
+                            <tbody class="text-gray-200">
                             @forelse ($works as $work)
                                 <tr class="border-t border-gray-700">
                                     <td class="border border-gray-700 p-2">{{ $work->nama_perusahaan }}</td>
@@ -354,8 +391,9 @@
                                     </td>
                                 </tr>
                             @endforelse
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -373,13 +411,21 @@
                 </svg>
             </button>
 
-            <div x-show="open === 5" x-collapse class="px-6 pb-6 space-y-4 text-gray-200">
+            <div x-show="open === 5"
+                 x-collapse
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="px-6 pt-6 pb-8 space-y-4 text-gray-200">
                 <button data-modal-open="modalPreferenceForm"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                     + Tambah / Ubah Minat Kerja
                 </button>
 
-                <div class="bg-gray-900/40 rounded-lg p-6 border border-gray-700/60">
+                <div class="bg-gray-900/40 rounded-xl p-6 shadow-inner">
                     <h3 class="text-lg font-semibold mb-4">Data Minat Kerja</h3>
                     @if ($preference)
                         <div class="space-y-3">
