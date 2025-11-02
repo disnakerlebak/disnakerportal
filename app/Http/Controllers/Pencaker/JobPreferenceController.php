@@ -10,8 +10,9 @@ class JobPreferenceController extends Controller
 {
     public function index(Request $request)
     {
-        $preference = JobPreference::where('user_id', $request->user()->id)->first();
-        return view('pencaker.preferences.index', compact('preference'));
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('accordion', 'preference');
     }
 
     public function store(Request $request)
@@ -33,6 +34,9 @@ class JobPreferenceController extends Controller
             ]
         );
 
-        return redirect()->route('pencaker.preferences.index')->with('success', 'Minat kerja berhasil disimpan.');
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('success', 'Minat kerja berhasil disimpan.')
+            ->with('accordion', 'preference');
     }
 }

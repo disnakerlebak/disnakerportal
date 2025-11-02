@@ -13,11 +13,9 @@ class TrainingController extends Controller
 {
     public function index(Request $request)
     {
-        $profile = JobseekerProfile::where('user_id', $request->user()->id)->firstOrFail();
-        $trainings = Training::where('jobseeker_profile_id', $profile->id)->latest()->get();
-
-        $isLocked = $this->isEditingLocked($request->user()->id);
-        return view('pencaker.training.index', compact('trainings', 'isLocked'));
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('accordion', 'training');
     }
 
     public function store(Request $request)
@@ -43,7 +41,10 @@ class TrainingController extends Controller
 
         Training::create($validated);
 
-        return redirect()->route('pencaker.training.index')->with('success', 'Riwayat pelatihan berhasil ditambahkan.');
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('success', 'Riwayat pelatihan berhasil ditambahkan.')
+            ->with('accordion', 'training');
     }
 
     public function update(Request $request, $id)
@@ -71,7 +72,10 @@ class TrainingController extends Controller
 
     $training->update($validated);
 
-    return redirect()->route('pencaker.training.index')->with('success', 'Data pelatihan berhasil diperbarui.');
+    return redirect()
+        ->route('pencaker.profile.edit')
+        ->with('success', 'Data pelatihan berhasil diperbarui.')
+        ->with('accordion', 'training');
 }
 
     public function destroy(Training $training)
@@ -84,7 +88,10 @@ class TrainingController extends Controller
         }
         $training->delete();
 
-        return redirect()->route('pencaker.training.index')->with('success', 'Data pelatihan berhasil dihapus.');
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('success', 'Data pelatihan berhasil dihapus.')
+            ->with('accordion', 'training');
 }
 
     private function isEditingLocked(int $userId): bool

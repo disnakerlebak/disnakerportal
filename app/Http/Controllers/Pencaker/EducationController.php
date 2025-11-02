@@ -12,10 +12,9 @@ class EducationController extends Controller
 {
     public function index(Request $request)
     {
-        $profile = JobseekerProfile::where('user_id', $request->user()->id)->first();
-        $educations = $profile ? $profile->educations : collect();
-        $isLocked = $this->isEditingLocked($request->user()->id);
-        return view('pencaker.education.index', compact('educations', 'isLocked'));
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('accordion', 'education');
     }
 
     public function create()
@@ -45,7 +44,10 @@ class EducationController extends Controller
 
         $profile->educations()->create($validated);
 
-        return redirect()->route('pencaker.education.index')->with('success', 'Riwayat pendidikan berhasil ditambahkan.');
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('success', 'Riwayat pendidikan berhasil ditambahkan.')
+            ->with('accordion', 'education');
     }
 
     public function edit(Education $education)
@@ -76,11 +78,16 @@ class EducationController extends Controller
 
         $education->update($validated);
 
-        return redirect()->route('pencaker.education.index')->with('success', 'Riwayat pendidikan berhasil diperbarui.');
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('success', 'Riwayat pendidikan berhasil diperbarui.')
+            ->with('accordion', 'education');
     }
     public function show(Education $education)
     {   
-        return redirect()->route('pencaker.education.index');
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('accordion', 'education');
     }
     public function destroy(Education $education)
     {
@@ -89,7 +96,10 @@ class EducationController extends Controller
             return back()->with('error', 'Menghapus pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
         $education->delete();
-        return back()->with('success', 'Riwayat pendidikan dihapus.');
+        return redirect()
+            ->route('pencaker.profile.edit')
+            ->with('success', 'Riwayat pendidikan dihapus.')
+            ->with('accordion', 'education');
     }
 
     private function authorizeEducation(Education $education)

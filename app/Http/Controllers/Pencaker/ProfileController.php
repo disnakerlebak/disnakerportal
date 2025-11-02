@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pencaker;
 use App\Http\Controllers\Controller;
 use App\Models\JobseekerProfile;
 use App\Models\CardApplication;
+use App\Models\JobPreference;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,18 +15,41 @@ class ProfileController extends Controller
     // 🔹 Tampilkan halaman Data Diri
     public function edit(Request $request)
     {
+        $user = $request->user();
+        $userId = $user->id;
+
         $profile = JobseekerProfile::firstOrNew(
-            ['user_id' => $request->user()->id],
+            ['user_id' => $userId],
             [
-                'nama_lengkap' => $request->user()->name,
-                'email_cache'  => $request->user()->email,
+                'nama_lengkap' => $user->name,
+                'email_cache'  => $user->email,
             ]
         );
 
-        $kecamatan = $this->kecamatanLebak();
+        $profileId = $profile->id;
+        $educations = $profileId
+            ? $profile->educations()->orderBy('tahun_mulai')->get()
+            : collect();
+        $trainings = $profileId
+            ? $profile->trainings()->latest()->get()
+            : collect();
+        $works = $profileId
+            ? $profile->workExperiences()->latest()->get()
+            : collect();
+        $preference = JobPreference::where('user_id', $userId)->first();
 
-        $isLocked = $this->isEditingLocked($request->user()->id);
-        return view('pencaker.profile.edit', compact('profile', 'kecamatan', 'isLocked'));
+        $kecamatan = $this->kecamatanLebak();
+        $isLocked = $this->isEditingLocked($userId);
+
+        return view('pencaker.profile', compact(
+            'profile',
+            'kecamatan',
+            'isLocked',
+            'educations',
+            'trainings',
+            'works',
+            'preference'
+        ));
     }
 
     // 🔹 Update data diri dari form modal
@@ -70,8 +94,9 @@ class ProfileController extends Controller
         ]);
 
         return redirect()
-    ->to('/pencaker/profile')
-    ->with('success', 'Data diri berhasil diperbarui!');
+            ->route('pencaker.profile.edit')
+            ->with('success', 'Data diri berhasil diperbarui!')
+            ->with('accordion', 'profile');
 
     }
 
