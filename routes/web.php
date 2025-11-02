@@ -101,7 +101,7 @@ Route::middleware(['auth', 'role:pencaker'])
         Route::get('/dashboard', fn () => view('pencaker.dashboard'))->name('dashboard');
 
         // Data Diri
-        Route::get('/profile',  [PencakerProfileController::class, 'edit'])->name('profile.edit');
+        Route::get('/profile',  [PencakerProfileController::class, 'edit'])->name('profile');
         Route::post('/profile', [PencakerProfileController::class, 'store'])->name('profile.store');
         Route::put('/profile',  [PencakerProfileController::class, 'update'])->name('profile.update');
 

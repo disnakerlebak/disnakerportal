@@ -94,7 +94,7 @@ class ProfileController extends Controller
         ]);
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Data diri berhasil diperbarui!')
             ->with('accordion', 'profile');
 

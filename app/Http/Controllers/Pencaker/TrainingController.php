@@ -14,7 +14,7 @@ class TrainingController extends Controller
     public function index(Request $request)
     {
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('accordion', 'training');
     }
 
@@ -42,7 +42,7 @@ class TrainingController extends Controller
         Training::create($validated);
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Riwayat pelatihan berhasil ditambahkan.')
             ->with('accordion', 'training');
     }
@@ -73,7 +73,7 @@ class TrainingController extends Controller
     $training->update($validated);
 
     return redirect()
-        ->route('pencaker.profile.edit')
+        ->route('pencaker.profile')
         ->with('success', 'Data pelatihan berhasil diperbarui.')
         ->with('accordion', 'training');
 }
@@ -89,7 +89,7 @@ class TrainingController extends Controller
         $training->delete();
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Data pelatihan berhasil dihapus.')
             ->with('accordion', 'training');
 }

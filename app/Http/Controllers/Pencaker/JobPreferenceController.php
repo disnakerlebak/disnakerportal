@@ -11,7 +11,7 @@ class JobPreferenceController extends Controller
     public function index(Request $request)
     {
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('accordion', 'preference');
     }
 
@@ -35,7 +35,7 @@ class JobPreferenceController extends Controller
         );
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Minat kerja berhasil disimpan.')
             ->with('accordion', 'preference');
     }

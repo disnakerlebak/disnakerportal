@@ -13,7 +13,7 @@ class WorkController extends Controller
     public function index(Request $request)
     {
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('accordion', 'work');
     }
 
@@ -38,7 +38,7 @@ class WorkController extends Controller
         WorkExperience::create($validated);
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Riwayat kerja berhasil ditambahkan.')
             ->with('accordion', 'work');
     }
@@ -66,7 +66,7 @@ class WorkController extends Controller
     $work->update($validated);
 
     return redirect()
-        ->route('pencaker.profile.edit')
+        ->route('pencaker.profile')
         ->with('success', 'Data riwayat kerja berhasil diperbarui.')
         ->with('accordion', 'work');
 }
@@ -81,7 +81,7 @@ class WorkController extends Controller
         $work->delete();
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Data riwayat kerja dihapus.')
             ->with('accordion', 'work');
     }

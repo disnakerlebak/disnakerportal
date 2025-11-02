@@ -13,7 +13,7 @@ class EducationController extends Controller
     public function index(Request $request)
     {
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('accordion', 'education');
     }
 
@@ -45,7 +45,7 @@ class EducationController extends Controller
         $profile->educations()->create($validated);
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Riwayat pendidikan berhasil ditambahkan.')
             ->with('accordion', 'education');
     }
@@ -79,14 +79,14 @@ class EducationController extends Controller
         $education->update($validated);
 
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Riwayat pendidikan berhasil diperbarui.')
             ->with('accordion', 'education');
     }
     public function show(Education $education)
     {   
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('accordion', 'education');
     }
     public function destroy(Education $education)
@@ -97,7 +97,7 @@ class EducationController extends Controller
         }
         $education->delete();
         return redirect()
-            ->route('pencaker.profile.edit')
+            ->route('pencaker.profile')
             ->with('success', 'Riwayat pendidikan dihapus.')
             ->with('accordion', 'education');
     }

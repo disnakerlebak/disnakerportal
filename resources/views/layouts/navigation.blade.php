@@ -15,7 +15,7 @@
         <div class="hidden sm:flex sm:items-center sm:ms-10 space-x-8">
           @auth
             @if(auth()->user()->role === 'pencaker')
-              <x-nav-link :href="route('pencaker.profile.edit')" :active="request()->routeIs('pencaker.profile.*')">Data Diri</x-nav-link>
+              <x-nav-link :href="route('pencaker.profile')" :active="request()->routeIs('pencaker.profile*')">Data Diri</x-nav-link>
               <x-nav-link :href="route('pencaker.education.index')" :active="request()->routeIs('pencaker.education.*')">Pendidikan</x-nav-link>
               <x-nav-link :href="route('pencaker.training.index')" :active="request()->routeIs('pencaker.training.*')">Pelatihan</x-nav-link>
               <x-nav-link :href="route('pencaker.work.index')" :active="request()->routeIs('pencaker.work.*')">Riwayat Kerja</x-nav-link>
@@ -68,7 +68,7 @@
     <div class="pt-2 pb-3 space-y-1">
       @auth
         @if(auth()->user()->role === 'pencaker')
-          <x-responsive-nav-link :href="route('pencaker.profile.edit')" :active="request()->routeIs('pencaker.profile.*')">Data Diri</x-responsive-nav-link>
+          <x-responsive-nav-link :href="route('pencaker.profile')" :active="request()->routeIs('pencaker.profile*')">Data Diri</x-responsive-nav-link>
           <x-responsive-nav-link :href="route('pencaker.education.index')" :active="request()->routeIs('pencaker.education.*')">Pendidikan</x-responsive-nav-link>
           <x-responsive-nav-link :href="route('pencaker.training.index')" :active="request()->routeIs('pencaker.training.*')">Pelatihan</x-responsive-nav-link>
           <x-responsive-nav-link :href="route('pencaker.work.index')" :active="request()->routeIs('pencaker.work.*')">Riwayat Kerja</x-responsive-nav-link>

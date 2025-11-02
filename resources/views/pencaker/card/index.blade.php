@@ -1,7 +1,7 @@
 @extends('layouts.pencaker')
 @section('title', 'Dashboard')
 @section('content')
-  <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8 text-gray-200">
+  <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8 text-gray-900 dark:text-gray-200">
   <!-- {{-- ALERTS (sukses / gagal / error validasi) --}}
     @if (session('success'))
       <div class="mb-4 rounded-lg bg-green-600/20 border border-green-600 text-green-200 px-4 py-3">
@@ -89,61 +89,83 @@
     <p class="mb-6 text-sm md:text-base text-gray-300 leading-relaxed">
       Pastikan seluruh data berikut sudah benar dan sesuai dengan dokumen resmi Anda.
       Jika masih ada kesalahan, ubah terlebih dahulu pada halaman
-      <a href="{{ route('pencaker.profile.edit') }}" class="text-blue-400 hover:underline">Data Diri</a>,
+      <a href="{{ route('pencaker.profile') }}" class="text-blue-500 hover:underline">Data Diri</a>,
       <a href="{{ route('pencaker.education.index') }}" class="text-blue-400 hover:underline">Pendidikan</a>,
       atau
       <a href="{{ route('pencaker.training.index') }}" class="text-blue-400 hover:underline">Pelatihan</a>.
     </p>
 
             {{-- ===================== FOTO + DATA DIRI ===================== --}}
-            <div class="bg-gray-800 rounded-2xl">
-        <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
-          <div class="grid md:grid-cols-[260px_minmax(0,1fr)] gap-6 lg:gap-12 items-start">
-
-            {{-- Kolom Foto --}}
-            <div class="flex flex-col items-center md:items-start justify-self-center md:justify-self-start">
-              <div class="relative w-48 h-56 bg-gray-700 rounded-lg overflow-hidden shadow-md border border-gray-600">
-                <img id="fotoPreview"
-                     src="{{ $fotoDoc ? asset('storage/' . $fotoDoc->file_path) : asset('images/placeholder-avatar.png') }}"
-                     alt="Foto Close-Up"
-                     class="object-cover w-full h-full" />
-                @if($editable)
-                  <label for="fotoCloseup"
-                        class="absolute bottom-0 w-full bg-black/60 text-center py-2 text-xs text-gray-200 cursor-pointer hover:bg-black/75 transition">
-                    Ganti Foto
-                  </label>
-                @endif
-              </div>
-              <input id="fotoCloseup" name="foto_closeup" type="file" accept="image/*"
-                     class="hidden" onchange="previewImage(event)" @disabled(!$editable)>
-              <p class="text-xs text-gray-400 mt-2">Format: JPG/PNG | Maks: 2 MB</p>
+    <div class="rounded-2xl bg-gray-900/60 shadow-lg">
+      <div class="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-10 lg:px-10">
+        <div class="flex flex-col gap-8 lg:flex-row lg:items-start">
+          {{-- Kolom Foto --}}
+          <div class="flex flex-col items-center justify-start gap-3 text-sm text-gray-400 lg:items-start">
+            <div class="relative h-52 w-44 overflow-hidden rounded-xl border border-gray-700/60 bg-gray-800 shadow-md sm:h-56 sm:w-48">
+              <img id="fotoPreview"
+                   src="{{ $fotoDoc ? asset('storage/' . $fotoDoc->file_path) : asset('images/placeholder-avatar.png') }}"
+                   alt="Foto Close-Up"
+                   class="h-full w-full object-cover" />
+              @if($editable)
+                <label for="fotoCloseup"
+                       class="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-center text-xs text-gray-100 transition hover:bg-black/75">
+                  Ganti Foto
+                </label>
+              @endif
             </div>
-
-          {{-- Kolom Data Diri --}}
-          <div class="md:col-span-1 lg:pl-2">
-            <h3 class="text-lg font-semibold text-white mb-4">Data Diri</h3>
-            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm md:text-base text-gray-200">
-              <p><span class="font-medium w-40 inline-block">NIK</span>: {{ $profile->nik ?? '-' }}</p>
-              <p><span class="font-medium w-40 inline-block">Status</span>: {{ $profile->status_perkawinan ?? '-' }}</p>
-
-              <p><span class="font-medium w-40 inline-block">Nama Lengkap</span>: {{ $profile->nama_lengkap ?? '-' }}</p>
-              <p><span class="font-medium w-40 inline-block">Agama</span>: {{ $profile->agama ?? '-' }}</p>
-
-              <p><span class="font-medium w-40 inline-block">Tempat Lahir</span>: {{ $profile->tempat_lahir ?? '-' }}</p>
-              <p>  <span class="font-medium w-40 inline-block">Tanggal Lahir</span>:
-              {{ indoDateOnly($profile->tanggal_lahir) }}</p>
-
-              <p><span class="font-medium w-40 inline-block">Jenis Kelamin</span>: {{ $profile->jenis_kelamin ?? '-' }}</p>
-              <p class="col-span-2"><span class="font-medium w-40 inline-block">Alamat Domisili</span>: {{ $profile->alamat_lengkap ?? '-' }}</p>
-            </div>
+            <p class="text-center text-xs text-gray-400 sm:text-left">Format: JPG/PNG &bull; Maks: 2 MB</p>
+            <input id="fotoCloseup" name="foto_closeup" type="file" accept="image/*"
+                   class="hidden" onchange="previewImage(event)" @disabled(!$editable)>
           </div>
 
+          {{-- Kolom Data Diri --}}
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-white sm:text-xl">Data Diri</h3>
+            <p class="mt-1 text-sm text-gray-400">Pastikan informasi sesuai dengan dokumen kependudukan.</p>
+
+            <dl class="mt-6 grid grid-cols-1 gap-4 text-sm text-gray-200 sm:grid-cols-2">
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">NIK</dt>
+                <dd class="mt-1 text-base font-semibold text-white">{{ $profile->nik ?? '-' }}</dd>
+              </div>
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Status</dt>
+                <dd class="mt-1 text-base font-semibold text-white">{{ $profile->status_perkawinan ?? '-' }}</dd>
+              </div>
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Nama Lengkap</dt>
+                <dd class="mt-1 text-base font-semibold text-white">{{ $profile->nama_lengkap ?? '-' }}</dd>
+              </div>
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Agama</dt>
+                <dd class="mt-1 text-base font-semibold text-white">{{ $profile->agama ?? '-' }}</dd>
+              </div>
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Tempat Lahir</dt>
+                <dd class="mt-1 text-base font-semibold text-white">{{ $profile->tempat_lahir ?? '-' }}</dd>
+              </div>
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Tanggal Lahir</dt>
+                <dd class="mt-1 text-base font-semibold text-white">
+                    {{ $profile->tanggal_lahir ? indoDateOnly($profile->tanggal_lahir) : '-' }}
+                </dd>
+              </div>
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Jenis Kelamin</dt>
+                <dd class="mt-1 text-base font-semibold text-white">{{ $profile->jenis_kelamin ?? '-' }}</dd>
+              </div>
+              <div class="rounded-lg border border-gray-800/60 bg-gray-800/50 px-4 py-3 shadow-sm sm:col-span-2">
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Alamat Domisili</dt>
+                <dd class="mt-1 text-base font-semibold text-white leading-relaxed">{{ $profile->alamat_lengkap ?? '-' }}</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </div>
     </div>
 
     {{-- ===================== RIWAYAT PENDIDIKAN ===================== --}}
-    <div class="bg-gray-800 rounded-2xl mt-8">
+    <div class=" bg-gray-900/60 rounded-2xl mt-8">
       <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
         <h3 class="text-lg font-semibold text-white mb-4">Riwayat Pendidikan</h3>
         <div class="overflow-x-auto">
