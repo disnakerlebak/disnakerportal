@@ -496,6 +496,7 @@ const actionLabels = {
   printed: 'Dicetak',
   picked_up: 'Diambil',
   submit: 'Pengajuan Baru',
+  resubmit: 'Pengajuan Ulang',
   unapprove: 'Persetujuan Dibatalkan',
 };
 const actionColors = {
@@ -505,6 +506,7 @@ const actionColors = {
   printed: 'bg-sky-400',
   picked_up: 'bg-sky-500',
   submit: 'bg-indigo-400',
+  resubmit: 'bg-indigo-500',
   unapprove: 'bg-orange-400',
 };
 const statusLabels = {
@@ -527,7 +529,13 @@ const formatStatus = (status) => statusLabels[status] || status || '-';
 
 document.querySelectorAll('[data-action="open-log"]').forEach(btn => {
   btn.addEventListener('click', () => {
-    const logs = JSON.parse(btn.getAttribute('data-logs') || '[]');
+    const logs = (JSON.parse(btn.getAttribute('data-logs') || '[]') || [])
+      .slice()
+      .sort((a, b) => {
+        const aDate = a.timestamp ? new Date(a.timestamp) : new Date(a.created_at || 0);
+        const bDate = b.timestamp ? new Date(b.timestamp) : new Date(b.created_at || 0);
+        return aDate - bDate;
+      });
     const name = btn.getAttribute('data-app-name') || 'Pemohon';
     const email = btn.getAttribute('data-app-email') || '';
     const currentStatus = btn.getAttribute('data-current-status') || '-';

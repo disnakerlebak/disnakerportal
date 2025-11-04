@@ -13,7 +13,8 @@ use App\Models\{
     Education,
     Training,
     CardApplication,
-    CardApplicationDocument
+    CardApplicationDocument,
+    CardApplicationLog
 };
 
 class CardApplicationController extends Controller
@@ -120,6 +121,8 @@ class CardApplicationController extends Controller
         try {
             DB::beginTransaction();
 
+            $previousStatus = $lastApp?->status;
+
             if ($isResubmission) {
                 $lastApp->update([
                     'status' => 'Menunggu Revisi Verifikasi',
@@ -151,6 +154,17 @@ class CardApplicationController extends Controller
                     throw new \RuntimeException("Dokumen {$input} belum diunggah");
                 }
             }
+
+            CardApplicationLog::create([
+                'card_application_id' => $application->id,
+                'actor_id'           => $user->id,
+                'action'             => $isResubmission ? 'resubmit' : 'submit',
+                'from_status'        => $isResubmission ? $previousStatus : null,
+                'to_status'          => $application->status,
+                'notes'              => $isResubmission ? 'Pengajuan ulang oleh pemohon.' : 'Pengajuan baru oleh pemohon.',
+                'ip'                 => $request->ip(),
+                'user_agent'         => substr($request->userAgent() ?? '', 0, 255),
+            ]);
 
             DB::commit();
 
