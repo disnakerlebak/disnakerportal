@@ -31,7 +31,7 @@
 
     {{-- ===== Tabel Daftar Pengajuan ===== --}}
     <div class="bg-gray-800 border border-gray-700 rounded-lg">
-        <div class="w-full overflow-x-auto overflow-y-hidden">
+        <div class="w-full overflow-x-auto overflow-y-visible">
             <table class="min-w-[1100px] w-full text-sm text-gray-300">
                 <thead class="bg-gray-700 text-gray-100 uppercase text-xs whitespace-nowrap">
                     <tr>
@@ -65,6 +65,20 @@
                         @endphp
 
                         <tr class="border-b border-gray-700 hover:bg-gray-700/40 transition">
+                            @php
+                                $logPayload = $app->logs->map(function ($log) {
+                                    return [
+                                        'id'          => $log->id,
+                                        'action'     => $log->action,
+                                        'from_status'=> $log->from_status,
+                                        'to_status'  => $log->to_status,
+                                        'notes'      => $log->notes,
+                                        'actor'      => $log->actor?->name,
+                                        'created_at' => optional($log->created_at)->format('d M Y H:i'),
+                                        'timestamp'  => optional($log->created_at)->toIso8601String(),
+                                    ];
+                                });
+                            @endphp
                             {{-- Pemohon --}}
                             <td class="p-3 align-top whitespace-nowrap">
                                 <div class="font-medium">{{ $app->user->name }}</div>
@@ -136,7 +150,7 @@
                                             x-transition:leave="transition ease-in duration-100"
                                             x-transition:leave-start="opacity-100 transform scale-100"
                                             x-transition:leave-end="opacity-0 transform scale-95"
-                                            class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg ring-1 ring-black/30 z-30 overflow-hidden text-left divide-y divide-gray-700">
+                                            class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg ring-1 ring-black/30 z-50 overflow-hidden text-left divide-y divide-gray-700">
 
                                             {{-- 👁️ Detail --}}
                                             <button onclick="showDetail({{ $app->id }})"
@@ -181,6 +195,22 @@
                                                 </button>
                                             @endif
 
+                                            @if ($app->status === 'Disetujui')
+                                                {{-- 🔄 Batalkan Persetujuan --}}
+                                                <button
+                                                    type="button"
+                                                    class="w-full text-left px-4 py-2 text-sm text-orange-300 hover:bg-orange-700/20 flex items-center gap-2 transition"
+                                                    data-action="open-unapprove"
+                                                    data-unapprove-url="{{ route('admin.ak1.unapprove', $app) }}"
+                                                    data-app-name="{{ $app->user->name }}"
+                                                    data-app-email="{{ $app->user->email }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16M9 3l-6 9 6 9" />
+                                                    </svg>
+                                                    Batalkan Persetujuan
+                                                </button>
+                                            @endif
+
                                             {{-- ⬇️ Unduh Kartu --}}
                                             @if ($app->status === 'Disetujui' && $app->nomor_ak1)
                                                 <a href="{{ route('admin.ak1.cetak', $app->id) }}" target="_blank"
@@ -192,6 +222,21 @@
                                                     Unduh Kartu
                                                 </a>
                                             @endif
+
+                                            {{-- 🕑 Riwayat --}}
+                                            <button
+                                                type="button"
+                                                class="w-full text-left px-4 py-2 text-sm text-cyan-400 hover:bg-cyan-700/20 flex items-center gap-2 transition"
+                                                data-action="open-log"
+                                                data-app-name="{{ $app->user->name }}"
+                                                data-app-email="{{ $app->user->email }}"
+                                                data-current-status="{{ $app->status }}"
+                                                data-logs='@json($logPayload)'>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Riwayat
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -250,6 +295,55 @@
     </form>
   </div>
 </div>
+
+<!-- Modal Riwayat -->
+<div id="logModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+  <div class="bg-gray-900 w-full max-w-3xl rounded-xl shadow-xl text-gray-100 relative overflow-hidden">
+    <div class="flex items-start justify-between border-b border-gray-800 px-6 py-5">
+      <div>
+        <h3 class="text-lg font-semibold" id="logModalTitle">Riwayat Pengajuan</h3>
+        <p class="text-sm text-gray-400 mt-1" id="logModalSubtitle"></p>
+      </div>
+      <button type="button" onclick="closeLogModal()" class="text-gray-400 hover:text-gray-200 transition">
+        ✕
+      </button>
+    </div>
+    <div id="logModalBody" class="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4"></div>
+  </div>
+</div>
+<!-- Modal Batalkan Persetujuan -->
+<div id="unapproveModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+  <div class="bg-gray-900 w-full max-w-lg rounded-xl shadow-xl text-gray-100 relative overflow-hidden">
+    <div class="flex items-center justify-between border-b border-gray-800 px-6 py-4">
+      <div>
+        <h3 class="text-lg font-semibold">Batalkan Persetujuan</h3>
+        <p class="text-sm text-gray-400 mt-1" id="unapproveModalSubtitle"></p>
+      </div>
+      <button type="button" onclick="closeUnapproveModal()" class="text-gray-400 hover:text-gray-200 transition">✕</button>
+    </div>
+    <form id="unapproveForm" method="POST" class="px-6 py-5 space-y-4">
+      @csrf
+      <p class="text-sm text-gray-300 leading-relaxed">
+        Apakah Anda yakin ingin membatalkan persetujuan pengajuan ini? Status akan kembali menjadi
+        <span class="font-semibold text-yellow-300">Menunggu Verifikasi</span>.
+      </p>
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1" for="unapproveNotes">Catatan (opsional)</label>
+        <textarea name="notes" id="unapproveNotes" rows="4"
+                  class="w-full resize-none bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  placeholder="Catat alasan pembatalan jika diperlukan..."></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeUnapproveModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">
+          Batal
+        </button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">
+          Ya, Batalkan Persetujuan
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 <!-- Modal Revisi -->
 <div id="revisionModal" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
   <div class="bg-gray-900 w-full max-w-md p-6 rounded-xl shadow-lg text-gray-100 relative">
@@ -273,13 +367,6 @@
 function closeModal() {
   document.getElementById('detailModal').classList.add('hidden');
 }
-</script>
-
-@endsection
-
-
-    {{-- Prompt alasan sederhana untuk tolak/revisi --}}
-    <script>
         function handleReason(form, message) {
             const reason = prompt(message);
             if (reason === null) return false;        // batal
@@ -393,6 +480,148 @@ function closeModal() {
   document.getElementById('detailModal').classList.add('hidden');
 }
 
+// === Log Modal ===
+const logModalEl = document.getElementById('logModal');
+const logModalBody = document.getElementById('logModalBody');
+const logModalTitle = document.getElementById('logModalTitle');
+const logModalSubtitle = document.getElementById('logModalSubtitle');
+const unapproveModalEl = document.getElementById('unapproveModal');
+const unapproveForm = document.getElementById('unapproveForm');
+const unapproveSubtitle = document.getElementById('unapproveModalSubtitle');
+const unapproveNotes = document.getElementById('unapproveNotes');
+const actionLabels = {
+  approve: 'Disetujui',
+  reject: 'Ditolak',
+  revision: 'Revisi Diminta',
+  printed: 'Dicetak',
+  picked_up: 'Diambil',
+  submit: 'Pengajuan Baru',
+  unapprove: 'Persetujuan Dibatalkan',
+};
+const actionColors = {
+  approve: 'bg-emerald-400',
+  reject: 'bg-red-500',
+  revision: 'bg-amber-400',
+  printed: 'bg-sky-400',
+  picked_up: 'bg-sky-500',
+  submit: 'bg-indigo-400',
+  unapprove: 'bg-orange-400',
+};
+const statusLabels = {
+  'Menunggu': 'Menunggu Verifikasi',
+  'Menunggu Verifikasi': 'Menunggu Verifikasi',
+  'Menunggu Revisi Verifikasi': 'Menunggu Revisi Verifikasi',
+  'Revisi Diminta': 'Revisi Diminta',
+  'Disetujui': 'Disetujui',
+  'Ditolak': 'Ditolak',
+  'Dicetak': 'Dicetak',
+  'Diambil': 'Diambil',
+};
+const escapeHtml = (value = '') => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+const formatStatus = (status) => statusLabels[status] || status || '-';
+
+document.querySelectorAll('[data-action="open-log"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const logs = JSON.parse(btn.getAttribute('data-logs') || '[]');
+    const name = btn.getAttribute('data-app-name') || 'Pemohon';
+    const email = btn.getAttribute('data-app-email') || '';
+    const currentStatus = btn.getAttribute('data-current-status') || '-';
+
+    logModalTitle.textContent = `Riwayat Pengajuan — ${name}`;
+    logModalSubtitle.textContent = email ? `${email} · Status saat ini: ${currentStatus}` : `Status saat ini: ${currentStatus}`;
+
+    if (!logs.length) {
+      logModalBody.innerHTML = `<p class="text-sm text-gray-400">Belum ada aktivitas pada pengajuan ini.</p>`;
+    } else {
+      const content = logs.map((log, idx) => {
+        const label = actionLabels[log.action] || log.action;
+        const noteSection = log.notes
+          ? `<div class="mt-3 rounded-lg bg-gray-800/60 px-3 py-2 text-sm text-gray-200">
+                <span class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Catatan</span>
+                <p class="mt-1 leading-relaxed">${escapeHtml(log.notes).replace(/\n/g, '<br>')}</p>
+             </div>`
+          : '';
+        const circleColor = actionColors[log.action] || 'bg-gray-400';
+        const isLast = idx === logs.length - 1;
+
+        return `
+          <div class="relative pl-10">
+            <span class="absolute left-1 top-1.5 inline-flex h-3 w-3 rounded-full ${circleColor} ring-4 ring-gray-900"></span>
+            ${isLast ? '' : '<span class="absolute left-2.5 top-4 bottom-0 border-l border-gray-700"></span>'}
+            <div class="rounded-xl border border-gray-800 bg-gray-900/60 px-4 py-3 shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h4 class="text-sm font-semibold text-gray-100">${escapeHtml(label)}</h4>
+                <span class="text-xs text-gray-400">${log.created_at ?? '-'}</span>
+              </div>
+              <p class="mt-1 text-xs text-gray-500">Perubahan: <span class="text-gray-300">${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}</span></p>
+              <p class="mt-2 text-sm text-gray-300 leading-relaxed">
+                Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}</span>
+              </p>
+              ${noteSection}
+            </div>
+          </div>
+        `;
+      }).join('');
+      logModalBody.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 text-sm font-semibold text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Linimasa Pengajuan
+          </div>
+          <div class="space-y-6">${content}</div>
+        </div>
+      `;
+    }
+
+    logModalEl.classList.remove('hidden');
+    document.querySelectorAll('.action-dropdown').forEach(el => el.classList.add('hidden'));
+  });
+});
+
+function closeLogModal() {
+  logModalEl.classList.add('hidden');
+}
+
+if (logModalEl) {
+  logModalEl.addEventListener('click', (e) => {
+    if (e.target === logModalEl) closeLogModal();
+  });
+}
+
+// === Unapprove Modal ===
+if (unapproveModalEl) {
+  document.querySelectorAll('[data-action="open-unapprove"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.getAttribute('data-unapprove-url');
+      const name = btn.getAttribute('data-app-name') || '';
+      const email = btn.getAttribute('data-app-email') || '';
+      unapproveForm.action = url;
+      unapproveNotes.value = '';
+      unapproveSubtitle.textContent = email ? `${name} · ${email}` : name;
+      unapproveModalEl.classList.remove('hidden');
+    });
+  });
+
+  unapproveModalEl.addEventListener('click', (e) => {
+    if (e.target === unapproveModalEl) {
+      closeUnapproveModal();
+    }
+  });
+}
+
+function closeUnapproveModal() {
+  if (unapproveModalEl) {
+    unapproveModalEl.classList.add('hidden');
+  }
+}
+
 // Script tombol aksi
 
   // === Dropdown toggle ===
@@ -453,3 +682,5 @@ function closeModal() {
   //   });
   // });
     </script>
+
+@endsection

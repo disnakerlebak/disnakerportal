@@ -41,7 +41,7 @@
         <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 z-30 bg-black/60 lg:hidden" @click="sidebarOpen = false"></div>
 
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-40 w-64 transform border-r border-gray-200/80 bg-white/95 backdrop-blur transition-transform duration-200 ease-out dark:border-gray-800/70 dark:bg-gray-900/90 lg:translate-x-0" :class="{'-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen}">
+        <aside class="fixed inset-y-0 left-0 z-40 w-64 transform border-r border-gray-200/80 bg-white/95 backdrop-blur transition-transform duration-200 ease-out dark:border-gray-800/70 dark:bg-gray-800/90 lg:translate-x-0" :class="{'-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen}">
             <div class="flex h-full flex-col">
                 <div class="flex items-center justify-between border-b border-gray-200/70 px-4 py-4 dark:border-gray-800/70 lg:hidden">
                     <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">Disnaker Portal</p>

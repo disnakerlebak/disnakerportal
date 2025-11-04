@@ -13,7 +13,7 @@ class CardVerificationController extends Controller
 {
     public function index(Request $request)
 {
-    $apps = CardApplication::with(['user', 'lastHandler.actor'])
+    $apps = CardApplication::with(['user', 'lastHandler.actor', 'logs.actor'])
                 ->when($request->q, fn($q) =>
                     $q->whereHas('user', fn($u) =>
                         $u->where('name', 'like', "%{$request->q}%")
@@ -188,7 +188,42 @@ class CardVerificationController extends Controller
                 'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
             ]);
 
-            return back()->with('success', 'Permintaan revisi terkirim ke pemohon.');
+        return back()->with('success', 'Permintaan revisi terkirim ke pemohon.');
+    });
+    }
+
+    public function unapprove(CardApplication $application, Request $request)
+    {
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        return DB::transaction(function () use ($application, $request, $validated) {
+            $app = CardApplication::whereKey($application->id)->lockForUpdate()->first();
+
+            if ($app->status !== 'Disetujui') {
+                return back()->with('error', 'Pengajuan belum berstatus Disetujui.');
+            }
+
+            $from = $app->status;
+            $app->update([
+                'status' => 'Menunggu Verifikasi',
+                'nomor_ak1' => null,
+                'assigned_to' => null,
+            ]);
+
+            CardApplicationLog::create([
+                'card_application_id' => $app->id,
+                'actor_id'    => $request->user()->id,
+                'action'      => 'unapprove',
+                'from_status' => $from,
+                'to_status'   => 'Menunggu Verifikasi',
+                'notes'       => $validated['notes'] ?? null,
+                'ip'          => $request->ip(),
+                'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
+            ]);
+
+            return back()->with('success', 'Persetujuan dibatalkan dan status dikembalikan ke Menunggu Verifikasi.');
         });
     }
 

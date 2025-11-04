@@ -1,8 +1,8 @@
 @extends('layouts.pencaker')
 @section('title', 'Dashboard')
 @section('content')
-    <div class="max-w-7xl mx-auto space-y-6">
-        <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-100">
+    <div class="max-w-6xl mx-auto py-8 px-4">
+        <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-100 mb-6">
             Dashboard Pencaker
         </h2>
 

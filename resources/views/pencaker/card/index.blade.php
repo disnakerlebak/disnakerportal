@@ -1,5 +1,5 @@
 @extends('layouts.pencaker')
-@section('title', 'Dashboard')
+@section('title', 'Pengajuan Kartu (AK1)')
 @section('content')
   <!-- <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8 text-gray-900 dark:text-gray-200">
   @if (session('success'))
@@ -50,7 +50,7 @@
     </h2>
     {{-- Status Pengajuan --}}
 @if ($application)
-  <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-6">
+  <div class="rounded-xl border border-dashed border-blue-300/40 bg-blue-50/50 px-6 py-5 text-blue-900 shadow-sm dark:border-blue-400/30 dark:bg-blue-500/10 dark:text-blue-100 mb-6">
     <p class="text-gray-300 text-sm">Status Pengajuan:</p>
     <p class="text-lg font-semibold
       @class([
@@ -109,7 +109,7 @@
     </p>
 
             {{-- ===================== FOTO + DATA DIRI ===================== --}}
-    <div class="rounded-2xl bg-gray-800/50 shadow-lg">
+    <div class="rounded-2xl bg-gray-800 shadow-lg">
       <div class="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-10 lg:px-10">
         <div class="flex flex-col gap-8 lg:flex-row lg:items-start">
           {{-- Kolom Foto --}}
@@ -182,7 +182,7 @@
     </div>
 
     {{-- ===================== RIWAYAT PENDIDIKAN ===================== --}}
-    <div class=" bg-gray-800/50 rounded-2xl mt-8">
+    <div class=" bg-gray-800 rounded-2xl mt-8">
       <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
         <h3 class="text-lg font-semibold text-white mb-4">Riwayat Pendidikan</h3>
         <div class="overflow-x-auto">
@@ -211,7 +211,7 @@
     </div>
 
     {{-- ===================== RIWAYAT PELATIHAN ===================== --}}
-    <div class="bg-gray-800/50 rounded-2xl mt-8">
+    <div class="bg-gray-800 rounded-2xl mt-8">
       <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
         <h3 class="text-lg font-semibold text-white mb-4">Riwayat Pelatihan</h3>
         <div class="overflow-x-auto">
@@ -238,7 +238,7 @@
     </div>
 
     {{-- ===================== UNGGAH DOKUMEN ===================== --}}
-      <div class="bg-gray-800/50 rounded-2xl mt-8">
+      <div class="bg-gray-800 rounded-2xl mt-8">
         <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
           <h3 class="text-lg font-semibold text-white mb-4">Unggah Dokumen Wajib</h3>
 

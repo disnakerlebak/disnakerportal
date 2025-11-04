@@ -14,24 +14,29 @@ return new class extends Migration
                 'Menunggu Revisi Verifikasi',
                 'Revisi Diminta',
                 'Disetujui',
-                'Ditolak'
+                'Ditolak',
+                'Dicetak',
+                'Diambil'
             ) DEFAULT 'Menunggu Verifikasi'
         ");
-
-        DB::table('card_applications')
-            ->where('status', 'Menunggu')
-            ->update(['status' => 'Menunggu Verifikasi']);
     }
 
     public function down(): void
     {
         DB::table('card_applications')
-            ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi'])
-            ->update(['status' => 'Menunggu']);
+            ->whereIn('status', ['Dicetak', 'Diambil'])
+            ->update(['status' => 'Disetujui']);
 
         DB::statement("
             ALTER TABLE card_applications
-            MODIFY status ENUM('Menunggu', 'Disetujui', 'Ditolak') DEFAULT 'Menunggu'
+            MODIFY status ENUM(
+                'Menunggu Verifikasi',
+                'Menunggu Revisi Verifikasi',
+                'Revisi Diminta',
+                'Disetujui',
+                'Ditolak'
+            ) DEFAULT 'Menunggu Verifikasi'
         ");
     }
 };
+

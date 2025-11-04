@@ -64,6 +64,7 @@ Route::middleware(['auth', 'role:admin,admin_ak1,superadmin'])
         Route::post('/ak1/{application}/revision', [CardVerificationController::class, 'requestRevision'])->name('ak1.revision');
         Route::post('/ak1/{application}/printed', [CardVerificationController::class, 'markPrinted'])->name('ak1.printed');
         Route::post('/ak1/{application}/picked-up', [CardVerificationController::class, 'markPickedUp'])->name('ak1.picked');
+        Route::post('/ak1/{application}/unapprove', [CardVerificationController::class, 'unapprove'])->name('ak1.unapprove');
 
         // Daftar Pencari Kerja
         Route::get('/pencaker', [JobseekerController::class, 'index'])->name('pencaker.index');
