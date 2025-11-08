@@ -15,9 +15,9 @@
     $locked = $isLocked ?? false;
 @endphp
 
-<div class="max-w-6xl mx-auto py-8 px-4" x-data="{ open: {{ $openDefault }} }">
+<div class="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 py-8 text-slate-100" x-data="{ open: {{ $openDefault }} }">
 
-    <h1 class="text-2xl font-semibold text-gray-100 mb-6">Profil Pencaker</h1>
+    <h1 class="text-2xl font-semibold text-slate-100 mb-6">Profil Pencaker</h1>
 
     <!-- @if (session('success'))
         <div class="mb-4 rounded-lg bg-green-600/20 border border-green-600 text-green-100 px-4 py-3">
@@ -45,9 +45,9 @@
     <div class="space-y-4">
 
         <!-- Data Diri -->
-        <div class="bg-gray-800 rounded-xl shadow">
+        <div class="bg-slate-900 rounded-xl shadow">
             <button @click="open === 1 ? open = null : open = 1"
-                    class="w-full text-left px-5 py-4 font-semibold text-gray-200 flex justify-between items-center">
+                    class="w-full text-left px-5 py-4 font-semibold text-slate-300 flex justify-between items-center">
                 <span>Data Diri</span>
                 <svg :class="{'rotate-180': open === 1}"
                      class="h-5 w-5 transform transition-transform" xmlns="http://www.w3.org/2000/svg"
@@ -67,11 +67,11 @@
                  x-transition:leave-end="opacity-0 -translate-y-2"
                  class="px-6 pt-6 pb-8 space-y-4">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-semibold text-gray-100">Data Diri Pencari Kerja</h2>
+                    <h2 class="text-lg font-semibold text-slate-100">Data Diri Pencari Kerja</h2>
                     @if ($locked)
                         <button id="openEdit" disabled
                                 title="Terkunci karena pengajuan AK1 sedang diproses/diterima"
-                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-gray-600 cursor-not-allowed">
+                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 cursor-not-allowed">
                             Edit Profil (Terkunci)
                         </button>
                     @else
@@ -104,13 +104,13 @@
                     ];
                 @endphp
 
-                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
-                    <table class="w-full text-gray-100">
+                <div class="bg-slate-950/40 rounded-xl p-4 shadow-inner">
+                    <table class="w-full text-slate-100">
                         <tbody>
                             @foreach ($fields as $label => $value)
-                                <tr class="border-b border-gray-700/40">
-                                    <td class="py-2 px-4 font-semibold text-gray-300 w-1/3">{{ $label }}</td>
-                                    <td class="py-2 px-4 text-gray-100">: {{ $value }}</td>
+                                <tr class="border-b border-slate-800/60">
+                                    <td class="py-2 px-4 font-semibold text-slate-400 w-1/3">{{ $label }}</td>
+                                    <td class="py-2 px-4 text-slate-100">: {{ $value }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -120,9 +120,9 @@
         </div>
 
         <!-- Pendidikan -->
-        <div class="bg-gray-800 rounded-xl shadow">
+        <div class="bg-slate-900 rounded-xl shadow">
             <button @click="open === 2 ? open = null : open = 2"
-                    class="w-full text-left px-5 py-4 font-semibold text-gray-200 flex justify-between items-center">
+                    class="w-full text-left px-5 py-4 font-semibold text-slate-300 flex justify-between items-center">
                 <span>Riwayat Pendidikan</span>
                 <svg :class="{'rotate-180': open === 2}"
                      class="h-5 w-5 transform transition-transform" xmlns="http://www.w3.org/2000/svg"
@@ -149,7 +149,7 @@
 
                 @if ($locked)
                     <button disabled title="Terkunci saat pengajuan AK1 diproses/diterima"
-                            class="px-4 py-2 bg-gray-600 text-white rounded-lg cursor-not-allowed">
+                            class="px-4 py-2 bg-slate-700 text-white rounded-lg cursor-not-allowed">
                         + Tambah Pendidikan (Terkunci)
                     </button>
                 @else
@@ -159,30 +159,30 @@
                     </button>
                 @endif
 
-                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
+                <div class="bg-slate-950/40 rounded-xl p-4 shadow-inner">
                     <div class="overflow-x-auto">
-                        <table class="w-full border-collapse border border-gray-700 rounded-lg overflow-hidden">
-                            <thead class="bg-gray-700 text-gray-100">
+                        <table class="w-full border-collapse border border-slate-800 rounded-lg overflow-hidden">
+                            <thead class="bg-slate-800 text-slate-100">
                             <tr>
-                                <th class="border border-gray-600 p-2 text-left">Tingkat</th>
-                                <th class="border border-gray-600 p-2 text-left">Nama Sekolah / Institusi</th>
-                                <th class="border border-gray-600 p-2 text-left">Jurusan</th>
-                                <th class="border border-gray-600 p-2 text-center">Tahun</th>
-                                <th class="border border-gray-600 p-2 text-center w-32">Aksi</th>
+                                <th class="border border-slate-700 p-2 text-left">Tingkat</th>
+                                <th class="border border-slate-700 p-2 text-left">Nama Sekolah / Institusi</th>
+                                <th class="border border-slate-700 p-2 text-left">Jurusan</th>
+                                <th class="border border-slate-700 p-2 text-center">Tahun</th>
+                                <th class="border border-slate-700 p-2 text-center w-32">Aksi</th>
                             </tr>
                             </thead>
-                            <tbody class="text-gray-200">
+                            <tbody class="text-slate-300">
                             @forelse ($educations as $edu)
-                                <tr class="border-t border-gray-700">
-                                    <td class="border border-gray-700 p-2">{{ $edu->tingkat }}</td>
-                                    <td class="border border-gray-700 p-2">{{ $edu->nama_institusi }}</td>
-                                    <td class="border border-gray-700 p-2 text-center">{{ $edu->jurusan ?: '-' }}</td>
-                                    <td class="border border-gray-700 p-2 text-center">
+                                <tr class="border-t border-slate-800">
+                                    <td class="border border-slate-800 p-2">{{ $edu->tingkat }}</td>
+                                    <td class="border border-slate-800 p-2">{{ $edu->nama_institusi }}</td>
+                                    <td class="border border-slate-800 p-2 text-center">{{ $edu->jurusan ?: '-' }}</td>
+                                    <td class="border border-slate-800 p-2 text-center">
                                         {{ $edu->tahun_mulai }} - {{ $edu->tahun_selesai }}
                                     </td>
-                                    <td class="border border-gray-700 p-2 text-center">
+                                    <td class="border border-slate-800 p-2 text-center">
                                         @if ($locked)
-                                            <span class="text-gray-400">Terkunci</span>
+                                            <span class="text-slate-400">Terkunci</span>
                                         @else
                                             <a href="javascript:void(0)"
                                                data-modal-open="modalEducationEdit{{ $edu->id }}"
@@ -200,7 +200,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-gray-400">
+                                    <td colspan="5" class="text-center py-4 text-slate-400">
                                         Belum ada data pendidikan.
                                     </td>
                                 </tr>
@@ -213,9 +213,9 @@
         </div>
 
         <!-- Pelatihan -->
-        <div class="bg-gray-800 rounded-xl shadow">
+        <div class="bg-slate-900 rounded-xl shadow">
             <button @click="open === 3 ? open = null : open = 3"
-                    class="w-full text-left px-5 py-4 font-semibold text-gray-200 flex justify-between items-center">
+                    class="w-full text-left px-5 py-4 font-semibold text-slate-300 flex justify-between items-center">
                 <span>Riwayat Pelatihan</span>
                 <svg :class="{'rotate-180': open === 3}"
                      class="h-5 w-5 transform transition-transform" xmlns="http://www.w3.org/2000/svg"
@@ -242,7 +242,7 @@
 
                 @if ($locked)
                     <button disabled title="Terkunci saat pengajuan AK1 diproses/diterima"
-                            class="px-4 py-2 bg-gray-600 text-white rounded-lg cursor-not-allowed">
+                            class="px-4 py-2 bg-slate-700 text-white rounded-lg cursor-not-allowed">
                         + Tambah Pelatihan (Terkunci)
                     </button>
                 @else
@@ -252,25 +252,25 @@
                     </button>
                 @endif
 
-                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
+                <div class="bg-slate-950/40 rounded-xl p-4 shadow-inner">
                     <div class="overflow-x-auto">
-                        <table class="w-full border-collapse border border-gray-700 rounded-lg overflow-hidden">
-                            <thead class="bg-gray-700 text-gray-100">
+                        <table class="w-full border-collapse border border-slate-800 rounded-lg overflow-hidden">
+                            <thead class="bg-slate-800 text-slate-100">
                             <tr>
-                                <th class="border border-gray-600 p-2 text-left">Jenis Pelatihan</th>
-                                <th class="border border-gray-600 p-2 text-left">Lembaga</th>
-                                <th class="border border-gray-600 p-2 text-center">Tahun</th>
-                                <th class="border border-gray-600 p-2 text-center">Sertifikat</th>
-                                <th class="border border-gray-600 p-2 text-center w-32">Aksi</th>
+                                <th class="border border-slate-700 p-2 text-left">Jenis Pelatihan</th>
+                                <th class="border border-slate-700 p-2 text-left">Lembaga</th>
+                                <th class="border border-slate-700 p-2 text-center">Tahun</th>
+                                <th class="border border-slate-700 p-2 text-center">Sertifikat</th>
+                                <th class="border border-slate-700 p-2 text-center w-32">Aksi</th>
                             </tr>
                             </thead>
-                            <tbody class="text-gray-200">
+                            <tbody class="text-slate-300">
                             @forelse ($trainings as $train)
-                                <tr class="border-t border-gray-700">
-                                    <td class="border border-gray-700 p-2">{{ $train->jenis_pelatihan }}</td>
-                                    <td class="border border-gray-700 p-2">{{ $train->lembaga_pelatihan }}</td>
-                                    <td class="border border-gray-700 p-2 text-center">{{ $train->tahun }}</td>
-                                    <td class="border border-gray-700 p-2 text-center">
+                                <tr class="border-t border-slate-800">
+                                    <td class="border border-slate-800 p-2">{{ $train->jenis_pelatihan }}</td>
+                                    <td class="border border-slate-800 p-2">{{ $train->lembaga_pelatihan }}</td>
+                                    <td class="border border-slate-800 p-2 text-center">{{ $train->tahun }}</td>
+                                    <td class="border border-slate-800 p-2 text-center">
                                         @if ($train->sertifikat_file)
                                             <a href="{{ asset('storage/'.$train->sertifikat_file) }}"
                                                target="_blank"
@@ -278,12 +278,12 @@
                                                 Lihat
                                             </a>
                                         @else
-                                            <span class="text-gray-400 italic">Tidak ada</span>
+                                            <span class="text-slate-400 italic">Tidak ada</span>
                                         @endif
                                     </td>
-                                    <td class="border border-gray-700 p-2 text-center">
+                                    <td class="border border-slate-800 p-2 text-center">
                                         @if ($locked)
-                                            <span class="text-gray-400">Terkunci</span>
+                                            <span class="text-slate-400">Terkunci</span>
                                         @else
                                             <a href="javascript:void(0)"
                                                data-modal-open="modalTrainingEdit{{ $train->id }}"
@@ -301,7 +301,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-gray-400">
+                                    <td colspan="5" class="text-center py-4 text-slate-400">
                                         Belum ada data pelatihan.
                                     </td>
                                 </tr>
@@ -314,9 +314,9 @@
         </div>
 
         <!-- Riwayat Kerja -->
-        <div class="bg-gray-800 rounded-xl shadow">
+        <div class="bg-slate-900 rounded-xl shadow">
             <button @click="open === 4 ? open = null : open = 4"
-                    class="w-full text-left px-5 py-4 font-semibold text-gray-200 flex justify-between items-center">
+                    class="w-full text-left px-5 py-4 font-semibold text-slate-300 flex justify-between items-center">
                 <span>Riwayat Kerja</span>
                 <svg :class="{'rotate-180': open === 4}"
                      class="h-5 w-5 transform transition-transform" xmlns="http://www.w3.org/2000/svg"
@@ -340,37 +340,37 @@
                     + Tambah Riwayat Kerja
                 </button>
 
-                <div class="bg-gray-900/40 rounded-xl p-4 shadow-inner">
+                <div class="bg-slate-950/40 rounded-xl p-4 shadow-inner">
                     <div class="overflow-x-auto">
-                        <table class="w-full border-collapse border border-gray-700 rounded-lg overflow-hidden">
-                            <thead class="bg-gray-700 text-gray-100">
+                        <table class="w-full border-collapse border border-slate-800 rounded-lg overflow-hidden">
+                            <thead class="bg-slate-800 text-slate-100">
                             <tr>
-                                <th class="border border-gray-600 p-2 text-left">Perusahaan</th>
-                                <th class="border border-gray-600 p-2 text-left">Jabatan</th>
-                                <th class="border border-gray-600 p-2 text-center">Tahun</th>
-                                <th class="border border-gray-600 p-2 text-center">Surat Pengalaman</th>
-                                <th class="border border-gray-600 p-2 text-center w-32">Aksi</th>
+                                <th class="border border-slate-700 p-2 text-left">Perusahaan</th>
+                                <th class="border border-slate-700 p-2 text-left">Jabatan</th>
+                                <th class="border border-slate-700 p-2 text-center">Tahun</th>
+                                <th class="border border-slate-700 p-2 text-center">Surat Pengalaman</th>
+                                <th class="border border-slate-700 p-2 text-center w-32">Aksi</th>
                             </tr>
                             </thead>
-                            <tbody class="text-gray-200">
+                            <tbody class="text-slate-300">
                             @forelse ($works as $work)
-                                <tr class="border-t border-gray-700">
-                                    <td class="border border-gray-700 p-2">{{ $work->nama_perusahaan }}</td>
-                                    <td class="border border-gray-700 p-2">{{ $work->jabatan }}</td>
-                                    <td class="border border-gray-700 p-2 text-center">
+                                <tr class="border-t border-slate-800">
+                                    <td class="border border-slate-800 p-2">{{ $work->nama_perusahaan }}</td>
+                                    <td class="border border-slate-800 p-2">{{ $work->jabatan }}</td>
+                                    <td class="border border-slate-800 p-2 text-center">
                                         {{ $work->tahun_mulai }} - {{ $work->tahun_selesai ?? 'Sekarang' }}
                                     </td>
-                                    <td class="border border-gray-700 p-2 text-center">
+                                    <td class="border border-slate-800 p-2 text-center">
                                         @if ($work->surat_pengalaman)
                                             <a href="{{ asset('storage/'.$work->surat_pengalaman) }}" target="_blank"
                                                class="text-blue-400 hover:underline">
                                                 Lihat
                                             </a>
                                         @else
-                                            <span class="text-gray-400 italic">Tidak ada</span>
+                                            <span class="text-slate-400 italic">Tidak ada</span>
                                         @endif
                                     </td>
-                                    <td class="border border-gray-700 p-2 text-center">
+                                    <td class="border border-slate-800 p-2 text-center">
                                         <a href="javascript:void(0)"
                                            data-modal-open="modalWorkEdit{{ $work->id }}"
                                            class="text-yellow-400 hover:text-yellow-300 mr-2">
@@ -386,7 +386,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-gray-400">
+                                    <td colspan="5" class="text-center py-4 text-slate-400">
                                         Belum ada riwayat kerja.
                                     </td>
                                 </tr>
@@ -399,9 +399,9 @@
         </div>
 
         <!-- Minat Kerja -->
-        <div class="bg-gray-800 rounded-xl shadow">
+        <div class="bg-slate-900 rounded-xl shadow">
             <button @click="open === 5 ? open = null : open = 5"
-                    class="w-full text-left px-5 py-4 font-semibold text-gray-200 flex justify-between items-center">
+                    class="w-full text-left px-5 py-4 font-semibold text-slate-300 flex justify-between items-center">
                 <span>Referensi & Minat Kerja</span>
                 <svg :class="{'rotate-180': open === 5}"
                      class="h-5 w-5 transform transition-transform" xmlns="http://www.w3.org/2000/svg"
@@ -419,13 +419,13 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100 translate-y-0"
                  x-transition:leave-end="opacity-0 -translate-y-2"
-                 class="px-6 pt-6 pb-8 space-y-4 text-gray-200">
+                 class="px-6 pt-6 pb-8 space-y-4 text-slate-300">
                 <button data-modal-open="modalPreferenceForm"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                     + Tambah / Ubah Minat Kerja
                 </button>
 
-                <div class="bg-gray-900/40 rounded-xl p-6 shadow-inner">
+                <div class="bg-slate-950/40 rounded-xl p-6 shadow-inner">
                     <h3 class="text-lg font-semibold mb-4">Data Minat Kerja</h3>
                     @if ($preference)
                         <div class="space-y-3">
@@ -439,7 +439,7 @@
                                 {{ $preference->deskripsi_diri ?: '-' }}</p>
                         </div>
                     @else
-                        <p class="text-gray-400 italic">Belum ada data minat kerja yang diisi.</p>
+                        <p class="text-slate-400 italic">Belum ada data minat kerja yang diisi.</p>
                     @endif
                 </div>
             </div>
@@ -450,63 +450,56 @@
 
 {{-- Modal: Edit Profil --}}
 <div id="profileModal"
-     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-    <div class="w-full max-w-xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-700/30
-                flex flex-col overflow-hidden min-h-0"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div class="min-h-0 flex w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900 shadow-2xl"
          style="max-height:90vh">
 
-        <div class="p-4 border-b border-gray-600/20 flex justify-between items-center sticky top-0
-                    bg-white dark:bg-gray-800 z-10">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Edit Data Diri</h3>
-            <button id="closeModal" class="text-gray-400 hover:text-gray-200 text-2xl font-bold">&times;</button>
+        <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-900 px-5 py-4">
+            <h3 class="text-lg font-semibold text-slate-100">Edit Data Diri</h3>
+            <button id="closeModal" class="text-2xl font-bold text-slate-400 transition hover:text-slate-200">&times;</button>
         </div>
 
         <form method="POST" action="{{ route('pencaker.profile.update') }}"
-              class="p-6 overflow-y-auto grow space-y-4">
+              class="grow space-y-4 overflow-y-auto p-6">
             @csrf
             @method('PUT')
             <input type="hidden" name="__accordion" value="profile">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <label class="block text-sm text-gray-500">Nama Lengkap</label>
+                    <label class="block text-sm text-slate-400">Nama Lengkap</label>
                     <input type="text" name="nama_lengkap"
                            value="{{ old('nama_lengkap', $profile->nama_lengkap ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                  dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500"
                            required>
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">NIK</label>
+                    <label class="block text-sm text-slate-400">NIK</label>
                     <input type="text" name="nik"
                            value="{{ old('nik', $profile->nik ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                  dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500"
                            required>
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">Tempat Lahir</label>
+                    <label class="block text-sm text-slate-400">Tempat Lahir</label>
                     <input type="text" name="tempat_lahir"
                            value="{{ old('tempat_lahir', $profile->tempat_lahir ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                  dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">Tanggal Lahir</label>
+                    <label class="block text-sm text-slate-400">Tanggal Lahir</label>
                     <input type="date" name="tanggal_lahir"
                            value="{{ old('tanggal_lahir', $profile->tanggal_lahir ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                  dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">Jenis Kelamin</label>
+                    <label class="block text-sm text-slate-400">Jenis Kelamin</label>
                     <select name="jenis_kelamin"
-                            class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                   dark:bg-gray-900 dark:text-gray-100">
+                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                         <option value="">Pilih</option>
                         <option value="Laki-laki" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Laki-laki')>
                             Laki-laki
@@ -518,10 +511,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">Agama</label>
+                    <label class="block text-sm text-slate-400">Agama</label>
                     <select name="agama"
-                            class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                   dark:bg-gray-900 dark:text-gray-100">
+                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                         <option value="">Pilih</option>
                         @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
                             <option value="{{ $agama }}" @selected(old('agama', $profile->agama ?? '') == $agama)>
@@ -532,10 +524,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">Status Perkawinan</label>
+                    <label class="block text-sm text-slate-400">Status Perkawinan</label>
                     <select name="status_perkawinan"
-                            class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                   dark:bg-gray-900 dark:text-gray-100">
+                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                         <option value="">Pilih</option>
                         @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
                             <option value="{{ $status }}" @selected(old('status_perkawinan', $profile->status_perkawinan ?? '') == $status)>
@@ -546,31 +537,16 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">Pendidikan Terakhir</label>
-                    <select name="pendidikan_terakhir"
-                            class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                   dark:bg-gray-900 dark:text-gray-100">
-                        <option value="">Pilih</option>
-                        @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $p)
-                            <option value="{{ $p }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir ?? '') == $p)>
-                                {{ $p }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm text-gray-500">Alamat Lengkap</label>
-                    <textarea name="alamat_lengkap" rows="2"
-                              class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                     dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">{{ old('alamat_lengkap', $profile->alamat_lengkap ?? '') }}</textarea>
+                    <label class="block text-sm text-slate-400">Pendidikan Terakhir</label>
+                    <input type="text" name="pendidikan_terakhir"
+                           value="{{ old('pendidikan_terakhir', $profile->pendidikan_terakhir ?? '') }}"
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-500">Kecamatan Domisili</label>
+                    <label class="block text-sm text-slate-400">Kecamatan Domisili</label>
                     <select name="domisili_kecamatan"
-                            class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                   dark:bg-gray-900 dark:text-gray-100">
+                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                         <option value="">Pilih Kecamatan</option>
                         @foreach ($kecamatan as $kec)
                             <option value="{{ $kec }}" @selected(old('domisili_kecamatan', $profile->domisili_kecamatan ?? '') == $kec)>
@@ -580,23 +556,27 @@
                     </select>
                 </div>
 
+                <div class="md:col-span-2">
+                    <label class="block text-sm text-slate-400">Alamat Lengkap</label>
+                    <textarea name="alamat_lengkap" rows="2"
+                              class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">{{ old('alamat_lengkap', $profile->alamat_lengkap ?? '') }}</textarea>
+                </div>
+
                 <div>
-                    <label class="block text-sm text-gray-500">No. Telepon</label>
+                    <label class="block text-sm text-slate-400">No. Telepon</label>
                     <input type="text" name="no_telepon"
                            value="{{ old('no_telepon', $profile->no_telepon ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                                  dark:bg-gray-900 dark:text-gray-100">
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                 </div>
             </div>
 
-            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-600/30">
+            <div class="mt-6 flex justify-end gap-3 border-t border-slate-800 pt-4">
                 <button type="button" id="cancelEdit"
-                        class="px-4 py-2 rounded-lg border border-gray-400 text-gray-700 dark:text-gray-200
-                               hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        class="rounded-lg border border-slate-700 px-4 py-2 text-slate-300 transition hover:bg-slate-800">
                     Batal
                 </button>
                 <button type="submit"
-                        class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition">
+                        class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-500">
                     Simpan
                 </button>
             </div>
@@ -605,6 +585,7 @@
 </div>
 
 {{-- Modal: Tambah Pendidikan --}}
+{{-- Modal: Tambah Pendidikan --}}
 <x-modal-form id="modalEducationCreate"
               title="Tambah Riwayat Pendidikan"
               action="{{ route('pencaker.education.store') }}"
@@ -612,10 +593,10 @@
               submitLabel="Simpan" cancelLabel="Batal">
     <input type="hidden" name="__accordion" value="education">
     <div>
-        <label class="block text-sm text-gray-500">Tingkat Pendidikan</label>
+        <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
         <select name="tingkat"
-                class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                       dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500" required>
+                class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                       dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
             <option value="">- Pilih -</option>
             @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
                 <option value="{{ $tingkat }}">{{ $tingkat }}</option>
@@ -624,31 +605,31 @@
     </div>
 
     <div>
-        <label class="block text-sm text-gray-500">Nama Institusi / Sekolah</label>
+        <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
         <input type="text" name="nama_institusi"
-               class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                      dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500" required>
+               class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                      dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
     </div>
 
     <div>
-        <label class="block text-sm text-gray-500">Jurusan</label>
+        <label class="block text-sm text-slate-400">Jurusan</label>
         <input type="text" name="jurusan"
-               class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                      dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
+               class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                      dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
     </div>
 
     <div class="grid grid-cols-2 gap-3">
         <div>
-            <label class="block text-sm text-gray-500">Tahun Mulai</label>
+            <label class="block text-sm text-slate-400">Tahun Mulai</label>
             <input type="number" name="tahun_mulai" placeholder="contoh: 2018"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                          dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
+                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Tahun Selesai</label>
+            <label class="block text-sm text-slate-400">Tahun Selesai</label>
             <input type="number" name="tahun_selesai" placeholder="contoh: 2022"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                          dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
+                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
         </div>
     </div>
 
@@ -665,10 +646,10 @@
         <input type="hidden" name="__accordion" value="education">
 
         <div>
-            <label class="block text-sm text-gray-500">Tingkat Pendidikan</label>
+            <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
             <select name="tingkat"
-                    class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                           dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500" required>
+                    class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                           dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
                 @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
                     <option value="{{ $tingkat }}" @selected($edu->tingkat == $tingkat)>{{ $tingkat }}</option>
                 @endforeach
@@ -676,31 +657,31 @@
         </div>
 
         <div>
-            <label class="block text-sm text-gray-500">Nama Institusi / Sekolah</label>
+            <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
             <input type="text" name="nama_institusi" value="{{ old('nama_institusi', $edu->nama_institusi) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                          dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500" required>
+                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
         </div>
 
         <div>
-            <label class="block text-sm text-gray-500">Jurusan</label>
+            <label class="block text-sm text-slate-400">Jurusan</label>
             <input type="text" name="jurusan" value="{{ old('jurusan', $edu->jurusan) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                          dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
+                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <div>
-                <label class="block text-sm text-gray-500">Tahun Mulai</label>
+                <label class="block text-sm text-slate-400">Tahun Mulai</label>
                 <input type="number" name="tahun_mulai" value="{{ old('tahun_mulai', $edu->tahun_mulai) }}"
-                       class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                              dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500" required>
+                       class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                              dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
             </div>
             <div>
-                <label class="block text-sm text-gray-500">Tahun Selesai</label>
+                <label class="block text-sm text-slate-400">Tahun Selesai</label>
                 <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}"
-                       class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700
-                              dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500" required>
+                       class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
+                              dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
             </div>
         </div>
 
@@ -715,7 +696,7 @@
               submitLabel="Ya, Hapus" cancelLabel="Batal">
     @method('DELETE')
     <input type="hidden" name="__accordion" value="education">
-    <p class="text-gray-300">Apakah Anda yakin ingin menghapus data pendidikan ini?</p>
+    <p class="text-slate-400">Apakah Anda yakin ingin menghapus data pendidikan ini?</p>
 </x-modal-form>
 
 {{-- Modal: Tambah Pelatihan --}}
@@ -758,7 +739,7 @@
               submitLabel="Ya, Hapus" cancelLabel="Batal">
     @method('DELETE')
     <input type="hidden" name="__accordion" value="training">
-    <p class="text-gray-300">Apakah Anda yakin ingin menghapus data pelatihan ini?</p>
+    <p class="text-slate-400">Apakah Anda yakin ingin menghapus data pelatihan ini?</p>
 </x-modal-form>
 
 {{-- Modal: Tambah Riwayat Kerja --}}
@@ -809,7 +790,7 @@
               submitLabel="Ya, Hapus" cancelLabel="Batal">
     @method('DELETE')
     <input type="hidden" name="__accordion" value="work">
-    <p class="text-gray-300">Apakah Anda yakin ingin menghapus data riwayat kerja ini?</p>
+    <p class="text-slate-400">Apakah Anda yakin ingin menghapus data riwayat kerja ini?</p>
 </x-modal-form>
 
 {{-- Modal: Minat Kerja --}}
@@ -822,7 +803,7 @@
 
     <div class="space-y-4">
         <div>
-            <label class="block text-sm text-gray-500 dark:text-gray-300 mb-1">
+            <label class="block text-sm text-slate-400 dark:text-slate-400 mb-1">
                 Minat Lokasi Kerja (boleh lebih dari satu)
             </label>
             <div class="flex flex-wrap gap-3">
@@ -833,7 +814,7 @@
                 @foreach ($lokasiList as $lokasi)
                     <label class="inline-flex items-center space-x-2">
                         <input type="checkbox" name="minat_lokasi[]" value="{{ $lokasi }}"
-                               class="rounded border-gray-400 dark:border-gray-600"
+                               class="rounded border-slate-600 dark:border-slate-700"
                                {{ in_array($lokasi, $selectedLokasi ?? []) ? 'checked' : '' }}>
                         <span>{{ $lokasi }}</span>
                     </label>
@@ -842,7 +823,7 @@
         </div>
 
         <div>
-            <label class="block text-sm text-gray-500 dark:text-gray-300 mb-1">
+            <label class="block text-sm text-slate-400 dark:text-slate-400 mb-1">
                 Minat Bidang Usaha (boleh lebih dari satu)
             </label>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -853,7 +834,7 @@
                 @foreach ($bidangList as $bidang)
                     <label class="inline-flex items-center space-x-2">
                         <input type="checkbox" name="minat_bidang[]" value="{{ $bidang }}"
-                               class="rounded border-gray-400 dark:border-gray-600"
+                               class="rounded border-slate-600 dark:border-slate-700"
                                {{ in_array($bidang, $selectedBidang ?? []) ? 'checked' : '' }}>
                         <span>{{ $bidang }}</span>
                     </label>
@@ -865,11 +846,11 @@
                       :value="old('gaji_harapan', $preference->gaji_harapan ?? '')" />
 
         <div>
-            <label class="block text-sm text-gray-500 dark:text-gray-300 mb-1">
+            <label class="block text-sm text-slate-400 dark:text-slate-400 mb-1">
                 Deskripsi Singkat Tentang Diri Anda
             </label>
             <textarea name="deskripsi_diri" rows="4"
-                      class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">{{ old('deskripsi_diri', $preference->deskripsi_diri ?? '') }}</textarea>
+                      class="w-full rounded-lg border-gray-300 dark:border-slate-800 dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">{{ old('deskripsi_diri', $preference->deskripsi_diri ?? '') }}</textarea>
         </div>
     </div>
 </x-modal-form>

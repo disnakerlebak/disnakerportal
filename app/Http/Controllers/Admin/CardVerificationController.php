@@ -373,32 +373,52 @@ class CardVerificationController extends Controller
 //cetak kartu pencaker
 public function cetakPdf($id)
 {
-    // 1. Ambil data lengkap (relasi profil, pendidikan, pelatihan, dan dokumen)
     $application = \App\Models\CardApplication::with([
         'user.jobseekerProfile.educations',
         'user.jobseekerProfile.trainings',
         'documents'
     ])->findOrFail($id);
 
-    // 2. Ambil profil pencaker melalui relasi user
-    $profile = optional($application->user)->jobseekerProfile;
+    $snapshot = $application->snapshot_after ?? null;
 
-    // 3. Ambil pendidikan & pelatihan (jika ada)
-    $educations = $profile ? $profile->educations : collect();
-    $trainings = $profile ? $profile->trainings : collect();
+    if ($snapshot) {
+        $profileArray = array_merge([
+            'nama_lengkap' => '-',
+            'nik' => '-',
+            'tempat_lahir' => '-',
+            'tanggal_lahir' => null,
+            'jenis_kelamin' => '-',
+            'agama' => '-',
+            'status_perkawinan' => '-',
+            'pendidikan_terakhir' => '-',
+            'alamat_lengkap' => '-',
+            'domisili_kecamatan' => '-',
+            'no_telepon' => '-',
+        ], $snapshot['profile'] ?? []);
 
-    // 4. Ambil pas foto dari tabel card_application_documents
-    $fotoDoc = $application->documents->firstWhere('type', 'foto_closeup');
-    $fotoPath = $fotoDoc && $fotoDoc->file_path
-        ? storage_path('app/public/' . $fotoDoc->file_path)
-        : null;
+        $profile = (object) $profileArray;
+        $educations = collect($snapshot['educations'] ?? [])->map(fn ($item) => (object) $item);
+        $trainings = collect($snapshot['trainings'] ?? [])->map(fn ($item) => (object) $item);
 
-    // 5. Pastikan file foto benar-benar ada di storage
-    if ($fotoPath && !file_exists($fotoPath)) {
-        $fotoPath = null; // fallback jika file tidak ditemukan
+        $fotoDoc = collect($snapshot['documents'] ?? [])->firstWhere('type', 'foto_closeup');
+        $fotoPath = $fotoDoc && !empty($fotoDoc['file_path'])
+            ? storage_path('app/public/' . $fotoDoc['file_path'])
+            : null;
+    } else {
+        $profile = optional($application->user)->jobseekerProfile;
+        $educations = $profile ? $profile->educations : collect();
+        $trainings = $profile ? $profile->trainings : collect();
+
+        $fotoDoc = $application->documents->firstWhere('type', 'foto_closeup');
+        $fotoPath = $fotoDoc && $fotoDoc->file_path
+            ? storage_path('app/public/' . $fotoDoc->file_path)
+            : null;
     }
 
-    // 6. Data yang dikirim ke view PDF
+    if ($fotoPath && !file_exists($fotoPath)) {
+        $fotoPath = null;
+    }
+
     $data = [
         'application' => $application,
         'profile'     => $profile,
@@ -407,11 +427,9 @@ public function cetakPdf($id)
         'fotoPath'    => $fotoPath,
     ];
 
-    // 7. Generate PDF (legal size seperti format Disnaker)
     $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.ak1_card', $data)
         ->setPaper('legal', 'portrait');
 
-    // 8. Stream hasil PDF
     $filename = 'AK1-' . ($application->nomor_ak1 ?? 'Belum-Ditetapkan') . '.pdf';
     return $pdf->stream($filename);
 }

@@ -2,7 +2,7 @@
 @section('title', 'Perbaikan AK1')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8 text-gray-900 dark:text-gray-200">
+<div class="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 py-8 text-slate-100">
     <h2 class="text-2xl font-semibold text-white mb-4">Perbaikan Data Kartu AK1</h2>
 
     @if (session('success'))
@@ -17,9 +17,9 @@
         </div>
     @endif
 
-    <div class="mb-6 bg-blue-900/40 border border-blue-700 text-blue-100 px-4 py-3 rounded">
-        <p class="font-semibold">🔧 Informasi Perbaikan</p>
-        <p class="text-sm mt-1">Silakan perbarui data diri, riwayat pendidikan/pelatihan, atau dokumen yang perlu direvisi. Setelah yakin perubahan sesuai, ajukan perbaikan untuk diverifikasi admin.</p>
+    <div class="mb-8 rounded-2xl border border-indigo-800/60 bg-indigo-900/40 px-6 py-5 text-slate-100 shadow-lg">
+        <p class="text-sm font-semibold uppercase tracking-wide text-indigo-200">Informasi Perbaikan</p>
+        <p class="mt-2 text-sm leading-relaxed text-slate-200">Silakan perbarui data diri, riwayat pendidikan/pelatihan, atau dokumen yang perlu direvisi. Setelah yakin perubahan sesuai, ajukan perbaikan untuk diverifikasi admin.</p>
     </div>
 
     @php
@@ -30,27 +30,29 @@
         @csrf
 
         {{-- Status ringkas --}}
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-white mb-2">Status Kartu Aktif</h3>
-            <div class="text-sm text-gray-300">
-                <p>Nomor AK1: <span class="font-semibold text-white">{{ $application->nomor_ak1 ?? '-' }}</span></p>
-                <p>Status Saat Ini: <span class="font-semibold text-white">{{ $application->status }}</span></p>
-                <p>Tanggal Persetujuan: {{ indoDate($approvedAt) }}</p>
+        <div class="rounded-2xl bg-slate-900 shadow-lg">
+            <div class="mx-auto max-w-6xl px-4 py-6 sm:px-8 lg:px-10">
+                <h3 class="text-lg font-semibold text-white mb-2">Status Kartu Aktif</h3>
+                <div class="text-sm text-slate-300 space-y-1">
+                    <p>Nomor AK1: <span class="font-semibold text-white">{{ $application->nomor_ak1 ?? '-' }}</span></p>
+                    <p>Status Saat Ini: <span class="font-semibold text-white">{{ $application->status }}</span></p>
+                    <p>Tanggal Persetujuan: {{ indoDate($approvedAt) }}</p>
+                </div>
             </div>
         </div>
 
         {{-- Foto & data diri --}}
-        <div class="rounded-2xl bg-gray-700/60 shadow-lg">
+        <div class="rounded-2xl bg-slate-900 shadow-lg">
             <div class="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-10 lg:px-10">
                 <div class="flex flex-col gap-8 lg:flex-row lg:items-start">
-                    <div class="flex flex-col items-center justify-start gap-3 text-sm text-gray-400 lg:items-start">
-                        <div class="relative h-52 w-44 overflow-hidden rounded-xl border border-gray-700/60 bg-gray-800 shadow-md sm:h-56 sm:w-48">
+                    <div class="flex flex-col items-center justify-start gap-3 text-sm text-slate-400 lg:items-start">
+                        <div class="relative h-52 w-44 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900 shadow-md sm:h-56 sm:w-48">
                             <img id="fotoPreview" src="{{ optional($application->documents->firstWhere('type', 'foto_closeup'))->file_path ? asset('storage/' . $application->documents->firstWhere('type', 'foto_closeup')->file_path) : asset('images/placeholder-avatar.png') }}" alt="Foto Close-Up" class="h-full w-full object-cover" />
-                            <label for="fotoCloseup" class="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-center text-xs text-gray-100 transition hover:bg-black/75">
+                            <label for="fotoCloseup" class="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-center text-xs text-slate-100 transition hover:bg-black/75">
                                 Ganti Foto
                             </label>
                         </div>
-                        <p class="text-center text-xs text-gray-400 sm:text-left">Format JPG/PNG &bull; Maks 2 MB</p>
+                        <p class="text-center text-xs text-slate-400 sm:text-left">Format JPG/PNG &bull; Maks 2 MB</p>
                         <input id="fotoCloseup" name="foto_closeup" type="file" accept="image/*" class="hidden" onchange="previewImage(event); enableRepairButton();">
                         <button type="button" class="text-xs text-blue-400 hover:text-blue-300" data-modal-open="modalRepairProfile">Ubah Data Diri</button>
                     </div>
@@ -59,46 +61,46 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-lg font-semibold text-white sm:text-xl">Data Diri</h3>
-                                <p class="mt-1 text-sm text-gray-400">Pastikan informasi sesuai dengan dokumen kependudukan.</p>
+                                <p class="mt-1 text-sm text-slate-400">Pastikan informasi sesuai dengan dokumen kependudukan.</p>
                             </div>
                             <button type="button" data-modal-open="modalRepairProfile" class="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-600/30">Ubah Data</button>
                         </div>
 
-                        <dl class="mt-6 grid grid-cols-1 gap-4 text-sm text-gray-200 sm:grid-cols-2">
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">NIK</dt>
+                        <dl class="mt-6 grid grid-cols-1 gap-4 text-sm text-slate-200 sm:grid-cols-2">
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">NIK</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->nik ?? '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Status</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Status</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->status_perkawinan ?? '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Nama Lengkap</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Nama Lengkap</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->nama_lengkap ?? '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Agama</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Agama</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->agama ?? '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Tempat Lahir</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Tempat Lahir</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->tempat_lahir ?? '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Tanggal Lahir</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Tanggal Lahir</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->tanggal_lahir ? indoDateOnly($profile->tanggal_lahir) : '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Jenis Kelamin</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Jenis Kelamin</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->jenis_kelamin ?? '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Pendidikan Terakhir</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Pendidikan Terakhir</dt>
                                 <dd class="mt-1 text-base font-semibold text-white">{{ $profile->pendidikan_terakhir ?? '-' }}</dd>
                             </div>
-                            <div class="rounded-lg border border-gray-800/60 bg-gray-700/60 px-4 py-3 shadow-sm sm:col-span-2">
-                                <dt class="text-xs font-medium uppercase tracking-wide text-gray-400">Alamat Domisili</dt>
+                            <div class="rounded-lg border border-slate-800/60 bg-slate-800/60 px-4 py-3 shadow-sm sm:col-span-2">
+                                <dt class="text-xs font-medium uppercase tracking-wide text-slate-400">Alamat Domisili</dt>
                                 <dd class="mt-1 text-base font-semibold text-white leading-relaxed">{{ $profile->alamat_lengkap ?? '-' }}</dd>
                             </div>
                         </dl>
@@ -108,7 +110,7 @@
         </div>
 
         {{-- Pendidikan --}}
-        <div class="bg-gray-800 rounded-2xl mt-8">
+        <div class="rounded-2xl bg-slate-900 shadow-lg">
             <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-white">Riwayat Pendidikan</h3>
@@ -117,8 +119,8 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm md:text-base border-collapse text-gray-300">
-                        <thead class="bg-gray-700 text-gray-200">
+                    <table class="w-full text-sm md:text-base border-collapse text-slate-300">
+                        <thead class="bg-slate-800 text-slate-200">
                             <tr>
                                 <th class="p-3 text-left">Tingkat</th>
                                 <th class="p-3 text-left">Lembaga / Sekolah</th>
@@ -129,7 +131,7 @@
                         </thead>
                         <tbody>
                             @foreach ($educations as $edu)
-                                <tr class="border-b border-gray-700">
+                                <tr class="border-b border-slate-800">
                                     <td class="p-3">{{ $edu->tingkat }}</td>
                                     <td class="p-3">{{ $edu->nama_institusi }}</td>
                                     <td class="p-3">{{ $edu->jurusan ?: '-' }}</td>
@@ -146,7 +148,7 @@
         </div>
 
         {{-- Pelatihan --}}
-        <div class="bg-gray-800 rounded-2xl mt-8">
+        <div class="rounded-2xl bg-slate-900 shadow-lg">
             <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-white">Riwayat Pelatihan</h3>
@@ -155,8 +157,8 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm md:text-base border-collapse text-gray-300">
-                        <thead class="bg-gray-700 text-gray-200">
+                    <table class="w-full text-sm md:text-base border-collapse text-slate-300">
+                        <thead class="bg-slate-800 text-slate-200">
                             <tr>
                                 <th class="p-3 text-left">Jenis Pelatihan</th>
                                 <th class="p-3 text-left">Lembaga</th>
@@ -166,7 +168,7 @@
                         </thead>
                         <tbody>
                             @foreach ($trainings as $training)
-                                <tr class="border-b border-gray-700">
+                                <tr class="border-b border-slate-800">
                                     <td class="p-3">{{ $training->jenis_pelatihan }}</td>
                                     <td class="p-3">{{ $training->lembaga_pelatihan }}</td>
                                     <td class="p-3">{{ $training->tahun }}</td>
@@ -182,7 +184,7 @@
         </div>
 
         {{-- Dokumen --}}
-        <div class="bg-gray-800 rounded-2xl mt-8">
+        <div class="rounded-2xl bg-slate-900 shadow-lg">
             <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
                 <h3 class="text-lg font-semibold text-white mb-4">Unggah Dokumen</h3>
                 <div class="grid gap-6 md:grid-cols-2">
@@ -192,7 +194,7 @@
                             <a href="{{ asset('storage/'.$ktp) }}" target="_blank" class="text-sm text-blue-300 hover:underline">Lihat Dokumen Saat Ini</a>
                         @endif
                         <input type="file" name="ktp_file" accept=".jpg,.jpeg,.png,.pdf"
-                               class="mt-2 block w-full text-sm text-gray-300"
+                               class="mt-2 block w-full text-sm text-slate-300"
                                onchange="enableRepairButton();">
                     </div>
                     <div>
@@ -201,7 +203,7 @@
                             <a href="{{ asset('storage/'.$ijazah) }}" target="_blank" class="text-sm text-blue-300 hover:underline">Lihat Dokumen Saat Ini</a>
                         @endif
                         <input type="file" name="ijazah_file" accept=".jpg,.jpeg,.png,.pdf"
-                               class="mt-2 block w-full text-sm text-gray-300"
+                               class="mt-2 block w-full text-sm text-slate-300"
                                onchange="enableRepairButton();">
                     </div>
                 </div>
@@ -214,7 +216,7 @@
                     @if(!$snapshotChanged) disabled @endif>
                 Ajukan Perbaikan
             </button>
-            <span id="submitSpinner" class="hidden text-sm text-gray-300">Mengirim… mohon tunggu.</span>
+            <span id="submitSpinner" class="hidden text-sm text-slate-300">Mengirim… mohon tunggu.</span>
         </div>
         <p class="text-xs mt-1 text-yellow-400">⚠️ Setelah pengajuan perbaikan dikirim, data tidak dapat diubah sebelum diverifikasi.</p>
     </form>
@@ -233,28 +235,28 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm text-gray-500">Nama Lengkap</label>
+            <label class="block text-sm text-slate-400">Nama Lengkap</label>
             <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $profile->nama_lengkap) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">NIK</label>
+            <label class="block text-sm text-slate-400">NIK</label>
             <input type="text" name="nik" value="{{ $profile->nik }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400" readonly>
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-400" readonly>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Tempat Lahir</label>
+            <label class="block text-sm text-slate-400">Tempat Lahir</label>
             <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $profile->tempat_lahir) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Tanggal Lahir</label>
+            <label class="block text-sm text-slate-400">Tanggal Lahir</label>
             <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $profile->tanggal_lahir) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Jenis Kelamin</label>
-            <select name="jenis_kelamin" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+            <label class="block text-sm text-slate-400">Jenis Kelamin</label>
+            <select name="jenis_kelamin" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                 <option value="">- Pilih -</option>
                 @foreach (['Laki-laki','Perempuan'] as $jk)
                     <option value="{{ $jk }}" @selected($profile->jenis_kelamin === $jk)>{{ $jk }}</option>
@@ -262,13 +264,13 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Agama</label>
+            <label class="block text-sm text-slate-400">Agama</label>
             <input type="text" name="agama" value="{{ old('agama', $profile->agama) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Status Perkawinan</label>
-            <select name="status_perkawinan" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+            <label class="block text-sm text-slate-400">Status Perkawinan</label>
+            <select name="status_perkawinan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                 <option value="">- Pilih -</option>
                 @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
                     <option value="{{ $status }}" @selected($profile->status_perkawinan === $status)>{{ $status }}</option>
@@ -276,17 +278,17 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Pendidikan Terakhir</label>
+            <label class="block text-sm text-slate-400">Pendidikan Terakhir</label>
             <input type="text" name="pendidikan_terakhir" value="{{ old('pendidikan_terakhir', $profile->pendidikan_terakhir) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
         </div>
         <div class="sm:col-span-2">
-            <label class="block text-sm text-gray-500">Alamat Lengkap</label>
-            <textarea name="alamat_lengkap" rows="3" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">{{ old('alamat_lengkap', $profile->alamat_lengkap) }}</textarea>
+            <label class="block text-sm text-slate-400">Alamat Lengkap</label>
+            <textarea name="alamat_lengkap" rows="3" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">{{ old('alamat_lengkap', $profile->alamat_lengkap) }}</textarea>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Domisili Kecamatan</label>
-            <select name="domisili_kecamatan" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+            <label class="block text-sm text-slate-400">Domisili Kecamatan</label>
+            <select name="domisili_kecamatan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
                 <option value="">- Pilih -</option>
                 @foreach ($kecamatanList as $kecamatan)
                     <option value="{{ $kecamatan }}" @selected($profile->domisili_kecamatan === $kecamatan)>{{ $kecamatan }}</option>
@@ -294,9 +296,9 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Nomor Telepon</label>
+            <label class="block text-sm text-slate-400">Nomor Telepon</label>
             <input type="text" name="no_telepon" value="{{ old('no_telepon', $profile->no_telepon) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
         </div>
     </div>
 </x-modal-form>
@@ -310,8 +312,8 @@
     <input type="hidden" name="repair_mode" value="1">
     <div class="space-y-3">
         <div>
-            <label class="block text-sm text-gray-500">Tingkat Pendidikan</label>
-            <select name="tingkat" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+            <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
+            <select name="tingkat" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
                 <option value="">- Pilih -</option>
                 @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
                     <option value="{{ $tingkat }}">{{ $tingkat }}</option>
@@ -319,21 +321,21 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Nama Institusi / Sekolah</label>
-            <input type="text" name="nama_institusi" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+            <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
+            <input type="text" name="nama_institusi" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Jurusan</label>
-            <input type="text" name="jurusan" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+            <label class="block text-sm text-slate-400">Jurusan</label>
+            <input type="text" name="jurusan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
         </div>
         <div class="grid grid-cols-2 gap-3">
             <div>
-                <label class="block text-sm text-gray-500">Tahun Mulai</label>
-                <input type="number" name="tahun_mulai" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="2018">
+                <label class="block text-sm text-slate-400">Tahun Mulai</label>
+                <input type="number" name="tahun_mulai" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" placeholder="2018">
             </div>
             <div>
-                <label class="block text-sm text-gray-500">Tahun Selesai</label>
-                <input type="number" name="tahun_selesai" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="2022">
+                <label class="block text-sm text-slate-400">Tahun Selesai</label>
+                <input type="number" name="tahun_selesai" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" placeholder="2022">
             </div>
         </div>
     </div>
@@ -350,29 +352,29 @@
         <input type="hidden" name="repair_mode" value="1">
         <div class="space-y-3">
             <div>
-                <label class="block text-sm text-gray-500">Tingkat Pendidikan</label>
-                <select name="tingkat" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
+                <select name="tingkat" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
                     @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
                         <option value="{{ $tingkat }}" @selected($edu->tingkat === $tingkat)>{{ $tingkat }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="block text-sm text-gray-500">Nama Institusi / Sekolah</label>
-                <input type="text" name="nama_institusi" value="{{ old('nama_institusi', $edu->nama_institusi) }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
+                <input type="text" name="nama_institusi" value="{{ old('nama_institusi', $edu->nama_institusi) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
             </div>
             <div>
-                <label class="block text-sm text-gray-500">Jurusan</label>
-                <input type="text" name="jurusan" value="{{ old('jurusan', $edu->jurusan) }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                <label class="block text-sm text-slate-400">Jurusan</label>
+                <input type="text" name="jurusan" value="{{ old('jurusan', $edu->jurusan) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-sm text-gray-500">Tahun Mulai</label>
-                    <input type="number" name="tahun_mulai" value="{{ old('tahun_mulai', $edu->tahun_mulai) }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                    <label class="block text-sm text-slate-400">Tahun Mulai</label>
+                    <input type="number" name="tahun_mulai" value="{{ old('tahun_mulai', $edu->tahun_mulai) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-500">Tahun Selesai</label>
-                    <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                    <label class="block text-sm text-slate-400">Tahun Selesai</label>
+                    <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
                 </div>
             </div>
         </div>
@@ -388,20 +390,20 @@
     <input type="hidden" name="repair_mode" value="1">
     <div class="space-y-3">
         <div>
-            <label class="block text-sm text-gray-500">Jenis Pelatihan</label>
-            <input type="text" name="jenis_pelatihan" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+            <label class="block text-sm text-slate-400">Jenis Pelatihan</label>
+            <input type="text" name="jenis_pelatihan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Lembaga</label>
-            <input type="text" name="lembaga_pelatihan" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+            <label class="block text-sm text-slate-400">Lembaga</label>
+            <input type="text" name="lembaga_pelatihan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Tahun</label>
-            <input type="number" name="tahun" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+            <label class="block text-sm text-slate-400">Tahun</label>
+            <input type="number" name="tahun" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
         </div>
         <div>
-            <label class="block text-sm text-gray-500">Sertifikat (PDF/JPG/PNG, maks 2MB)</label>
-            <input type="file" name="sertifikat_file" accept=".pdf,.jpg,.jpeg,.png" class="mt-1 w-full text-sm text-gray-300" required>
+            <label class="block text-sm text-slate-400">Sertifikat (PDF/JPG/PNG, maks 2MB)</label>
+            <input type="file" name="sertifikat_file" accept=".pdf,.jpg,.jpeg,.png" class="mt-1 w-full text-sm text-slate-300" required>
         </div>
     </div>
 </x-modal-form>
@@ -417,22 +419,22 @@
         <input type="hidden" name="repair_mode" value="1">
         <div class="space-y-3">
             <div>
-                <label class="block text-sm text-gray-500">Jenis Pelatihan</label>
-                <input type="text" name="jenis_pelatihan" value="{{ old('jenis_pelatihan', $training->jenis_pelatihan) }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                <label class="block text-sm text-slate-400">Jenis Pelatihan</label>
+                <input type="text" name="jenis_pelatihan" value="{{ old('jenis_pelatihan', $training->jenis_pelatihan) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
             </div>
             <div>
-                <label class="block text-sm text-gray-500">Lembaga</label>
-                <input type="text" name="lembaga_pelatihan" value="{{ old('lembaga_pelatihan', $training->lembaga_pelatihan) }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                <label class="block text-sm text-slate-400">Lembaga</label>
+                <input type="text" name="lembaga_pelatihan" value="{{ old('lembaga_pelatihan', $training->lembaga_pelatihan) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
             </div>
             <div>
-                <label class="block text-sm text-gray-500">Tahun</label>
-                <input type="number" name="tahun" value="{{ old('tahun', $training->tahun) }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                <label class="block text-sm text-slate-400">Tahun</label>
+                <input type="number" name="tahun" value="{{ old('tahun', $training->tahun) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
             </div>
             <div>
-                <label class="block text-sm text-gray-500">Sertifikat Baru (opsional)</label>
-                <input type="file" name="sertifikat_file" accept=".pdf,.jpg,.jpeg,.png" class="mt-1 w-full text-sm text-gray-300">
+                <label class="block text-sm text-slate-400">Sertifikat Baru (opsional)</label>
+                <input type="file" name="sertifikat_file" accept=".pdf,.jpg,.jpeg,.png" class="mt-1 w-full text-sm text-slate-300">
                 @if ($training->sertifikat_file)
-                    <p class="text-xs text-gray-500 mt-1">Dokumen saat ini: <a href="{{ asset('storage/'.$training->sertifikat_file) }}" target="_blank" class="text-blue-300 underline">Lihat</a></p>
+                    <p class="text-xs text-slate-400 mt-1">Dokumen saat ini: <a href="{{ asset('storage/'.$training->sertifikat_file) }}" target="_blank" class="text-blue-300 underline">Lihat</a></p>
                 @endif
             </div>
         </div>
@@ -440,11 +442,11 @@
 @endforeach
 
 <div id="confirmOverlay" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
-    <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full text-gray-100">
+    <div class="bg-slate-950 border border-slate-800 rounded-xl p-6 max-w-md w-full text-slate-100">
         <h3 class="text-lg font-semibold mb-2">Konfirmasi Ajukan Perbaikan</h3>
-        <p class="text-sm text-gray-300">Apakah Anda yakin ingin mengirim pengajuan perbaikan AK1 kepada admin?</p>
+        <p class="text-sm text-slate-300">Apakah Anda yakin ingin mengirim pengajuan perbaikan AK1 kepada admin?</p>
         <div class="mt-5 flex justify-end gap-3">
-            <button type="button" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600" onclick="toggleConfirm(false)">Batal</button>
+            <button type="button" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700" onclick="toggleConfirm(false)">Batal</button>
             <button type="button" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700" onclick="submitRepairForm()">Kirim</button>
         </div>
     </div>

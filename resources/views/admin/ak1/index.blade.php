@@ -2,37 +2,43 @@
 @section('title', 'Verifikasi AK1')
 
 @section('content')
-<div class="w-full px-4 sm:px-6 lg:px-8 space-y-6">
-    
-    {{-- ===== Filter ===== --}}
-    <form method="GET" class="flex flex-wrap gap-3 items-center">
-    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama / email"
-           class="w-64 max-w-full rounded-lg border-gray-700 dark:bg-gray-900 dark:text-gray-100 px-3 py-2">
+    <div class="max-w-6xl mx-auto h-full min-h-0 flex flex-col px-6 py-8 gap-6 box-border">
 
-    <select name="status" class="rounded-lg border-gray-700 dark:bg-gray-900 dark:text-gray-100 px-3 py-2">
-        @php
-            $statuses = ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta', 'Disetujui', 'Ditolak'];
-            $selected = request('status', 'Menunggu Verifikasi');
-        @endphp
-        <option value="">Semua Status</option>
-        @foreach ($statuses as $s)
-            <option value="{{ $s }}" @selected($selected === $s)>{{ $s }}</option>
-        @endforeach
-    </select>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">Verifikasi Pengajuan AK1</h2>
+        </div>
+        
+        {{-- ===== Filter ===== --}}
+        <form method="GET" class="flex flex-wrap items-center gap-3">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama / email"
+                   class="w-64 max-w-full rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
 
-    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Filter</button>
+            <select name="status" class="rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
+                @php
+                    $statuses = ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta', 'Disetujui', 'Ditolak'];
+                    $selected = request('status', 'Menunggu Verifikasi');
+                @endphp
+                <option value="">Semua Status</option>
+                @foreach ($statuses as $s)
+                    <option value="{{ $s }}" @selected($selected === $s)>{{ $s }}</option>
+                @endforeach
+            </select>
 
-    @if(request()->hasAny(['q','status']) && (request('q')||request('status')))
-        <a href="{{ route('admin.ak1.index') }}"
-           class="px-3 py-2 rounded-lg border border-gray-600 text-gray-200">Reset</a>
-    @endif
-</form>
+            <button class="rounded-lg bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-500">Filter</button>
+
+            @if(request()->hasAny(['q','status']) && (request('q')||request('status')))
+                <a href="{{ route('admin.ak1.index') }}"
+                   class="rounded-lg border border-slate-700 px-3 py-2 text-slate-200 hover:bg-slate-800">Reset</a>
+            @endif
+        </form>
 
 
-    {{-- ===== Tabel Daftar Pengajuan ===== --}}
-    <div class="bg-gray-800 border border-gray-700 rounded-lg">
-        <div class="w-full overflow-x-auto overflow-y-visible">
-            <table class="min-w-[1100px] w-full text-sm text-gray-300">
+        {{-- ===== Tabel Daftar Pengajuan ===== --}}
+        <div class="flex-1 min-h-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow">
+            <div class="flex-1 min-h-0 overflow-hidden">
+                <div class="overflow-x-auto h-full min-h-0">
+                    <div class="h-full min-h-0 overflow-y-auto lg:overflow-y-visible">
+                        <table class="min-w-full w-full text-sm text-gray-200">
                 <thead class="bg-gray-700 text-gray-100 uppercase text-xs whitespace-nowrap">
                     <tr>
                         <th class="p-3 text-center whitespace-nowrap">Pemohon</th>
@@ -46,7 +52,7 @@
                     </tr>
                 </thead>
 
-                <tbody class="text-gray-300">
+                <tbody class="divide-y divide-gray-800 text-gray-200">
                     @forelse ($apps as $app)
                         @php
                         $badgeClass = match($app->status) {
@@ -71,7 +77,7 @@
                             }
                         @endphp
 
-                        <tr class="border-b border-gray-700 hover:bg-gray-700/40 transition">
+                        <tr class="transition hover:bg-gray-800/60">
                             @php
                                 $logPayload = $app->logs->sortBy('created_at')->values()->map(function ($log) {
                                     return [
@@ -139,13 +145,14 @@
                             </td>
 
                             {{-- Aksi --}}
-                            <td class="p-3 align-top text-center relative">
+                            <td class="relative p-3 align-top text-center">
                                 <div class="flex items-center justify-center">
 
                                     {{-- Dropdown Aksi Modern --}}
-                                    <div class="relative" x-data="{ open: false }">
+                                    <div class="relative" x-data="{ open: false }" x-id="['action-menu']">
                                         <button @click="open = !open"
-                                                class="p-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white text-sm transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                                type="button"
+                                                class="rounded-md border border-slate-700 bg-slate-800 p-2 text-white text-sm transition duration-200 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor" stroke-width="2">
                                                 <circle cx="12" cy="5" r="1"/>
@@ -162,7 +169,7 @@
                                             x-transition:leave="transition ease-in duration-100"
                                             x-transition:leave-start="opacity-100 transform scale-100"
                                             x-transition:leave-end="opacity-0 transform scale-95"
-                                            class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg ring-1 ring-black/30 z-50 overflow-hidden text-left divide-y divide-gray-700">
+                                            class="absolute left-0 z-50 mt-2 w-48 origin-top-left rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800 md:left-auto md:right-0 md:origin-top-right">
 
                                             {{-- 👁️ Detail --}}
                                             <button onclick="showDetail({{ $app->id }})"
@@ -263,15 +270,16 @@
                         </tr>
                     @endforelse
                 </tbody>
-            </table>
-        </div>
+                </table>
+                    </div>
+                </div>
+            </div>
 
-        {{-- Pagination --}}
-        <div class="p-4">
-            {{ $apps->withQueryString()->links() }}
+            <div class="p-4 border-t border-gray-700">
+                {{ $apps->withQueryString()->links() }}
+            </div>
         </div>
     </div>
-</div>
 
 <!-- Modal Detail -->
 <div id="detailModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center">

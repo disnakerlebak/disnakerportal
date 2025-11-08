@@ -15,8 +15,8 @@
 
     $baseClasses = 'flex w-full items-center gap-3 px-3 py-2 rounded-md transition-colors duration-150';
     $stateClasses = $isActive
-        ? 'bg-blue-600 text-white shadow-sm'
-        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800';
+        ? 'bg-indigo-600 text-white shadow-sm'
+        : 'text-slate-300 hover:bg-slate-800';
 
     $iconMarkup = $icon instanceof \Illuminate\Contracts\Support\Htmlable
         ? $icon->toHtml()
