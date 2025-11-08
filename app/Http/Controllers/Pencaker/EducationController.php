@@ -12,6 +12,12 @@ class EducationController extends Controller
 {
     public function index(Request $request)
     {
+        $repairMode = $request->session()->get('ak1_repair_mode', false);
+
+        if ($repairMode) {
+            return redirect()->route('pencaker.card.repair');
+        }
+
         return redirect()
             ->route('pencaker.profile')
             ->with('accordion', 'education');
@@ -24,7 +30,9 @@ class EducationController extends Controller
 
     public function store(Request $request)
     {
-        if ($this->isEditingLocked($request->user()->id)) {
+        $repairMode = $request->session()->get('ak1_repair_mode', false) || $request->boolean('repair_mode');
+
+        if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Menambah pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
         $validated = $request->validate([
@@ -38,6 +46,10 @@ class EducationController extends Controller
         $profile = JobseekerProfile::firstOrCreate(['user_id' => $request->user()->id]);
 
         $profile->educations()->create($validated);
+
+        if ($repairMode) {
+            return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pendidikan berhasil ditambahkan.');
+        }
 
         return redirect()
             ->route('pencaker.profile')
@@ -54,7 +66,9 @@ class EducationController extends Controller
     public function update(Request $request, Education $education)
     {
         $this->authorizeEducation($education);
-        if ($this->isEditingLocked($request->user()->id)) {
+        $repairMode = $request->session()->get('ak1_repair_mode', false) || $request->boolean('repair_mode');
+
+        if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Mengubah pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
 
@@ -68,6 +82,10 @@ class EducationController extends Controller
 
         $education->update($validated);
 
+        if ($repairMode) {
+            return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pendidikan berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('pencaker.profile')
             ->with('success', 'Riwayat pendidikan berhasil diperbarui.')
@@ -79,13 +97,19 @@ class EducationController extends Controller
             ->route('pencaker.profile')
             ->with('accordion', 'education');
     }
-    public function destroy(Education $education)
+    public function destroy(Request $request, Education $education)
     {
         $this->authorizeEducation($education);
-        if ($this->isEditingLocked(auth()->id())) {
+        $repairMode = $request->session()->get('ak1_repair_mode', false);
+
+        if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Menghapus pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
         $education->delete();
+        if ($repairMode) {
+            return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pendidikan dihapus.');
+        }
+
         return redirect()
             ->route('pencaker.profile')
             ->with('success', 'Riwayat pendidikan dihapus.')

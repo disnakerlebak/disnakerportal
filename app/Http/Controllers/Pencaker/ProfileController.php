@@ -55,7 +55,9 @@ class ProfileController extends Controller
     // 🔹 Update data diri dari form modal
     public function update(Request $request)
     {
-        if ($this->isEditingLocked($request->user()->id)) {
+        $repairMode = $request->boolean('repair_mode') || $request->session()->get('ak1_repair_mode', false);
+
+        if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Perubahan data diri dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
         $userId = $request->user()->id;
@@ -93,10 +95,11 @@ class ProfileController extends Controller
             'description' => $profile->wasRecentlyCreated ? 'Isi Data Diri pertama kali' : 'Perbarui Data Diri',
         ]);
 
-        return redirect()
-            ->route('pencaker.profile')
-            ->with('success', 'Data diri berhasil diperbarui!')
-            ->with('accordion', 'profile');
+        $redirectRoute = $repairMode ? 'pencaker.card.repair' : 'pencaker.profile';
+        $redirect = redirect()->route($redirectRoute)
+            ->with('success', 'Data diri berhasil diperbarui!');
+
+        return $repairMode ? $redirect : $redirect->with('accordion', 'profile');
 
     }
 

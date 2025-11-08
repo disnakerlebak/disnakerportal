@@ -18,11 +18,11 @@ class JobseekerController extends Controller
     {
         // Hanya user yang punya CardApplication berstatus "Disetujui"
         $users = User::query()
-            ->whereHas('cardApplications', fn($q) => $q->where('status', 'Disetujui'))
+            ->whereHas('cardApplications', fn($q) => $q->where('status', 'Disetujui')->where('is_active', true))
             ->with([
                 'jobseekerProfile',
                 // ambil 1 aplikasi AK1 yang disetujui paling terbaru (untuk foto/berkas)
-                'cardApplications' => fn($q) => $q->where('status', 'Disetujui')->latest()->limit(1),
+                'cardApplications' => fn($q) => $q->where('status', 'Disetujui')->where('is_active', true)->latest()->limit(1),
             ])
             ->latest()
             ->paginate(20);
@@ -47,6 +47,7 @@ class JobseekerController extends Controller
         $preference  = JobPreference::where('user_id', $user->id)->first();
         $latestApp   = CardApplication::where('user_id', $user->id)
                             ->where('status', 'Disetujui')
+                            ->where('is_active', true)
                             ->latest()
                             ->first();
 

@@ -38,6 +38,7 @@
                         <th class="p-3 text-center whitespace-nowrap">Pemohon</th>
                         <th class="p-3 text-center whitespace-nowrap">Tanggal</th>
                         <th class="p-3 text-center whitespace-nowrap">Status</th>
+                        <th class="p-3 text-center whitespace-nowrap">Tipe Pengajuan</th>
                         <th class="p-3 text-center whitespace-nowrap">Keterangan</th>
                         <th class="p-3 text-center whitespace-nowrap">Nomor AK/1</th>
                         <th class="p-3 text-center whitespace-nowrap">Ditangani Oleh</th>
@@ -57,6 +58,12 @@
                         default => 'bg-gray-700 text-gray-300',
                           };
 
+                            $typeLabel = match($app->type) {
+                                'perbaikan' => 'Perbaikan',
+                                'perpanjangan' => 'Perpanjangan',
+                                default => 'Pengajuan Baru',
+                            };
+
                             $latestLog = $app->logs->first();
                             $catatan = '';
                             if (in_array($app->status, ['Ditolak', 'Revisi Diminta']) && $latestLog?->notes) {
@@ -66,7 +73,7 @@
 
                         <tr class="border-b border-gray-700 hover:bg-gray-700/40 transition">
                             @php
-                                $logPayload = $app->logs->map(function ($log) {
+                                $logPayload = $app->logs->sortBy('created_at')->values()->map(function ($log) {
                                     return [
                                         'id'          => $log->id,
                                         'action'     => $log->action,
@@ -95,6 +102,11 @@
                                 <span class="px-2 py-1 rounded text-xs font-medium {{ $badgeClass }}">
                                     {{ $app->status }}
                                 </span>
+                            </td>
+
+                            {{-- Tipe Pengajuan --}}
+                            <td class="p-3 align-top text-center whitespace-nowrap text-sm text-gray-200">
+                                {{ $typeLabel }}
                             </td>
 
                             {{-- Keterangan --}}
@@ -325,7 +337,7 @@
       @csrf
       <p class="text-sm text-gray-300 leading-relaxed">
         Apakah Anda yakin ingin membatalkan persetujuan pengajuan ini? Status akan kembali menjadi
-        <span class="font-semibold text-yellow-300">Menunggu Verifikasi</span>.
+        <span class="font-semibold text-yellow-300">Revisi Diminta</span> sehingga pemohon dapat memperbarui data.
       </p>
       <div>
         <label class="block text-sm font-medium text-gray-300 mb-1" for="unapproveNotes">Catatan (opsional)</label>
@@ -367,6 +379,86 @@
 function closeModal() {
   document.getElementById('detailModal').classList.add('hidden');
 }
+function renderSnapshotBlock(title, snapshot) {
+  if (!snapshot) return '';
+
+  const profile = snapshot.profile || {};
+  const educations = Array.isArray(snapshot.educations) ? snapshot.educations : [];
+  const trainings = Array.isArray(snapshot.trainings) ? snapshot.trainings : [];
+  const documents = Array.isArray(snapshot.documents) ? snapshot.documents : [];
+
+  const profileMap = [
+    ['Nama Lengkap', profile.nama_lengkap],
+    ['NIK', profile.nik],
+    ['Tempat Lahir', profile.tempat_lahir],
+    ['Tanggal Lahir', profile.tanggal_lahir],
+    ['Jenis Kelamin', profile.jenis_kelamin],
+    ['Agama', profile.agama],
+    ['Status', profile.status_perkawinan],
+    ['Pendidikan Terakhir', profile.pendidikan_terakhir],
+    ['Alamat', profile.alamat_lengkap],
+    ['Kecamatan', profile.domisili_kecamatan],
+    ['No. Telepon', profile.no_telepon],
+  ].map(([label, value]) => `
+      <div class="flex text-xs sm:text-sm text-gray-300">
+        <span class="w-32 text-gray-400">${label}</span>
+        <span class="flex-1">${value ?? '-'}</span>
+      </div>
+  `).join('');
+
+  const eduList = educations.length
+    ? `<ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-gray-300">${educations.map(e => `<li>${e.tingkat} - ${e.nama_institusi} (${e.tahun_mulai ?? '-'} - ${e.tahun_selesai ?? '-'})</li>`).join('')}</ul>`
+    : '<p class="text-xs text-gray-500">Tidak ada data</p>';
+
+  const trainingList = trainings.length
+    ? `<ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-gray-300">${trainings.map(t => `<li>${t.jenis_pelatihan} - ${t.lembaga_pelatihan} (${t.tahun ?? '-'})</li>`).join('')}</ul>`
+    : '<p class="text-xs text-gray-500">Tidak ada data</p>';
+
+  const documentList = documents.length
+    ? `<ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-gray-300">${documents.map(d => `<li>${d.type ?? '-'} : ${d.file_path ?? '-'}</li>`).join('')}</ul>`
+    : '<p class="text-xs text-gray-500">Tidak ada data</p>';
+
+  return `
+    <div class="bg-gray-900/50 border border-gray-700 rounded-xl p-4 space-y-4">
+      <h4 class="text-sm font-semibold text-gray-100">${title}</h4>
+      <div class="space-y-2">${profileMap}</div>
+      <div>
+        <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Riwayat Pendidikan</p>
+        ${eduList}
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Riwayat Pelatihan</p>
+        ${trainingList}
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Dokumen</p>
+        ${documentList}
+      </div>
+    </div>
+  `;
+}
+
+function renderDocumentCard(label, contentHtml) {
+  return `
+    <div class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">${label}</p>
+      ${contentHtml || '<p class="text-xs text-gray-500">Tidak ada</p>'}
+    </div>
+  `;
+}
+
+function renderDocumentsSection(fotoHtml, ktpHtml, ijazahHtml) {
+  return `
+    <div class="border-t border-gray-700 pt-4 mt-6">
+      <h3 class="font-semibold text-lg mb-3">Dokumen Terunggah</h3>
+      <div class="grid gap-6 md:grid-cols-3">
+        ${renderDocumentCard('Foto', fotoHtml)}
+        ${renderDocumentCard('KTP', ktpHtml)}
+        ${renderDocumentCard('Ijazah', ijazahHtml)}
+      </div>
+    </div>
+  `;
+}
         function handleReason(form, message) {
             const reason = prompt(message);
             if (reason === null) return false;        // batal
@@ -407,6 +499,28 @@ function closeModal() {
     const ijazah = app.ijazah_file
         ? `<img src="/storage/${app.ijazah_file}" class="h-28 w-auto rounded border border-gray-700 shadow cursor-pointer" onclick="window.open('/storage/${app.ijazah_file}', '_blank')">`
         : `<div class="h-28 w-40 flex items-center justify-center border border-gray-700 rounded-lg text-gray-500">Tidak ada file</div>`;
+
+    const documentsSection = renderDocumentsSection(foto, ktp, ijazah);
+
+    if (app.type === 'perbaikan') {
+      const blocks = [];
+      if (app.snapshot_before) {
+        blocks.push(renderSnapshotBlock('Data Sebelum Perbaikan', app.snapshot_before));
+      }
+      if (app.snapshot_after) {
+        blocks.push(renderSnapshotBlock('Data Setelah Perbaikan', app.snapshot_after));
+      }
+
+      body.innerHTML = `
+        <div class="space-y-6">
+          ${blocks.length
+            ? `<div class="grid gap-4 md:grid-cols-2">${blocks.join('')}</div>`
+            : '<p class="text-gray-400 text-sm">Tidak ada snapshot pembanding.</p>'}
+          ${documentsSection}
+        </div>
+      `;
+      return;
+    }
 
     body.innerHTML = `
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
@@ -456,30 +570,31 @@ function closeModal() {
         }
       </div>
 
-      <div class="border-t border-gray-700 pt-4 mt-4">
-        <h3 class="font-semibold text-lg mb-3">Dokumen Terunggah</h3>
-        <div class="flex flex-wrap gap-4">
-          <div>
-            <p class="text-sm mb-2 font-medium text-gray-300">KTP</p>
-            ${ktp}
-          </div>
-          <div>
-            <p class="text-sm mb-2 font-medium text-gray-300">Ijazah</p>
-            ${ijazah}
-          </div>
-        </div>
-      </div>
+      ${documentsSection}
     `;
+
+    if (app.snapshot_before || app.snapshot_after) {
+      const blocks = [];
+      if (app.snapshot_before) {
+        blocks.push(renderSnapshotBlock(app.type === 'perbaikan' ? 'Data Sebelum Perbaikan' : 'Data Sebelumnya', app.snapshot_before));
+      }
+      if (app.snapshot_after) {
+        blocks.push(renderSnapshotBlock(app.type === 'perbaikan' ? 'Data Setelah Perbaikan' : 'Data Saat Pengajuan', app.snapshot_after));
+      }
+      if (blocks.length) {
+        body.innerHTML += `
+          <div class="mt-6 space-y-3">
+            <h3 class="text-sm font-semibold text-gray-200 uppercase tracking-wide">Perbandingan Data</h3>
+            <div class="grid gap-4 md:grid-cols-2">${blocks.join('')}</div>
+          </div>
+        `;
+      }
+    }
   } catch (err) {
     console.error(err);
     body.innerHTML = `<p class="text-red-400">Gagal memuat detail.</p>`;
   }
 }
-
-function closeModal() {
-  document.getElementById('detailModal').classList.add('hidden');
-}
-
 // === Log Modal ===
 const logModalEl = document.getElementById('logModal');
 const logModalBody = document.getElementById('logModalBody');
@@ -496,6 +611,7 @@ const actionLabels = {
   printed: 'Dicetak',
   picked_up: 'Diambil',
   submit: 'Pengajuan Baru',
+  repair_submit: 'Pengajuan Perbaikan',
   resubmit: 'Pengajuan Ulang',
   unapprove: 'Persetujuan Dibatalkan',
 };
@@ -506,6 +622,7 @@ const actionColors = {
   printed: 'bg-sky-400',
   picked_up: 'bg-sky-500',
   submit: 'bg-indigo-400',
+  repair_submit: 'bg-indigo-500',
   resubmit: 'bg-indigo-500',
   unapprove: 'bg-orange-400',
 };

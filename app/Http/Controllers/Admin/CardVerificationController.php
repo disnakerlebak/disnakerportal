@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // pastikan sudah install barryvdh/laravel-dompdf
 use App\Models\RejectionReason;
+use App\Support\CardApplicationSnapshot;
 
 class CardVerificationController extends Controller
 {
@@ -41,7 +42,7 @@ class CardVerificationController extends Controller
     return DB::transaction(function () use ($application, $request) {
 
         // 🔒 Ambil data terbaru dan kunci agar tidak diproses ganda oleh admin lain
-        $app = CardApplication::whereKey($application->id)->lockForUpdate()->first();
+        $app = CardApplication::whereKey($application->id)->lockForUpdate()->with('parent')->first();
 
         // 🚫 Pastikan belum diproses admin lain
         if (!in_array($app->status, ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi'])) {
@@ -51,24 +52,27 @@ class CardVerificationController extends Controller
         // ==============================
         // 🔢 Generate Nomor AK1 Unik
         // ==============================
-        $prefix = 'DTK-AK1';
-        $monthYear = now()->format('my'); // contoh: 1025
-
-        // Ambil nomor AK1 terakhir dari tahun berjalan yang sudah disetujui
-        $latestAk1 = CardApplication::whereYear('created_at', now()->year)
-            ->where('status', 'Disetujui')
-            ->whereNotNull('nomor_ak1')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        // Tentukan nomor urut berikutnya
-        if ($latestAk1 && preg_match('/DTK-AK1-(\d+)-/', $latestAk1->nomor_ak1, $m)) {
-            $nextNumber = str_pad(((int) $m[1]) + 1, 4, '0', STR_PAD_LEFT);
+        $nomorAk1 = $app->nomor_ak1;
+        if ($app->type === 'perbaikan') {
+            $nomorAk1 = $app->parent?->nomor_ak1 ?: $nomorAk1;
         } else {
-            $nextNumber = '0001';
-        }
+            $prefix = 'DTK-AK1';
+            $monthYear = now()->format('my'); // contoh: 1025
 
-        $nomorAk1 = "{$prefix}-{$nextNumber}-{$monthYear}";
+            $latestAk1 = CardApplication::whereYear('created_at', now()->year)
+                ->where('status', 'Disetujui')
+                ->whereNotNull('nomor_ak1')
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($latestAk1 && preg_match('/DTK-AK1-(\d+)-/', $latestAk1->nomor_ak1, $m)) {
+                $nextNumber = str_pad(((int) $m[1]) + 1, 4, '0', STR_PAD_LEFT);
+            } else {
+                $nextNumber = '0001';
+            }
+
+            $nomorAk1 = "{$prefix}-{$nextNumber}-{$monthYear}";
+        }
 
         // ==============================
         // 💾 Update Data Pengajuan
@@ -77,7 +81,17 @@ class CardVerificationController extends Controller
             'status'      => 'Disetujui',
             'nomor_ak1'   => $nomorAk1,
             'assigned_to' => $request->user()->id,
+            'approved_at' => now(),
+            'is_active'   => true,
         ]);
+
+        if ($app->type === 'perbaikan' && $app->parent) {
+            $app->parent->update(['is_active' => false]);
+        }
+
+        $app->loadMissing('documents', 'user.jobseekerProfile.educations', 'user.jobseekerProfile.trainings');
+        $app->snapshot_after = CardApplicationSnapshot::capture($app);
+        $app->save();
 
         // ==============================
         // 🧠 Catat Aktivitas ke Log
@@ -111,7 +125,11 @@ class CardVerificationController extends Controller
         // ==============================
         // ✅ Selesai
         // ==============================
-        return back()->with('success', "Pengajuan disetujui. Nomor AK1: {$nomorAk1}");
+        $message = $app->type === 'perbaikan'
+            ? "Perbaikan disetujui. Nomor AK1 tetap: {$nomorAk1}"
+            : "Pengajuan disetujui. Nomor AK1: {$nomorAk1}";
+
+        return back()->with('success', $message);
     });
 }
 
@@ -207,9 +225,9 @@ class CardVerificationController extends Controller
 
             $from = $app->status;
             $app->update([
-                'status' => 'Menunggu Verifikasi',
-                'nomor_ak1' => null,
+                'status' => 'Revisi Diminta',
                 'assigned_to' => null,
+                'is_active' => false,
             ]);
 
             CardApplicationLog::create([
@@ -217,13 +235,13 @@ class CardVerificationController extends Controller
                 'actor_id'    => $request->user()->id,
                 'action'      => 'unapprove',
                 'from_status' => $from,
-                'to_status'   => 'Menunggu Verifikasi',
+                'to_status'   => 'Revisi Diminta',
                 'notes'       => $validated['notes'] ?? null,
                 'ip'          => $request->ip(),
                 'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
             ]);
 
-            return back()->with('success', 'Persetujuan dibatalkan dan status dikembalikan ke Menunggu Verifikasi.');
+            return back()->with('success', 'Persetujuan dibatalkan dan status dikembalikan ke Revisi Diminta.');
         });
     }
 
@@ -325,11 +343,15 @@ class CardVerificationController extends Controller
             'application' => [
                 'id'        => $app->id,
                 'status'    => $app->status,
+                'type'      => $app->type,
                 'nomor_ak1' => $app->nomor_ak1,
                 'tanggal'   => indoDateOnly($app->created_at),
                 'foto_closeup' => $foto,
                 'ktp_file'     => $ktp,
                 'ijazah_file'  => $ijazah,
+                'snapshot_before' => $app->snapshot_before,
+                'snapshot_after'  => $app->snapshot_after,
+                'parent_id'       => $app->parent_id,
             ],
             'profile' => [
                 'nama_lengkap'      => $profile->nama_lengkap ?? '-',

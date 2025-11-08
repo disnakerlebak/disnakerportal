@@ -118,6 +118,8 @@ Route::middleware(['auth', 'role:pencaker'])
         // Pengajuan Kartu Pencaker (AK1)
         Route::get('/card-application',  [CardApplicationController::class, 'index'])->name('card.index');
         Route::post('/card-application', [CardApplicationController::class, 'store'])->name('card.store');
+        Route::get('/card-application/repair',  [CardApplicationController::class, 'repairForm'])->name('card.repair');
+        Route::post('/card-application/repair', [CardApplicationController::class, 'submitRepair'])->name('card.repair.submit');
         // Unduh/Cetak Kartu AK1 (hanya milik sendiri dan jika disetujui)
         Route::get('/card-application/{application}/cetak', [CardApplicationController::class, 'cetakPdf'])
             ->name('card.cetak');

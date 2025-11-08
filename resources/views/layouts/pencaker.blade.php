@@ -19,12 +19,12 @@
         'logout' => new HtmlString('<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 12l3-3m0 0l-3-3m3 3h-9"/></svg>'),
     ];
 @endphp
-<body class="min-h-screen bg-gray-100 text-gray-900 transition-colors duration-300 ease-out dark:bg-gray-950 dark:text-gray-100">
+<body class="min-h-screen text-gray-100 transition-colors duration-300 ease-out bg-gray-900 dark:text-gray-100">
     <div x-data="{ sidebarOpen: false }" class="flex min-h-screen">
         <!-- Mobile top bar -->
-        <header class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white/95 px-4 py-3 shadow-sm dark:border-gray-800 dark:bg-gray-900/95 lg:hidden">
+        <header class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between border-b border-gray-200 bg-gray-900 px-4 py-3 shadow-sm dark:border-gray-800 dark:bg-gray-900/95 lg:hidden">
             <div class="flex items-center gap-3">
-                <button type="button" @click="sidebarOpen = true" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700 shadow-sm transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800" aria-label="Buka menu">
+                <button type="button" @click="sidebarOpen = true" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700 shadow-sm transition hover:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800" aria-label="Buka menu">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 6.75h16.5m-16.5 6.75h16.5"/></svg>
                 </button>
                 <div>
@@ -32,7 +32,7 @@
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ auth()->user()->name ?? 'Pencaker' }}</p>
                 </div>
             </div>
-            <button type="button" class="theme-toggle inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800" aria-label="Toggle tema">
+            <button type="button" class="theme-toggle inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800" aria-label="Toggle tema">
                 <span class="text-lg">🌙</span>
             </button>
         </header>
@@ -41,11 +41,11 @@
         <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 z-30 bg-black/60 lg:hidden" @click="sidebarOpen = false"></div>
 
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-40 w-64 transform border-r border-gray-200/80 bg-white/95 backdrop-blur transition-transform duration-200 ease-out dark:border-gray-800/70 dark:bg-gray-800/90 lg:translate-x-0" :class="{'-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen}">
+        <aside class="fixed inset-y-0 left-0 z-40 w-64 transform border-r border-gray-200/80 bg-gray-900 backdrop-blur transition-transform duration-200 ease-out dark:border-gray-800/70 dark:bg-gray-800/90 lg:translate-x-0" :class="{'-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen}">
             <div class="flex h-full flex-col">
                 <div class="flex items-center justify-between border-b border-gray-200/70 px-4 py-4 dark:border-gray-800/70 lg:hidden">
-                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">Disnaker Portal</p>
-                    <button type="button" @click="sidebarOpen = false" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800" aria-label="Tutup menu">
+                    <p class="text-sm font-semibold text-gray-100 dark:text-gray-100">Disnaker Portal</p>
+                    <button type="button" @click="sidebarOpen = false" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-900 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800" aria-label="Tutup menu">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -55,9 +55,9 @@
                     <div class="mt-4 flex items-center justify-between gap-2">
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Selamat datang,</p>
-                            <p class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ auth()->user()->name ?? 'Pencaker' }}</p>
+                            <p class="text-base font-semibold text-gray-100 dark:text-gray-100">{{ auth()->user()->name ?? 'Pencaker' }}</p>
                         </div>
-                        <button type="button" class="theme-toggle inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800" aria-label="Toggle tema">
+                        <button type="button" class="theme-toggle inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800" aria-label="Toggle tema">
                             <span class="text-lg">🌙</span>
                         </button>
                     </div>
@@ -66,10 +66,44 @@
                 <nav class="flex-1 space-y-1 overflow-y-auto px-4 py-6 text-sm font-medium">
                     <x-sidebar-link :icon="$sidebarIcons['home']" label="Beranda" :href="route('pencaker.dashboard')" />
                     <x-sidebar-link :icon="$sidebarIcons['user']" label="Profil Pencaker" :href="route('pencaker.profile')" />
-                    <x-sidebar-link :icon="$sidebarIcons['id-card']" label="Kartu AK1" :href="route('pencaker.card.index')" />
+
+                    @php
+                        $ak1Expanded = request()->routeIs('pencaker.card.*');
+                        $ak1ParentClasses = $ak1Expanded
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'text-gray-700 hover:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800';
+                        $ak1SubLink = function (string $label, string $href, bool $active = false) {
+                            $base = 'block rounded-md px-3 py-2 text-sm transition-colors';
+                            $state = $active
+                                ? 'bg-blue-500/20 text-blue-200'
+                                : 'text-gray-500 hover:text-blue-300 dark:text-gray-400 dark:hover:text-blue-200';
+                            return "<a href=\"{$href}\" class=\"{$base} {$state}\">{$label}</a>";
+                        };
+                    @endphp
+
+                    <div x-data="{ open: {{ $ak1Expanded ? 'true' : 'false' }} }" class="space-y-1">
+                        <button type="button"
+                                class="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 transition-colors duration-150 {{ $ak1ParentClasses }}"
+                                @click="open = !open">
+                            <span class="flex items-center gap-3">
+                                <span class="flex h-5 w-5 items-center justify-center text-current">{!! $sidebarIcons['id-card'] !!}</span>
+                                <span class="truncate">Kartu AK1</span>
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-collapse class="space-y-1 pl-11" x-cloak>
+                            {!! $ak1SubLink('Pengajuan Kartu AK1 Baru', route('pencaker.card.index'), request()->routeIs('pencaker.card.index')) !!}
+                            {!! $ak1SubLink('Perbaikan AK1', route('pencaker.card.repair'), request()->routeIs('pencaker.card.repair')) !!}
+                            {!! $ak1SubLink('Perpanjangan AK1', '#', request()->routeIs('pencaker.card.renew')) !!}
+                        </div>
+                    </div>
+
                     <x-sidebar-link :icon="$sidebarIcons['briefcase']" label="Lowongan Kerja" href="#" />
                     <x-sidebar-link :icon="$sidebarIcons['history']" label="Riwayat Lamaran" href="#" />
-                    <x-sidebar-link :icon="$sidebarIcons['settings']" label="Pengaturan" :href="route('profile.edit')" />
+                    <x-sidebar-link :icon="$sidebarIcons['settings']" label="Pengaturan" :href="route('pencaker.profile')" />
                 </nav>
 
                 <div class="border-t border-gray-200/70 px-4 py-6 dark:border-gray-800/70">
@@ -79,7 +113,7 @@
         </aside>
 
         <!-- Main content wrapper -->
-        <div class="flex min-h-screen w-full flex-col bg-gray-100 pt-16 transition-colors duration-300 ease-out dark:bg-gray-950 lg:ml-64 lg:pt-0">
+        <div class="flex min-h-screen w-full flex-col bg-gray-900 pt-16 transition-colors duration-300 ease-out dark:bg-gray-950 lg:ml-64 lg:pt-0">
             <main class="flex-1 px-4 pb-10 sm:px-6 lg:px-10">
                 @yield('content')
             </main>
