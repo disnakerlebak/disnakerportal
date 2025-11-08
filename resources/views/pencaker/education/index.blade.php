@@ -1,9 +1,9 @@
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.pencaker')
+@section('title', 'Dashboard')
+@section('content')
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">
             Riwayat Pendidikan
         </h2>
-    </x-slot>
 
     <div class="max-w-5xl mx-auto p-6 space-y-6">
         @php $locked = $isLocked ?? false; @endphp
@@ -75,13 +75,6 @@
         </div>
     </div>
 
-    <!-- <div>
-        <label class="block text-sm text-gray-500">Upload Ijazah (opsional)</label>
-        <input type="file" name="ijazah_file"
-               class="mt-1 w-full text-sm text-gray-300 border border-gray-700 rounded-lg p-2
-                      bg-gray-900 focus:ring-2 focus:ring-indigo-500">
-    </div> -->
-
 </x-modal-form>
 
 {{-- Modal Edit Pendidikan --}}
@@ -129,18 +122,6 @@
                           dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
         </div>
     </div>
-
-    <!-- <div>
-        <label class="block text-sm text-gray-500">Upload Ijazah (opsional)</label>
-        <input type="file" name="ijazah_file"
-               class="mt-1 w-full text-sm text-gray-300 border border-gray-700 rounded-lg p-2
-                      bg-gray-900 focus:ring-2 focus:ring-indigo-500">
-        @if($edu->ijazah_file)
-            <p class="text-xs text-gray-400 mt-1">
-                File saat ini: <a href="{{ asset('storage/'.$edu->ijazah_file) }}" target="_blank" class="text-blue-400 underline">Lihat Ijazah</a>
-            </p>
-        @endif
-    </div> -->
 
 </x-modal-form>
 @endforeach
@@ -240,4 +221,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // });
 </script>
 
-</x-app-layout>
+@endsection

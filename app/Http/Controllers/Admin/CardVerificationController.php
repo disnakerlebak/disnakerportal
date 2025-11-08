@@ -8,12 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // pastikan sudah install barryvdh/laravel-dompdf
 use App\Models\RejectionReason;
+use App\Support\CardApplicationSnapshot;
 
 class CardVerificationController extends Controller
 {
     public function index(Request $request)
 {
-    $apps = CardApplication::with(['user', 'lastHandler.actor'])
+    $apps = CardApplication::with(['user', 'lastHandler.actor', 'logs.actor'])
                 ->when($request->q, fn($q) =>
                     $q->whereHas('user', fn($u) =>
                         $u->where('name', 'like', "%{$request->q}%")
@@ -41,7 +42,7 @@ class CardVerificationController extends Controller
     return DB::transaction(function () use ($application, $request) {
 
         // 🔒 Ambil data terbaru dan kunci agar tidak diproses ganda oleh admin lain
-        $app = CardApplication::whereKey($application->id)->lockForUpdate()->first();
+        $app = CardApplication::whereKey($application->id)->lockForUpdate()->with('parent')->first();
 
         // 🚫 Pastikan belum diproses admin lain
         if (!in_array($app->status, ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi'])) {
@@ -51,24 +52,27 @@ class CardVerificationController extends Controller
         // ==============================
         // 🔢 Generate Nomor AK1 Unik
         // ==============================
-        $prefix = 'DTK-AK1';
-        $monthYear = now()->format('my'); // contoh: 1025
-
-        // Ambil nomor AK1 terakhir dari tahun berjalan yang sudah disetujui
-        $latestAk1 = CardApplication::whereYear('created_at', now()->year)
-            ->where('status', 'Disetujui')
-            ->whereNotNull('nomor_ak1')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        // Tentukan nomor urut berikutnya
-        if ($latestAk1 && preg_match('/DTK-AK1-(\d+)-/', $latestAk1->nomor_ak1, $m)) {
-            $nextNumber = str_pad(((int) $m[1]) + 1, 4, '0', STR_PAD_LEFT);
+        $nomorAk1 = $app->nomor_ak1;
+        if ($app->type === 'perbaikan') {
+            $nomorAk1 = $app->parent?->nomor_ak1 ?: $nomorAk1;
         } else {
-            $nextNumber = '0001';
-        }
+            $prefix = 'DTK-AK1';
+            $monthYear = now()->format('my'); // contoh: 1025
 
-        $nomorAk1 = "{$prefix}-{$nextNumber}-{$monthYear}";
+            $latestAk1 = CardApplication::whereYear('created_at', now()->year)
+                ->where('status', 'Disetujui')
+                ->whereNotNull('nomor_ak1')
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($latestAk1 && preg_match('/DTK-AK1-(\d+)-/', $latestAk1->nomor_ak1, $m)) {
+                $nextNumber = str_pad(((int) $m[1]) + 1, 4, '0', STR_PAD_LEFT);
+            } else {
+                $nextNumber = '0001';
+            }
+
+            $nomorAk1 = "{$prefix}-{$nextNumber}-{$monthYear}";
+        }
 
         // ==============================
         // 💾 Update Data Pengajuan
@@ -77,7 +81,17 @@ class CardVerificationController extends Controller
             'status'      => 'Disetujui',
             'nomor_ak1'   => $nomorAk1,
             'assigned_to' => $request->user()->id,
+            'approved_at' => now(),
+            'is_active'   => true,
         ]);
+
+        if ($app->type === 'perbaikan' && $app->parent) {
+            $app->parent->update(['is_active' => false]);
+        }
+
+        $app->loadMissing('documents', 'user.jobseekerProfile.educations', 'user.jobseekerProfile.trainings');
+        $app->snapshot_after = CardApplicationSnapshot::capture($app);
+        $app->save();
 
         // ==============================
         // 🧠 Catat Aktivitas ke Log
@@ -111,7 +125,11 @@ class CardVerificationController extends Controller
         // ==============================
         // ✅ Selesai
         // ==============================
-        return back()->with('success', "Pengajuan disetujui. Nomor AK1: {$nomorAk1}");
+        $message = $app->type === 'perbaikan'
+            ? "Perbaikan disetujui. Nomor AK1 tetap: {$nomorAk1}"
+            : "Pengajuan disetujui. Nomor AK1: {$nomorAk1}";
+
+        return back()->with('success', $message);
     });
 }
 
@@ -188,7 +206,42 @@ class CardVerificationController extends Controller
                 'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
             ]);
 
-            return back()->with('success', 'Permintaan revisi terkirim ke pemohon.');
+        return back()->with('success', 'Permintaan revisi terkirim ke pemohon.');
+    });
+    }
+
+    public function unapprove(CardApplication $application, Request $request)
+    {
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        return DB::transaction(function () use ($application, $request, $validated) {
+            $app = CardApplication::whereKey($application->id)->lockForUpdate()->first();
+
+            if ($app->status !== 'Disetujui') {
+                return back()->with('error', 'Pengajuan belum berstatus Disetujui.');
+            }
+
+            $from = $app->status;
+            $app->update([
+                'status' => 'Revisi Diminta',
+                'assigned_to' => null,
+                'is_active' => false,
+            ]);
+
+            CardApplicationLog::create([
+                'card_application_id' => $app->id,
+                'actor_id'    => $request->user()->id,
+                'action'      => 'unapprove',
+                'from_status' => $from,
+                'to_status'   => 'Revisi Diminta',
+                'notes'       => $validated['notes'] ?? null,
+                'ip'          => $request->ip(),
+                'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
+            ]);
+
+            return back()->with('success', 'Persetujuan dibatalkan dan status dikembalikan ke Revisi Diminta.');
         });
     }
 
@@ -290,11 +343,15 @@ class CardVerificationController extends Controller
             'application' => [
                 'id'        => $app->id,
                 'status'    => $app->status,
+                'type'      => $app->type,
                 'nomor_ak1' => $app->nomor_ak1,
                 'tanggal'   => indoDateOnly($app->created_at),
                 'foto_closeup' => $foto,
                 'ktp_file'     => $ktp,
                 'ijazah_file'  => $ijazah,
+                'snapshot_before' => $app->snapshot_before,
+                'snapshot_after'  => $app->snapshot_after,
+                'parent_id'       => $app->parent_id,
             ],
             'profile' => [
                 'nama_lengkap'      => $profile->nama_lengkap ?? '-',
@@ -316,32 +373,52 @@ class CardVerificationController extends Controller
 //cetak kartu pencaker
 public function cetakPdf($id)
 {
-    // 1. Ambil data lengkap (relasi profil, pendidikan, pelatihan, dan dokumen)
     $application = \App\Models\CardApplication::with([
         'user.jobseekerProfile.educations',
         'user.jobseekerProfile.trainings',
         'documents'
     ])->findOrFail($id);
 
-    // 2. Ambil profil pencaker melalui relasi user
-    $profile = optional($application->user)->jobseekerProfile;
+    $snapshot = $application->snapshot_after ?? null;
 
-    // 3. Ambil pendidikan & pelatihan (jika ada)
-    $educations = $profile ? $profile->educations : collect();
-    $trainings = $profile ? $profile->trainings : collect();
+    if ($snapshot) {
+        $profileArray = array_merge([
+            'nama_lengkap' => '-',
+            'nik' => '-',
+            'tempat_lahir' => '-',
+            'tanggal_lahir' => null,
+            'jenis_kelamin' => '-',
+            'agama' => '-',
+            'status_perkawinan' => '-',
+            'pendidikan_terakhir' => '-',
+            'alamat_lengkap' => '-',
+            'domisili_kecamatan' => '-',
+            'no_telepon' => '-',
+        ], $snapshot['profile'] ?? []);
 
-    // 4. Ambil pas foto dari tabel card_application_documents
-    $fotoDoc = $application->documents->firstWhere('type', 'foto_closeup');
-    $fotoPath = $fotoDoc && $fotoDoc->file_path
-        ? storage_path('app/public/' . $fotoDoc->file_path)
-        : null;
+        $profile = (object) $profileArray;
+        $educations = collect($snapshot['educations'] ?? [])->map(fn ($item) => (object) $item);
+        $trainings = collect($snapshot['trainings'] ?? [])->map(fn ($item) => (object) $item);
 
-    // 5. Pastikan file foto benar-benar ada di storage
-    if ($fotoPath && !file_exists($fotoPath)) {
-        $fotoPath = null; // fallback jika file tidak ditemukan
+        $fotoDoc = collect($snapshot['documents'] ?? [])->firstWhere('type', 'foto_closeup');
+        $fotoPath = $fotoDoc && !empty($fotoDoc['file_path'])
+            ? storage_path('app/public/' . $fotoDoc['file_path'])
+            : null;
+    } else {
+        $profile = optional($application->user)->jobseekerProfile;
+        $educations = $profile ? $profile->educations : collect();
+        $trainings = $profile ? $profile->trainings : collect();
+
+        $fotoDoc = $application->documents->firstWhere('type', 'foto_closeup');
+        $fotoPath = $fotoDoc && $fotoDoc->file_path
+            ? storage_path('app/public/' . $fotoDoc->file_path)
+            : null;
     }
 
-    // 6. Data yang dikirim ke view PDF
+    if ($fotoPath && !file_exists($fotoPath)) {
+        $fotoPath = null;
+    }
+
     $data = [
         'application' => $application,
         'profile'     => $profile,
@@ -350,11 +427,9 @@ public function cetakPdf($id)
         'fotoPath'    => $fotoPath,
     ];
 
-    // 7. Generate PDF (legal size seperti format Disnaker)
     $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.ak1_card', $data)
         ->setPaper('legal', 'portrait');
 
-    // 8. Stream hasil PDF
     $filename = 'AK1-' . ($application->nomor_ak1 ?? 'Belum-Ditetapkan') . '.pdf';
     return $pdf->stream($filename);
 }

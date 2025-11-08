@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pencaker;
 use App\Http\Controllers\Controller;
 use App\Models\JobseekerProfile;
 use App\Models\CardApplication;
+use App\Models\JobPreference;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,24 +15,49 @@ class ProfileController extends Controller
     // 🔹 Tampilkan halaman Data Diri
     public function edit(Request $request)
     {
+        $user = $request->user();
+        $userId = $user->id;
+
         $profile = JobseekerProfile::firstOrNew(
-            ['user_id' => $request->user()->id],
+            ['user_id' => $userId],
             [
-                'nama_lengkap' => $request->user()->name,
-                'email_cache'  => $request->user()->email,
+                'nama_lengkap' => $user->name,
+                'email_cache'  => $user->email,
             ]
         );
 
-        $kecamatan = $this->kecamatanLebak();
+        $profileId = $profile->id;
+        $educations = $profileId
+            ? $profile->educations()->orderBy('tahun_mulai')->get()
+            : collect();
+        $trainings = $profileId
+            ? $profile->trainings()->latest()->get()
+            : collect();
+        $works = $profileId
+            ? $profile->workExperiences()->latest()->get()
+            : collect();
+        $preference = JobPreference::where('user_id', $userId)->first();
 
-        $isLocked = $this->isEditingLocked($request->user()->id);
-        return view('pencaker.profile.edit', compact('profile', 'kecamatan', 'isLocked'));
+        $kecamatan = $this->kecamatanLebak();
+        $isLocked = $this->isEditingLocked($userId);
+
+        return view('pencaker.profile', compact(
+            'profile',
+            'kecamatan',
+            'isLocked',
+            'educations',
+            'trainings',
+            'works',
+            'preference'
+        ));
     }
 
     // 🔹 Update data diri dari form modal
     public function update(Request $request)
     {
-        if ($this->isEditingLocked($request->user()->id)) {
+        $repairMode = $request->boolean('repair_mode') || $request->session()->get('ak1_repair_mode', false);
+
+        if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Perubahan data diri dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
         $userId = $request->user()->id;
@@ -69,9 +95,11 @@ class ProfileController extends Controller
             'description' => $profile->wasRecentlyCreated ? 'Isi Data Diri pertama kali' : 'Perbarui Data Diri',
         ]);
 
-        return redirect()
-    ->to('/pencaker/profile')
-    ->with('success', 'Data diri berhasil diperbarui!');
+        $redirectRoute = $repairMode ? 'pencaker.card.repair' : 'pencaker.profile';
+        $redirect = redirect()->route($redirectRoute)
+            ->with('success', 'Data diri berhasil diperbarui!');
+
+        return $repairMode ? $redirect : $redirect->with('accordion', 'profile');
 
     }
 

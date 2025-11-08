@@ -1,9 +1,9 @@
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.pencaker')
+@section('title', 'Dashboard')
+@section('content')
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">
             Riwayat Kerja
         </h2>
-    </x-slot>
 
     <div class="max-w-5xl mx-auto p-6 space-y-6">
 
@@ -131,4 +131,4 @@
             });
         });
     </script>
-</x-app-layout>
+@endsection

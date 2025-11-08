@@ -1,9 +1,9 @@
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.pencaker')
+@section('title', 'Dashboard')
+@section('content')
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">
             Edit Riwayat Pendidikan
         </h2>
-    </x-slot>
 
     <div class="max-w-3xl mx-auto p-6 space-y-6">
         <form method="POST" action="{{ route('pencaker.education.update', $education) }}" enctype="multipart/form-data">
@@ -41,15 +41,6 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm mb-1">Upload Ijazah (opsional)</label>
-                    <input type="file" name="ijazah_file" class="w-full border rounded p-2">
-                    @if($education->ijazah_file)
-                        <p class="text-sm mt-1">File saat ini:
-                            <a href="{{ asset('storage/'.$education->ijazah_file) }}" target="_blank" class="text-blue-600">Lihat</a>
-                        </p>
-                    @endif
-                </div>
             </div>
 
             <div class="mt-6 flex justify-between">
@@ -62,4 +53,4 @@
             </div>
         </form>
     </div>
-</x-app-layout>
+@endsection

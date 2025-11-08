@@ -12,10 +12,9 @@ class WorkController extends Controller
 {
     public function index(Request $request)
     {
-        $profile = JobseekerProfile::where('user_id', $request->user()->id)->firstOrFail();
-        $works = WorkExperience::where('jobseeker_profile_id', $profile->id)->latest()->get();
-
-        return view('pencaker.work.index', compact('works'));
+        return redirect()
+            ->route('pencaker.profile')
+            ->with('accordion', 'work');
     }
 
     public function store(Request $request)
@@ -38,7 +37,10 @@ class WorkController extends Controller
 
         WorkExperience::create($validated);
 
-        return redirect()->route('pencaker.work.index')->with('success', 'Riwayat kerja berhasil ditambahkan.');
+        return redirect()
+            ->route('pencaker.profile')
+            ->with('success', 'Riwayat kerja berhasil ditambahkan.')
+            ->with('accordion', 'work');
     }
 
     public function update(Request $request, $id)
@@ -63,7 +65,10 @@ class WorkController extends Controller
 
     $work->update($validated);
 
-    return redirect()->route('pencaker.work.index')->with('success', 'Data riwayat kerja berhasil diperbarui.');
+    return redirect()
+        ->route('pencaker.profile')
+        ->with('success', 'Data riwayat kerja berhasil diperbarui.')
+        ->with('accordion', 'work');
 }
 
 
@@ -75,6 +80,9 @@ class WorkController extends Controller
 
         $work->delete();
 
-        return redirect()->route('pencaker.work.index')->with('success', 'Data riwayat kerja dihapus.');
+        return redirect()
+            ->route('pencaker.profile')
+            ->with('success', 'Data riwayat kerja dihapus.')
+            ->with('accordion', 'work');
     }
 }

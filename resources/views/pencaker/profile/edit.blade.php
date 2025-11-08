@@ -1,5 +1,7 @@
-<x-app-layout>
-<head>
+@extends('layouts.pencaker')
+
+@section('title', 'Profil Saya')
+@section('content')
 <style>
   html {
     scroll-behavior: smooth;
@@ -230,6 +232,7 @@
         </form>
     </div>
 </div>
+@endsection
 <!-- <x-toast type="success" message="Berhasil disimpan!" position="center" /> -->
 
 <script>
@@ -252,5 +255,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
-
-</x-app-layout>

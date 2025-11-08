@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\CardApplicationSnapshot;
 use App\Models\{
     JobseekerProfile,
     Education,
     Training,
     CardApplication,
-    CardApplicationDocument
+    CardApplicationDocument,
+    CardApplicationLog
 };
 
 class CardApplicationController extends Controller
@@ -24,18 +27,212 @@ class CardApplicationController extends Controller
     {
         $user = $request->user();
 
+        $request->session()->forget('ak1_repair_mode');
+
         $profile = JobseekerProfile::where('user_id', $user->id)->first();
         $educations = Education::whereHas('profile', fn($q) => $q->where('user_id', $user->id))->get();
         $trainings = Training::whereHas('profile', fn($q) => $q->where('user_id', $user->id))->get();
 
-        $application = CardApplication::with('documents')
+        $application = CardApplication::with([
+                'documents',
+                'logs' => fn($q) => $q->latest(),
+            ])
             ->where('user_id', $user->id)
             ->latest()
             ->first();
 
+        $lastApp = CardApplication::with('documents')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->skip(1)
+            ->first();
+
+        if ($application && $application->status === 'Menunggu Verifikasi' && !$application->documents->count()) {
+            $application = $lastApp ?: $application;
+        }
+
         return view('pencaker.card.index', compact(
             'profile', 'educations', 'trainings', 'application'
         ));
+    }
+
+    public function repairForm(Request $request)
+    {
+        $user = $request->user();
+
+        $activeApp = CardApplication::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->whereIn('status', ['Disetujui', 'Dicetak', 'Diambil'])
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$activeApp) {
+            return redirect()->route('pencaker.card.index')
+                ->with('error', 'Tidak ada kartu AK1 aktif yang dapat diperbaiki.');
+        }
+
+        $hasPendingRepair = CardApplication::where('user_id', $user->id)
+            ->whereIn('type', ['perbaikan'])
+            ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'])
+            ->exists();
+
+        if ($hasPendingRepair) {
+            return redirect()->route('pencaker.card.index')
+                ->with('error', 'Pengajuan perbaikan sebelumnya masih diproses.');
+        }
+
+        $request->session()->put('ak1_repair_mode', true);
+
+        $profile = JobseekerProfile::where('user_id', $user->id)->first();
+        $educations = Education::whereHas('profile', fn($q) => $q->where('user_id', $user->id))->get();
+        $trainings = Training::whereHas('profile', fn($q) => $q->where('user_id', $user->id))->get();
+
+        $activeApp->loadMissing('documents', 'logs');
+
+        $baselineSnapshot = $activeApp->snapshot_after ?? CardApplicationSnapshot::capture($activeApp);
+        if (!$activeApp->snapshot_after) {
+            $activeApp->snapshot_after = $baselineSnapshot;
+            $activeApp->save();
+        }
+
+        $currentSnapshot = CardApplicationSnapshot::captureFromContext($user, $activeApp->documents);
+        $snapshotChanged = $this->snapshotHash($baselineSnapshot) !== $this->snapshotHash($currentSnapshot);
+
+        $approvedAt = $activeApp->approved_at ?? optional($activeApp->logs->firstWhere('action', 'approve'))->created_at;
+
+        return view('pencaker.card.repair', [
+            'profile' => $profile,
+            'educations' => $educations,
+            'trainings' => $trainings,
+            'application' => $activeApp,
+            'currentSnapshot' => $currentSnapshot,
+            'snapshotChanged' => $snapshotChanged,
+            'kecamatanList' => $this->districtOptions(),
+            'approvedAt' => $approvedAt,
+        ]);
+    }
+
+    public function submitRepair(Request $request)
+    {
+        $user = $request->user();
+
+        $activeApp = CardApplication::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->whereIn('status', ['Disetujui', 'Dicetak', 'Diambil'])
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$activeApp) {
+            return redirect()->route('pencaker.card.index')->with('error', 'Tidak ada kartu AK1 aktif yang dapat diperbaiki.');
+        }
+
+        $hasPendingRepair = CardApplication::where('user_id', $user->id)
+            ->where('type', 'perbaikan')
+            ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'])
+            ->exists();
+
+        if ($hasPendingRepair) {
+            return redirect()->route('pencaker.card.index')->with('error', 'Pengajuan perbaikan sebelumnya masih diproses.');
+        }
+
+        $activeApp->loadMissing('documents');
+
+        $baselineSnapshot = $activeApp->snapshot_after ?? CardApplicationSnapshot::capture($activeApp);
+        if (!$activeApp->snapshot_after) {
+            $activeApp->snapshot_after = $baselineSnapshot;
+            $activeApp->save();
+        }
+
+        $currentSnapshot = CardApplicationSnapshot::captureFromContext($user, $activeApp->documents);
+        $hasStructureChange = $this->snapshotHash($baselineSnapshot) !== $this->snapshotHash($currentSnapshot);
+        $hasDocumentChange = $request->hasFile('foto_closeup') || $request->hasFile('ktp_file') || $request->hasFile('ijazah_file');
+
+        if (!$hasStructureChange && !$hasDocumentChange) {
+            return back()->with('error', 'Belum ada perubahan data atau dokumen yang diajukan untuk perbaikan.');
+        }
+
+        $docRules = [
+            'foto_closeup' => 'nullable|image|max:2048',
+            'ktp_file' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+            'ijazah_file' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+        ];
+
+        $request->validate($docRules);
+
+        try {
+            DB::beginTransaction();
+
+            $repairApp = CardApplication::create([
+                'user_id' => $user->id,
+                'status' => 'Menunggu Verifikasi',
+                'type' => 'perbaikan',
+                'parent_id' => $activeApp->id,
+                'nomor_ak1' => $activeApp->nomor_ak1,
+                'tanggal_pengajuan' => now(),
+                'is_active' => false,
+                'snapshot_before' => $baselineSnapshot,
+            ]);
+
+            $docTypes = [
+                'foto_closeup' => [
+                    'folder' => 'ak1/foto',
+                ],
+                'ktp_file' => [
+                    'folder' => 'ak1/ktp',
+                ],
+                'ijazah_file' => [
+                    'folder' => 'ak1/ijazah',
+                ],
+            ];
+
+            $activeDocs = $activeApp->documents->keyBy('type');
+
+            foreach ($docTypes as $input => $meta) {
+                if ($request->hasFile($input)) {
+                    $storedPath = $request->file($input)->store($meta['folder'], 'public');
+
+                    $repairApp->documents()->create([
+                        'type' => $input,
+                        'file_path' => $storedPath,
+                    ]);
+                } elseif ($activeDocs->has($input)) {
+                    $repairApp->documents()->create([
+                        'type' => $input,
+                        'file_path' => $activeDocs[$input]->file_path,
+                    ]);
+                }
+            }
+
+            $repairApp->load('documents', 'user.jobseekerProfile.educations', 'user.jobseekerProfile.trainings');
+            $repairApp->snapshot_after = CardApplicationSnapshot::capture($repairApp);
+            $repairApp->save();
+
+            CardApplicationLog::create([
+                'card_application_id' => $repairApp->id,
+                'actor_id' => $user->id,
+                'action' => 'repair_submit',
+                'from_status' => $activeApp->status,
+                'to_status' => $repairApp->status,
+                'notes' => 'Pengajuan perbaikan oleh pemohon.',
+                'ip' => $request->ip(),
+                'user_agent' => substr($request->userAgent() ?? '', 0, 255),
+            ]);
+
+            DB::commit();
+
+            $request->session()->forget('ak1_repair_mode');
+
+            return redirect()->route('pencaker.card.index')->with('success', 'Pengajuan perbaikan AK1 berhasil dikirim. Menunggu verifikasi admin.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('AK1 repair submit error', [
+                'user_id' => $user->id,
+                'msg' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal mengajukan perbaikan: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -45,7 +242,8 @@ class CardApplicationController extends Controller
     {
         $user = $request->user();
 
-        $lastApp = CardApplication::where('user_id', $user->id)
+        $lastApp = CardApplication::with('documents')
+            ->where('user_id', $user->id)
             ->latest()
             ->first();
 
@@ -54,55 +252,109 @@ class CardApplicationController extends Controller
             return back()->with('error', 'Pengajuan Anda sebelumnya masih diproses atau sudah disetujui. Tidak dapat mengajukan ulang saat ini.');
         }
 
-        // 🧩 Validasi hanya untuk file yang benar-benar diunggah
-        $validated = $request->validate([
-            'foto_closeup' => $request->hasFile('foto_closeup') ? 'image|max:2048' : 'nullable',
-            'ktp_file'     => $request->hasFile('ktp_file') ? 'mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable',
-            'ijazah_file'  => $request->hasFile('ijazah_file') ? 'mimes:jpg,jpeg,png,pdf|max:2048' : 'nullable',
-        ]);
+        $requiredDocs = [
+            'foto_closeup' => [
+                'label' => 'Foto close-up',
+                'rule'  => 'image|max:2048',
+                'folder'=> 'ak1/foto',
+            ],
+            'ktp_file' => [
+                'label' => 'Scan KTP',
+                'rule'  => 'mimes:jpg,jpeg,png,pdf|max:2048',
+                'folder'=> 'ak1/ktp',
+            ],
+            'ijazah_file' => [
+                'label' => 'Scan Ijazah Terakhir',
+                'rule'  => 'mimes:jpg,jpeg,png,pdf|max:2048',
+                'folder'=> 'ak1/ijazah',
+            ],
+        ];
+
+        $isResubmission = $request->has('is_resubmission') && $lastApp && in_array($lastApp->status, ['Ditolak', 'Revisi Diminta']);
+
+        $existingDocs = $isResubmission
+            ? $lastApp->documents->keyBy('type')
+            : collect();
+
+        $baseRules = [];
+        foreach ($requiredDocs as $field => $meta) {
+            if ($request->hasFile($field)) {
+                $baseRules[$field] = 'required|' . $meta['rule'];
+            } elseif (!$isResubmission) {
+                // Pengajuan pertama harus mengunggah semua berkas wajib
+                $baseRules[$field] = 'required|' . $meta['rule'];
+            }
+        }
+
+        $validator = Validator::make($request->all(), $baseRules);
+
+        $validator->after(function ($validator) use ($requiredDocs, $request, $existingDocs, $isResubmission) {
+            foreach ($requiredDocs as $field => $meta) {
+                $hasNew = $request->hasFile($field);
+                $hasOld = $existingDocs->has($field);
+                if (!$hasNew && (!$isResubmission || !$hasOld)) {
+                    $validator->errors()->add($field, "Dokumen {$meta['label']} wajib diunggah.");
+                }
+            }
+        });
+
+        $validator->validate();
 
         try {
             DB::beginTransaction();
 
-            // 🧱 Buat atau perbarui pengajuan baru
-            $application = CardApplication::create([
-                'user_id' => $user->id,
-                // Jika sebelumnya revisi → ubah ke status menunggu verifikasi ulang
-                'status' => ($lastApp && $lastApp->status === 'Revisi Diminta')
-                    ? 'Menunggu Revisi Verifikasi'
-                    : 'Menunggu Verifikasi',
-                'tanggal_pengajuan' => now(),
-            ]);
+            $previousStatus = $lastApp?->status;
 
-            // 📦 Daftar dokumen
-            $dokumenList = [
-                'foto_closeup' => 'ak1/foto',
-                'ktp_file'     => 'ak1/ktp',
-                'ijazah_file'  => 'ak1/ijazah',
-            ];
+            if ($isResubmission) {
+                $lastApp->update([
+                    'status' => 'Menunggu Revisi Verifikasi',
+                ]);
 
-            foreach ($dokumenList as $input => $folder) {
-                // Kalau file baru diunggah → simpan baru
+                $application = $lastApp->fresh('documents');
+            } else {
+                $application = CardApplication::create([
+                    'user_id'           => $user->id,
+                    'status'            => 'Menunggu Verifikasi',
+                    'type'              => 'baru',
+                    'tanggal_pengajuan' => now(),
+                    'is_active'         => false,
+                ]);
+                $application->load('documents');
+            }
+
+            foreach ($requiredDocs as $input => $meta) {
+                $folder = $meta['folder'];
                 if ($request->hasFile($input)) {
                     $storedPath = $request->file($input)->store($folder, 'public');
-                    CardApplicationDocument::create([
-                        'card_application_id' => $application->id,
-                        'type' => $input,
-                        'file_path' => $storedPath,
-                    ]);
-                }
-                // Kalau file tidak diunggah ulang, tapi ada dari revisi sebelumnya → duplikasi path lama
-                elseif ($lastApp) {
-                    $oldDoc = $lastApp->documents()->where('type', $input)->first();
-                    if ($oldDoc) {
-                        CardApplicationDocument::create([
-                            'card_application_id' => $application->id,
-                            'type' => $oldDoc->type,
-                            'file_path' => $oldDoc->file_path,
-                        ]);
+                    if ($existingDocs->has($input)) {
+                        Storage::disk('public')->delete($existingDocs[$input]->file_path);
                     }
+
+                    $application->documents()->updateOrCreate(
+                        ['type' => $input],
+                        ['file_path' => $storedPath]
+                    );
+                } elseif (!$isResubmission) {
+                    // seharusnya tidak terjadi karena validasi, tapi sebagai pengaman
+                    throw new \RuntimeException("Dokumen {$input} belum diunggah");
                 }
             }
+
+            $application->loadMissing('user.jobseekerProfile.educations', 'user.jobseekerProfile.trainings', 'documents');
+            $application->snapshot_after = CardApplicationSnapshot::capture($application);
+            $application->is_active = false;
+            $application->save();
+
+            CardApplicationLog::create([
+                'card_application_id' => $application->id,
+                'actor_id'           => $user->id,
+                'action'             => $isResubmission ? 'resubmit' : 'submit',
+                'from_status'        => $isResubmission ? $previousStatus : null,
+                'to_status'          => $application->status,
+                'notes'              => $isResubmission ? 'Pengajuan ulang oleh pemohon.' : 'Pengajuan baru oleh pemohon.',
+                'ip'                 => $request->ip(),
+                'user_agent'         => substr($request->userAgent() ?? '', 0, 255),
+            ]);
 
             DB::commit();
 
@@ -169,5 +421,24 @@ class CardApplicationController extends Controller
         $pdf = Pdf::loadView('pdf.ak1_card', $data)->setPaper('legal', 'portrait');
         $filename = 'AK1-' . ($application->nomor_ak1 ?? 'Belum-Ditetapkan') . '.pdf';
         return $pdf->stream($filename);
+    }
+
+    protected function snapshotHash(?array $snapshot): string
+    {
+        if (!$snapshot) {
+            return '';
+        }
+
+        return md5(json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    private function districtOptions(): array
+    {
+        return [
+            'Bayah','Banjarsari','Bojongmanik','Cibadak','Cibeber','Cigemblong','Cihara','Cijaku',
+            'Cikulur','Cileles','Cilograng','Cimarga','Cipanas','Cirinten','Curugbitung','Gunungkencana',
+            'Kalanganyar','Lebakgedong','Leuwidamar','Maja','Malingping','Muncang','Panggarangan',
+            'Rangkasbitung','Sajira','Sobang','Wanasalam','Warunggunung'
+        ];
     }
 }

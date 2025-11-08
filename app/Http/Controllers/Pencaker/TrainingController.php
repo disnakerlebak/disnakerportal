@@ -13,16 +13,16 @@ class TrainingController extends Controller
 {
     public function index(Request $request)
     {
-        $profile = JobseekerProfile::where('user_id', $request->user()->id)->firstOrFail();
-        $trainings = Training::where('jobseeker_profile_id', $profile->id)->latest()->get();
-
-        $isLocked = $this->isEditingLocked($request->user()->id);
-        return view('pencaker.training.index', compact('trainings', 'isLocked'));
+        return redirect()
+            ->route('pencaker.profile')
+            ->with('accordion', 'training');
     }
 
     public function store(Request $request)
     {
-        if ($this->isEditingLocked($request->user()->id)) {
+        $repairMode = $request->session()->get('ak1_repair_mode', false) || $request->boolean('repair_mode');
+
+        if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Menambah pelatihan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
         $validated = $request->validate([
@@ -43,14 +43,23 @@ class TrainingController extends Controller
 
         Training::create($validated);
 
-        return redirect()->route('pencaker.training.index')->with('success', 'Riwayat pelatihan berhasil ditambahkan.');
-    }
+        if ($repairMode) {
+            return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pelatihan berhasil ditambahkan.');
+        }
+
+        return redirect()
+            ->route('pencaker.profile')
+            ->with('success', 'Riwayat pelatihan berhasil ditambahkan.')
+            ->with('accordion', 'training');
+}
 
     public function update(Request $request, $id)
 {
     $training = \App\Models\Training::findOrFail($id);
 
-    if ($this->isEditingLocked($request->user()->id)) {
+    $repairMode = $request->session()->get('ak1_repair_mode', false) || $request->boolean('repair_mode');
+
+    if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
         return back()->with('error', 'Mengubah pelatihan dikunci karena pengajuan AK1 sedang diproses/diterima.');
     }
 
@@ -71,12 +80,21 @@ class TrainingController extends Controller
 
     $training->update($validated);
 
-    return redirect()->route('pencaker.training.index')->with('success', 'Data pelatihan berhasil diperbarui.');
+    if ($repairMode) {
+        return redirect()->route('pencaker.card.repair')->with('success', 'Data pelatihan berhasil diperbarui.');
+    }
+
+    return redirect()
+        ->route('pencaker.profile')
+        ->with('success', 'Data pelatihan berhasil diperbarui.')
+        ->with('accordion', 'training');
 }
 
-    public function destroy(Training $training)
+    public function destroy(Request $request, Training $training)
     {
-        if ($this->isEditingLocked(auth()->id())) {
+        $repairMode = $request->session()->get('ak1_repair_mode', false);
+
+        if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Menghapus pelatihan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
         if ($training->sertifikat_file) {
@@ -84,7 +102,14 @@ class TrainingController extends Controller
         }
         $training->delete();
 
-        return redirect()->route('pencaker.training.index')->with('success', 'Data pelatihan berhasil dihapus.');
+        if ($repairMode) {
+            return redirect()->route('pencaker.card.repair')->with('success', 'Data pelatihan berhasil dihapus.');
+        }
+
+        return redirect()
+            ->route('pencaker.profile')
+            ->with('success', 'Data pelatihan berhasil dihapus.')
+            ->with('accordion', 'training');
 }
 
     private function isEditingLocked(int $userId): bool
