@@ -449,7 +449,8 @@ class CardApplicationController extends Controller
             ->first();
 
         // 🚧 Cegah duplikasi pengajuan jika masih aktif
-        if ($lastApp && !in_array($lastApp->status, ['Ditolak', 'Revisi Diminta'])) {
+        // Izinkan ajukan ulang untuk Ditolak, Revisi Diminta, dan Batal
+        if ($lastApp && !in_array($lastApp->status, ['Ditolak', 'Revisi Diminta', 'Batal'])) {
             return back()->with('error', 'Pengajuan Anda sebelumnya masih diproses atau sudah disetujui. Tidak dapat mengajukan ulang saat ini.');
         }
 
@@ -471,7 +472,7 @@ class CardApplicationController extends Controller
             ],
         ];
 
-        $isResubmission = $request->has('is_resubmission') && $lastApp && in_array($lastApp->status, ['Ditolak', 'Revisi Diminta']);
+        $isResubmission = $request->has('is_resubmission') && $lastApp && in_array($lastApp->status, ['Ditolak', 'Revisi Diminta', 'Batal']);
 
         $existingDocs = $isResubmission
             ? $lastApp->documents->keyBy('type')

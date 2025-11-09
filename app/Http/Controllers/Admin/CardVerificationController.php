@@ -8,9 +8,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // pastikan sudah install barryvdh/laravel-dompdf
 use App\Support\CardApplicationSnapshot;
+use App\Notifications\CardApplicationStatusNotification;
 
 class CardVerificationController extends Controller
 {
+    private function routeForType(?string $type): string
+    {
+        return match (strtolower($type ?? '')) {
+            'perbaikan' => route('pencaker.card.repair'),
+            'perpanjangan' => route('pencaker.card.renewal'),
+            default => route('pencaker.card.index'),
+        };
+    }
     public function index()
     {
         return view('admin.ak1.index');
@@ -91,6 +100,18 @@ class CardVerificationController extends Controller
             'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
         ]);
 
+        // 🔔 Notifikasi ke pemohon
+        try {
+            $url = $this->routeForType($app->type);
+            $title = 'Pengajuan AK1 Disetujui';
+            $msg = $app->type === 'perbaikan'
+                ? 'Perbaikan AK1 Anda disetujui. Nomor AK1 tetap: ' . ($nomorAk1 ?? '-')
+                : 'Pengajuan AK1 Anda disetujui. Nomor AK1: ' . ($nomorAk1 ?? '-');
+            $app->user?->notify(new CardApplicationStatusNotification($title, $msg, $url));
+        } catch (\Throwable $e) {
+            \Log::warning('notify_approve_failed', ['app_id' => $app->id, 'error' => $e->getMessage()]);
+        }
+
         // ==============================
         // 🔠 Konversi Data Profil ke Huruf Besar
         // ==============================
@@ -162,6 +183,16 @@ class CardVerificationController extends Controller
             'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
         ]);
 
+        // 🔔 Notifikasi ke pemohon
+        try {
+            $url = $this->routeForType($app->type);
+            $title = 'Pengajuan AK1 Ditolak';
+            $msg = 'Pengajuan AK1 belum dapat disetujui: ' . $fullNotes;
+            $app->user?->notify(new CardApplicationStatusNotification($title, $msg, $url));
+        } catch (\Throwable $e) {
+            \Log::warning('notify_reject_failed', ['app_id' => $app->id, 'error' => $e->getMessage()]);
+        }
+
         return back()->with('success', 'Pengajuan telah ditolak dengan alasan: ' . $reasonText);
     });
 }
@@ -190,6 +221,16 @@ class CardVerificationController extends Controller
                 'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
             ]);
 
+        // 🔔 Notifikasi revisi
+        try {
+            $url = $this->routeForType($app->type);
+            $title = 'Revisi Diminta';
+            $msg = 'Admin meminta revisi pada pengajuan AK1 Anda: ' . ($request->input('notes') ?? '');
+            $app->user?->notify(new CardApplicationStatusNotification($title, $msg, $url));
+        } catch (\Throwable $e) {
+            \Log::warning('notify_revision_failed', ['app_id' => $app->id, 'error' => $e->getMessage()]);
+        }
+
         return back()->with('success', 'Permintaan revisi terkirim ke pemohon.');
     });
     }
@@ -208,10 +249,12 @@ class CardVerificationController extends Controller
             }
 
             $from = $app->status;
+            // Ubah menjadi Batal dan kosongkan nomor AK1
             $app->update([
-                'status' => 'Revisi Diminta',
+                'status' => 'Batal',
                 'assigned_to' => null,
                 'is_active' => false,
+                'nomor_ak1' => null,
             ]);
 
             CardApplicationLog::create([
@@ -219,13 +262,23 @@ class CardVerificationController extends Controller
                 'actor_id'    => $request->user()->id,
                 'action'      => 'unapprove',
                 'from_status' => $from,
-                'to_status'   => 'Revisi Diminta',
+                'to_status'   => 'Batal',
                 'notes'       => $validated['notes'] ?? null,
                 'ip'          => $request->ip(),
                 'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
             ]);
 
-            return back()->with('success', 'Persetujuan dibatalkan dan status dikembalikan ke Revisi Diminta.');
+            // 🔔 Notifikasi dibatalkan
+            try {
+                $url = $this->routeForType($app->type);
+                $title = 'Persetujuan Dibatalkan';
+                $msg = 'Pengajuan AK1 Anda dibatalkan oleh admin. Silakan perbarui data/dokumen dan ajukan ulang.';
+                $app->user?->notify(new CardApplicationStatusNotification($title, $msg, $url));
+            } catch (\Throwable $e) {
+                \Log::warning('notify_unapprove_failed', ['app_id' => $app->id, 'error' => $e->getMessage()]);
+            }
+
+            return back()->with('success', 'Persetujuan dibatalkan. Status diubah menjadi Batal dan nomor AK1 dinonaktifkan.');
         });
     }
 
@@ -253,6 +306,16 @@ class CardVerificationController extends Controller
                 'ip'          => $request->ip(),
                 'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
             ]);
+
+            // 🔔 Notifikasi dicetak
+            try {
+                $url = $this->routeForType($app->type);
+                $title = 'Kartu AK1 Dicetak';
+                $msg = 'Kartu AK1 Anda sudah dicetak. Silakan ikuti prosedur pengambilan.';
+                $app->user?->notify(new CardApplicationStatusNotification($title, $msg, $url));
+            } catch (\Throwable $e) {
+                \Log::warning('notify_printed_failed', ['app_id' => $app->id, 'error' => $e->getMessage()]);
+            }
 
             return back()->with('success', 'Status diubah menjadi Dicetak.');
         });
@@ -282,6 +345,16 @@ class CardVerificationController extends Controller
                 'ip'          => $request->ip(),
                 'user_agent'  => substr($request->userAgent() ?? '', 0, 255),
             ]);
+
+            // 🔔 Notifikasi diambil
+            try {
+                $url = $this->routeForType($app->type);
+                $title = 'Kartu AK1 Diambil';
+                $msg = 'Kartu AK1 Anda telah ditandai diambil.';
+                $app->user?->notify(new CardApplicationStatusNotification($title, $msg, $url));
+            } catch (\Throwable $e) {
+                \Log::warning('notify_picked_failed', ['app_id' => $app->id, 'error' => $e->getMessage()]);
+            }
 
             return back()->with('success', 'Kartu ditandai sudah diambil.');
         });

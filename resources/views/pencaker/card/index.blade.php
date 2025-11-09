@@ -27,7 +27,7 @@
     @endif
 
     @php
-      $editable = !$application || in_array($application->status, ['Ditolak', 'Revisi Diminta']);
+      $editable = !$application || in_array($application->status, ['Ditolak', 'Revisi Diminta', 'Batal']);
       $fotoDoc = $application?->documents->firstWhere('type', 'foto_closeup');
       $ktpDoc = $application?->documents->firstWhere('type', 'ktp_file');
       $ijazahDoc = $application?->documents->firstWhere('type', 'ijazah_file');
@@ -40,7 +40,7 @@
           action="{{ route('pencaker.card.store') }}"
           enctype="multipart/form-data"
           class="space-y-8">
-      @if ($application && in_array($application->status, ['Revisi Diminta', 'Ditolak']))
+      @if ($application && in_array($application->status, ['Revisi Diminta', 'Ditolak', 'Batal']))
         <input type="hidden" name="is_resubmission" value="1">
       @endif
       @csrf
@@ -54,7 +54,7 @@
     <p class="text-slate-300 text-sm uppercase tracking-wide">Status Pengajuan</p>
     <p class="text-lg font-semibold
       @class([
-        'text-yellow-400' => $application->status === 'Revisi Diminta',
+        'text-yellow-400' => in_array($application->status, ['Revisi Diminta','Batal']),
         'text-green-400'  => $application->status === 'Disetujui',
         'text-red-400'    => $application->status === 'Ditolak',
         'text-slate-300'   => $application->status === 'Menunggu Verifikasi',
@@ -70,7 +70,7 @@
         $latestNote = $application->logs->first()?->notes;
     @endphp
 
-    @if ($latestNote && in_array($application->status, ['Ditolak', 'Revisi Diminta', 'Menunggu Revisi Verifikasi']))
+    @if ($latestNote && in_array($application->status, ['Ditolak', 'Revisi Diminta', 'Batal', 'Menunggu Revisi Verifikasi']))
         <div class="mt-3 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-100">
             <p class="font-semibold uppercase tracking-wide text-yellow-300">Catatan Admin</p>
             <p class="mt-1 leading-relaxed text-yellow-100">{{ $latestNote }}</p>
@@ -79,9 +79,9 @@
   </div>
 
   {{-- Notifikasi Status --}}
-  @if($application->status === 'Revisi Diminta')
+  @if(in_array($application->status, ['Revisi Diminta','Batal']))
       <div class="bg-yellow-900 text-yellow-200 px-4 py-2 rounded-md mb-4">
-          ⚠️ Admin meminta revisi pada dokumen Anda. Silakan unggah ulang dokumen yang diminta lalu ajukan ulang.
+          ⚠️ Pengajuan Anda memerlukan pembaruan. Silakan perbaiki data/dokumen lalu ajukan ulang.
       </div>
   @elseif($application->status === 'Menunggu Revisi Verifikasi')
       <div class="bg-blue-900 text-blue-200 px-4 py-2 rounded-md mb-4">
@@ -279,7 +279,7 @@
                   </button>
 
                 {{-- Tombol untuk pengajuan ulang setelah revisi atau ditolak --}}
-                @elseif(in_array($application->status, ['Revisi Diminta', 'Ditolak']))
+                @elseif(in_array($application->status, ['Revisi Diminta', 'Ditolak', 'Batal']))
                   <button type="submit" id="resubmitBtn"
                           class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition">
                     Ajukan Ulang

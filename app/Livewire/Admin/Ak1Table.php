@@ -33,6 +33,7 @@ class Ak1Table extends Component
         'Menunggu Verifikasi',
         'Menunggu Revisi Verifikasi',
         'Revisi Diminta',
+        'Batal',
         'Disetujui',
         'Ditolak',
     ];

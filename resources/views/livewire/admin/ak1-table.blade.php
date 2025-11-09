@@ -79,6 +79,7 @@
                                     'Menunggu Verifikasi' => 'bg-gray-700 text-gray-300',
                                     'Menunggu Revisi Verifikasi' => 'bg-blue-700 text-blue-100',
                                     'Revisi Diminta' => 'bg-yellow-700 text-yellow-100',
+                                    'Batal' => 'bg-orange-700 text-orange-100',
                                     'Disetujui' => 'bg-green-700 text-green-100',
                                     'Ditolak' => 'bg-red-700 text-red-100',
                                     default => 'bg-gray-700 text-gray-300',
@@ -92,7 +93,7 @@
 
                                 $latestLog = $app->logs->first();
                                 $catatan = '';
-                                if (in_array($app->status, ['Ditolak', 'Revisi Diminta']) && $latestLog?->notes) {
+                                if (in_array($app->status, ['Ditolak', 'Revisi Diminta', 'Batal']) && $latestLog?->notes) {
                                     $catatan = $latestLog->notes;
                                 }
 
@@ -116,7 +117,6 @@
                                     <div class="font-semibold text-white">{{ $app->user->name }}</div>
                                     <div class="text-xs text-gray-400">{{ $app->user->email }}</div>
                                     <div class="text-xs text-gray-500 mt-1">
-                                        ID: <span class="font-mono">{{ $app->id }}</span>
                                     </div>
                                 </td>
 
@@ -147,7 +147,7 @@
                                 <td class="p-3 align-top text-sm">
                                     @if($app->status === 'Ditolak')
                                         <span class="text-red-400">{{ $catatan ?: '—' }}</span>
-                                    @elseif($app->status === 'Revisi Diminta')
+                                    @elseif(in_array($app->status, ['Revisi Diminta','Batal']))
                                         <span class="text-yellow-400">{{ $catatan ?: '—' }}</span>
                                     @else
                                         <span class="text-gray-400">—</span>
@@ -209,15 +209,18 @@
                                                 </button>
 
                                                 @if(in_array($app->status, ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi']))
-                                                    <form method="POST" action="{{ route('admin.ak1.approve', $app) }}">
-                                                        @csrf
-                                                        <button class="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-700/20 flex items-center gap-2 transition">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                            Setujui
-                                                        </button>
-                                                    </form>
+                                                    <button
+                                                        type="button"
+                                                        onclick="openApproveModal(this)"
+                                                        data-approve-url="{{ route('admin.ak1.approve', $app) }}"
+                                                        data-app-name="{{ $app->user->name }}"
+                                                        data-app-email="{{ $app->user->email }}"
+                                                        class="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-700/20 flex items-center gap-2 transition">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                        Setujui
+                                                    </button>
 
                                                     <button onclick="openRejectModal({{ $app->id }})"
                                                             class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-700/20 flex items-center gap-2 transition">
@@ -302,11 +305,19 @@
     <div id="detailModal"
          wire:ignore
          class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center">
-        <div class="bg-gray-900 w-11/12 max-w-4xl p-6 rounded-xl shadow-lg relative text-gray-100">
-            <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200">
-                ✕
-            </button>
-            <div id="modalContent" class="overflow-y-auto max-h-[75vh]"></div>
+        <div class="bg-gray-900 w-11/12 max-w-4xl p-6 rounded-xl shadow-lg relative text-gray-100 border border-gray-800">
+            <div class="relative">
+                <div id="modalScroll" class="overflow-y-auto max-h-[75vh] pr-2 md:pr-3">
+                    <div class="sticky top-0 z-10 flex justify-end pt-1 pb-1 -mt-2 -mr-2 md:-mr-3 bg-gray-900/80">
+                        <button onclick="closeModal()" class="h-10 w-10 inline-flex items-center justify-center rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-gray-200 shadow transition" aria-label="Tutup">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+                                <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 11-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="modalContent" class=""></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -371,8 +382,8 @@
             <form id="unapproveForm" method="POST" class="px-6 py-5 space-y-4">
                 @csrf
                 <p class="text-sm text-gray-300 leading-relaxed">
-                    Apakah Anda yakin ingin membatalkan persetujuan pengajuan ini? Status akan kembali menjadi
-                    <span class="font-semibold text-yellow-300">Revisi Diminta</span> sehingga pemohon dapat memperbarui data.
+                    Apakah Anda yakin ingin membatalkan persetujuan pengajuan ini? Status akan diubah menjadi
+                    <span class="font-semibold text-orange-300">Batal</span> dan nomor AK1 akan dinonaktifkan. Pemohon dapat memperbarui data dan mengajukan ulang.
                 </p>
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1" for="unapproveNotes">Catatan (opsional)</label>
@@ -386,6 +397,41 @@
                     </button>
                     <button type="submit" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">
                         Ya, Batalkan Persetujuan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ===== Modal Setujui ===== --}}
+    <div id="approveModal"
+         wire:ignore
+         class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+        <div class="bg-gray-900 w-full max-w-lg rounded-xl shadow-xl text-gray-100 relative overflow-hidden border border-gray-800">
+            <div class="flex items-center justify-between border-b border-gray-800 px-6 py-4">
+                <div>
+                    <h3 class="text-lg font-semibold">Konfirmasi Persetujuan</h3>
+                    <p class="text-sm text-gray-400 mt-1" id="approveModalSubtitle"></p>
+                </div>
+                <button type="button" onclick="closeApproveModal()" class="text-gray-400 hover:text-gray-200 transition">✕</button>
+            </div>
+            <form id="approveForm" method="POST" class="px-6 py-5 space-y-4">
+                @csrf
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    Sebelum menyetujui pastikan data diri, riwayat pendidikan sudah sesuai dengan dokumen yang telah diunggah oleh pencaker.
+                </p>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1" for="approveNotes">Catatan (opsional)</label>
+                    <textarea name="notes" id="approveNotes" rows="4"
+                              class="w-full resize-none bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                              placeholder="Catatan untuk pemohon..."></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeApproveModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition text-sm font-semibold text-white">
+                        Ya, Setujui
                     </button>
                 </div>
             </form>
@@ -420,6 +466,7 @@
                     'Menunggu Verifikasi': 'Menunggu Verifikasi',
                     'Menunggu Revisi Verifikasi': 'Menunggu Revisi Verifikasi',
                     'Revisi Diminta': 'Revisi Diminta',
+                    'Batal': 'Batal',
                     'Disetujui': 'Disetujui',
                     'Ditolak': 'Ditolak',
                     'Diambil': 'Diambil',
@@ -450,7 +497,7 @@
                     getEl('detailModal')?.classList.add('hidden');
                 };
 
-                function renderSnapshotBlock(title, snapshot) {
+                function renderSnapshotBlock(title, snapshot, includeDocuments = true) {
                     if (!snapshot) return '';
 
                     const profile = snapshot.profile || {};
@@ -458,21 +505,19 @@
                     const trainings = Array.isArray(snapshot.trainings) ? snapshot.trainings : [];
                     const documents = Array.isArray(snapshot.documents) ? snapshot.documents : [];
 
+                    // Hanya tampilkan field yang tercantum di kartu AK1
                     const profileMap = [
-                        ['Nama Lengkap', profile.nama_lengkap],
                         ['NIK', profile.nik],
+                        ['Nama Lengkap', profile.nama_lengkap],
                         ['Tempat Lahir', profile.tempat_lahir],
                         ['Tanggal Lahir', profile.tanggal_lahir],
                         ['Jenis Kelamin', profile.jenis_kelamin],
-                        ['Agama', profile.agama],
                         ['Status', profile.status_perkawinan],
-                        ['Pendidikan Terakhir', profile.pendidikan_terakhir],
-                        ['Alamat', profile.alamat_lengkap],
-                        ['Kecamatan', profile.domisili_kecamatan],
-                        ['No. Telepon', profile.no_telepon],
+                        ['Agama', profile.agama],
+                        ['Alamat Domisili', profile.alamat_lengkap],
                     ].map(([label, value]) => `
                         <div class="flex text-xs sm:text-sm text-gray-300">
-                            <span class="w-32 text-gray-400">${label}</span>
+                            <span class="w-40 text-gray-400">${label}</span>
                             <span class="flex-1">${value ?? '-'}</span>
                         </div>
                     `).join('');
@@ -499,10 +544,11 @@
                                 <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Riwayat Pelatihan</p>
                                 ${trainingList}
                             </div>
+                            ${includeDocuments ? `
                             <div>
                                 <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Dokumen</p>
                                 ${documentList}
-                            </div>
+                            </div>` : ''}
                         </div>
                     `;
                 }
@@ -529,6 +575,38 @@
                     `;
                 }
 
+                // Hanya untuk KTP & Ijazah (tanpa foto)
+                function renderKtpIjazahSection(ktpHtml, ijazahHtml) {
+                    return `
+                        <div class="border-t border-gray-700 pt-4 mt-6">
+                            <h3 class="font-semibold text-lg mb-3">Dokumen</h3>
+                            <div class="grid gap-6 md:grid-cols-2">
+                                ${renderDocumentCard('KTP', ktpHtml)}
+                                ${renderDocumentCard('Ijazah', ijazahHtml)}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Buat thumbnail untuk gambar; jika pdf maka tampilkan tautan saja
+                function renderThumbnail(path, alt, sizeClass = 'w-full h-40 md:h-48') {
+                    if (!path) return '';
+                    const lower = (path || '').toLowerCase();
+                    const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => lower.endsWith(ext));
+                    const url = `/storage/${path}`;
+                    if (isImage) {
+                        return `<a href="${url}" target="_blank">
+                                    <img src="${url}" alt="${alt}" class="${sizeClass} object-contain rounded-lg border border-gray-600 shadow-md bg-gray-800/40" />
+                                </a>`;
+                    }
+                    if (lower.endsWith('.pdf')) {
+                        return `<a class="inline-flex items-center gap-2 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-indigo-300 text-xs" href="${url}" target="_blank">
+                                    <span class="inline-block h-2 w-2 rounded-full bg-red-400"></span> Lihat PDF
+                                </a>`;
+                    }
+                    return `<a class="text-indigo-400 text-sm underline" href="${url}" target="_blank">Lihat Dokumen</a>`;
+                }
+
                 window.showDetail = async function (id) {
                     const modal = getEl('detailModal');
                     const body = getEl('modalContent');
@@ -548,20 +626,29 @@
                             ? `<img src="/storage/${app.foto_closeup}" class="w-40 h-48 object-cover rounded-lg border border-gray-600 shadow-md">`
                             : `<div class="w-40 h-48 flex items-center justify-center border border-gray-700 rounded-lg text-gray-500 text-xs">Tidak ada foto</div>`;
 
-                        const ktp = app.ktp_file
-                            ? `<a class="text-indigo-400 text-sm underline" href="/storage/${app.ktp_file}" target="_blank">Lihat KTP</a>`
-                            : '<p class="text-xs text-gray-500">Tidak ada</p>';
+                        const ktp = app.ktp_file ? renderThumbnail(app.ktp_file, 'KTP') : '<p class="text-xs text-gray-500">Tidak ada</p>';
+                        const ijazah = app.ijazah_file ? renderThumbnail(app.ijazah_file, 'Ijazah') : '<p class="text-xs text-gray-500">Tidak ada</p>';
 
-                        const ijazah = app.ijazah_file
-                            ? `<a class="text-indigo-400 text-sm underline" href="/storage/${app.ijazah_file}" target="_blank">Lihat Ijazah</a>`
-                            : '<p class="text-xs text-gray-500">Tidak ada</p>';
-
+                        // Siapkan blok snapshot sesuai jenis pengajuan
                         const snapshotBlocks = [];
-                        if (app.snapshot_before) {
-                            snapshotBlocks.push(renderSnapshotBlock(app.type === 'perbaikan' ? 'Data Sebelum Perbaikan' : 'Data Sebelumnya', app.snapshot_before));
-                        }
-                        if (app.snapshot_after) {
-                            snapshotBlocks.push(renderSnapshotBlock(app.type === 'perbaikan' ? 'Data Setelah Perbaikan' : 'Data Saat Pengajuan', app.snapshot_after));
+                        const hasBefore = !!app.snapshot_before;
+                        const hasAfter  = !!app.snapshot_after;
+                        const isPerbaikan = app.type === 'perbaikan';
+                        const isPerpanjangan = app.type === 'perpanjangan';
+                        const isBaru = app.type === 'baru';
+
+                        if (!isBaru) {
+                            if (isPerbaikan && hasBefore && hasAfter) {
+                                snapshotBlocks.push(renderSnapshotBlock('Data Sebelum Perbaikan', app.snapshot_before));
+                                snapshotBlocks.push(renderSnapshotBlock('Data Setelah Perbaikan', app.snapshot_after));
+                            }
+                            if (isPerpanjangan && hasBefore && hasAfter) {
+                                const same = JSON.stringify(app.snapshot_before) === JSON.stringify(app.snapshot_after);
+                                if (!same) {
+                                    snapshotBlocks.push(renderSnapshotBlock('Data Sebelumnya', app.snapshot_before));
+                                    snapshotBlocks.push(renderSnapshotBlock('Data Saat Pengajuan', app.snapshot_after));
+                                }
+                            }
                         }
 
                         const profileBlock = renderSnapshotBlock('Profil Saat Ini', {
@@ -572,23 +659,102 @@
                         });
 
                         if (body) {
-                            body.innerHTML = `
-                                <div class="space-y-6">
-                                    <div class="flex items-start gap-6 flex-col md:flex-row">
-                                        ${foto}
-                                        <div class="flex-1 space-y-2">
-                                            <h3 class="text-2xl font-semibold text-gray-100">${profile.nama_lengkap ?? '-'}</h3>
-                                            <div class="text-sm text-gray-400">${profile.nik ?? '-'}</div>
-                                            <div class="text-sm text-gray-400">${profile.alamat_lengkap ?? '-'}</div>
-                                            <div class="text-xs text-gray-500 uppercase tracking-wide">
-                                                Status: ${app.status ?? '-'} · Tipe: ${app.type ?? '-'}
+                            if (isBaru) {
+                                // Susunan khusus untuk pengajuan Baru
+                                const row = (label, value) => `
+                                    <div class="flex text-xs sm:text-sm text-gray-300">
+                                        <span class="w-40 text-gray-400">${label}</span>
+                                        <span class="flex-1">${value ?? '-'}</span>
+                                    </div>`;
+
+                                const dataDiriGrid = `
+                                    <div class="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+                                        ${row('NIK', profile.nik)}
+                                        ${row('Tempat Lahir', profile.tempat_lahir)}
+                                        ${row('Nama Lengkap', profile.nama_lengkap)}
+                                        ${row('Tanggal Lahir', profile.tanggal_lahir)}
+                                        ${row('Jenis Kelamin', profile.jenis_kelamin)}
+                                        ${row('Agama', profile.agama)}
+                                        <div class="sm:col-span-2">${row('Status', profile.status_perkawinan)}</div>
+                                        <div class="sm:col-span-2">${row('Alamat Lengkap', profile.alamat_lengkap)}</div>
+                                    </div>`;
+
+                                const eduList = (data.educations && data.educations.length)
+                                    ? `<ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-gray-300">${(data.educations || []).map((e) => `<li>${e.tingkat} - ${e.nama_institusi} (${e.tahun_mulai ?? '-'} - ${e.tahun_selesai ?? '-'})</li>`).join('')}</ul>`
+                                    : '<p class="text-xs text-gray-500">Tidak ada data</p>';
+
+                                const trainingList = (data.trainings && data.trainings.length)
+                                    ? `<ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-gray-300">${(data.trainings || []).map((t) => `<li>${t.jenis_pelatihan} - ${t.lembaga_pelatihan} (${t.tahun ?? '-'})</li>`).join('')}</ul>`
+                                    : '<p class="text-xs text-gray-500">Tidak ada data</p>';
+
+                                body.innerHTML = `
+                                    <div class="space-y-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6 items-start">
+                                            ${foto}
+                                            <div class="rounded-xl border border-gray-700 bg-gray-900/50 p-4">
+                                                <h4 class="text-sm font-semibold text-gray-100 mb-3">Profil Saat Ini</h4>
+                                                ${dataDiriGrid}
                                             </div>
                                         </div>
+
+                                        <div>
+                                            <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Riwayat Pendidikan</p>
+                                            ${eduList}
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Riwayat Pelatihan</p>
+                                            ${trainingList}
+                                        </div>
+
+                                        ${renderKtpIjazahSection(ktp, ijazah)}
                                     </div>
-                                    ${[profileBlock, ...snapshotBlocks].join('')}
-                                    ${renderDocumentsSection(foto, ktp, ijazah)}
-                                </div>
-                            `;
+                                `;
+                            } else {
+                                // Non-baru
+                                if (isPerbaikan) {
+                                    // Tampilan khusus Perbaikan: tanpa "Profil Saat Ini",
+                                    // dua kolom: Sebelum vs Setelah, dan dokumen hanya KTP & Ijazah.
+                                    const beforeBlock = app.snapshot_before ? renderSnapshotBlock('Data Sebelum Perbaikan', app.snapshot_before, false) : '';
+                                    const afterBlock  = app.snapshot_after  ? renderSnapshotBlock('Data Setelah Perbaikan', app.snapshot_after, false)   : '';
+
+                                    body.innerHTML = `
+                                        <div class="space-y-6">
+                                            <div class="flex items-start gap-6 flex-col md:flex-row">
+                                                ${foto}
+                                                <div class="flex-1 space-y-1">
+                                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-100">${profile.nama_lengkap ?? '-'}</h3>
+                                                    <div class="text-sm text-gray-400">${profile.nik ?? '-'}</div>
+                                                    <div class="text-xs text-gray-500 uppercase tracking-wide">Status: ${app.status ?? '-'}</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="grid gap-4 md:grid-cols-2">
+                                                ${beforeBlock}
+                                                ${afterBlock}
+                                            </div>
+
+                                            ${renderKtpIjazahSection(ktp, ijazah)}
+                                        </div>
+                                    `;
+                                } else {
+                                    // Default/non-baru menampilkan snapshot sesuai aturan sebelumnya
+                                    body.innerHTML = `
+                                        <div class="space-y-6">
+                                            <div class="flex items-start gap-6 flex-col md:flex-row">
+                                                ${foto}
+                                                <div class="flex-1 space-y-1">
+                                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-100">${profile.nama_lengkap ?? '-'}</h3>
+                                                    <div class="text-sm text-gray-400">${profile.nik ?? '-'}</div>
+                                                    <div class="text-xs text-gray-500 uppercase tracking-wide">Status: ${app.status ?? '-'} · Tipe: ${app.type ?? '-'}</div>
+                                                </div>
+                                            </div>
+                                            ${[profileBlock, ...snapshotBlocks].join('')}
+                                            ${renderDocumentsSection(foto, ktp, ijazah)}
+                                        </div>
+                                    `;
+                                }
+                            }
                         }
                     } catch (error) {
                         if (body) body.innerHTML = `<p class="text-red-400 text-sm">Gagal memuat data. ${error.message}</p>`;
@@ -691,6 +857,26 @@
                     getEl('unapproveModal')?.classList.add('hidden');
                 };
 
+                window.openApproveModal = function (button) {
+                    const modal = getEl('approveModal');
+                    const form = getEl('approveForm');
+                    const subtitle = getEl('approveModalSubtitle');
+                    const notes = getEl('approveNotes');
+                    if (!modal || !form) return;
+                    form.action = button.getAttribute('data-approve-url');
+                    if (notes) notes.value = '';
+                    if (subtitle) {
+                        const name = button.getAttribute('data-app-name') || '';
+                        const email = button.getAttribute('data-app-email') || '';
+                        subtitle.textContent = email ? `${name} · ${email}` : name;
+                    }
+                    modal.classList.remove('hidden');
+                };
+
+                window.closeApproveModal = function () {
+                    getEl('approveModal')?.classList.add('hidden');
+                };
+
                 window.openRejectModal = function (id) {
                     const modal = getEl('rejectModal');
                     const form = getEl('rejectForm');
@@ -724,7 +910,7 @@
 
                 const formatStatus = (status) => statusLabels[status] || status || '-';
 
-                ['detailModal', 'logModal', 'unapproveModal', 'rejectModal', 'revisionModal'].forEach((id) => {
+                ['detailModal', 'logModal', 'unapproveModal', 'rejectModal', 'revisionModal', 'approveModal'].forEach((id) => {
                     const modal = getEl(id);
                     if (!modal) return;
                     modal.addEventListener('click', (e) => {
