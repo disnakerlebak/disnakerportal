@@ -265,7 +265,7 @@
 
 @push('scripts')
 <script>
-    let deleteFormTarget = null;
+    let deleteTargetUrl = null;
 
     function toggleRenewalConfirm(show) {
         document.getElementById('confirmOverlay').classList.toggle('hidden', !show);
@@ -296,8 +296,8 @@
         });
     }
 
-    function openDeleteConfirm(formId, message) {
-        deleteFormTarget = formId;
+    function openDeleteConfirm(targetUrl, message) {
+        deleteTargetUrl = targetUrl;
         document.getElementById('deleteConfirmMessage').textContent = message || 'Apakah Anda yakin?';
         toggleDeleteConfirm(true);
     }
@@ -307,11 +307,32 @@
     }
 
     function submitDeleteForm() {
-        if (!deleteFormTarget) return;
-        const form = document.getElementById(deleteFormTarget);
-        if (form) form.submit();
+        if (!deleteTargetUrl) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = deleteTargetUrl;
+        form.classList.add('hidden');
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = '{{ csrf_token() }}';
+
+        const method = document.createElement('input');
+        method.type = 'hidden';
+        method.name = '_method';
+        method.value = 'DELETE';
+
+        form.appendChild(csrf);
+        form.appendChild(method);
+
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+
         toggleDeleteConfirm(false);
-        deleteFormTarget = null;
+        deleteTargetUrl = null;
     }
 
     function previewImage(event) {

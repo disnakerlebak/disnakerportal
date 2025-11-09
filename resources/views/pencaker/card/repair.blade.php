@@ -149,15 +149,11 @@
                                             <button type="button"
                                                     class="p-2 rounded-full bg-slate-800 text-red-300 hover:bg-red-700/30"
                                                     title="Hapus"
-                                                    onclick="openDeleteConfirm('educationDeleteForm-{{ $edu->id }}', 'Hapus riwayat pendidikan ini?')">
+                                                    onclick="openDeleteConfirm('{{ route('pencaker.education.destroy', $edu->id) }}', 'Hapus riwayat pendidikan ini?')">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
                                                 </svg>
                                             </button>
-                                            <form id="educationDeleteForm-{{ $edu->id }}" action="{{ route('pencaker.education.destroy', $edu->id) }}" method="POST" class="hidden">
-                                                @csrf
-                                                @method('DELETE')
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -206,15 +202,11 @@
                                             <button type="button"
                                                     class="p-2 rounded-full bg-slate-800 text-red-300 hover:bg-red-700/30"
                                                     title="Hapus"
-                                                    onclick="openDeleteConfirm('trainingDeleteForm-{{ $training->id }}', 'Hapus riwayat pelatihan ini?')">
+                                                    onclick="openDeleteConfirm('{{ route('pencaker.training.destroy', $training->id) }}', 'Hapus riwayat pelatihan ini?')">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
                                                 </svg>
                                             </button>
-                                            <form id="trainingDeleteForm-{{ $training->id }}" action="{{ route('pencaker.training.destroy', $training->id) }}" method="POST" class="hidden">
-                                                @csrf
-                                                @method('DELETE')
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -517,7 +509,7 @@
 
 @push('scripts')
 <script>
-    let deleteFormTarget = null;
+    let deleteTargetUrl = null;
 
     function toggleConfirm(show) {
         document.getElementById('confirmOverlay').classList.toggle('hidden', !show);
@@ -548,8 +540,8 @@
         });
     }
 
-    function openDeleteConfirm(formId, message) {
-        deleteFormTarget = formId;
+    function openDeleteConfirm(targetUrl, message) {
+        deleteTargetUrl = targetUrl;
         document.getElementById('deleteConfirmMessage').textContent = message || 'Apakah Anda yakin?';
         toggleDeleteConfirm(true);
     }
@@ -559,11 +551,32 @@
     }
 
     function submitDeleteForm() {
-        if (!deleteFormTarget) return;
-        const form = document.getElementById(deleteFormTarget);
-        if (form) form.submit();
+        if (!deleteTargetUrl) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = deleteTargetUrl;
+        form.classList.add('hidden');
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = '{{ csrf_token() }}';
+
+        const method = document.createElement('input');
+        method.type = 'hidden';
+        method.name = '_method';
+        method.value = 'DELETE';
+
+        form.appendChild(csrf);
+        form.appendChild(method);
+
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+
         toggleDeleteConfirm(false);
-        deleteFormTarget = null;
+        deleteTargetUrl = null;
     }
 
     function previewImage(event) {

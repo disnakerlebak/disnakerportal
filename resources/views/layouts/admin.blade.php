@@ -14,12 +14,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') | Admin Disnaker</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="//unpkg.com/alpinejs" defer></script>
+    <livewire:styles />
 </head>
 
 <body class="flex h-screen bg-slate-950 text-slate-100">
 
-    <!-- ===== Sidebar ===== -->
  <!-- ===== Sidebar ===== -->
 <!-- Overlay mobile -->
 <div x-show="sidebarOpen" x-transition.opacity
@@ -254,6 +253,7 @@
     syncIcon();
     toggleButtons.forEach(btn => btn.addEventListener('click', toggleTheme));
     </script>
+    {{-- Livewire dimuat via ESM dalam Vite bundle (resources/js/app.js) --}}
     <!-- ===== Toastify (Global Notification) ===== -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>

@@ -7,30 +7,14 @@ use App\Models\{ CardApplication, CardApplicationLog };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // pastikan sudah install barryvdh/laravel-dompdf
-use App\Models\RejectionReason;
 use App\Support\CardApplicationSnapshot;
 
 class CardVerificationController extends Controller
 {
-    public function index(Request $request)
-{
-    $apps = CardApplication::with(['user', 'lastHandler.actor', 'logs.actor'])
-                ->when($request->q, fn($q) =>
-                    $q->whereHas('user', fn($u) =>
-                        $u->where('name', 'like', "%{$request->q}%")
-                          ->orWhere('email', 'like', "%{$request->q}%")
-                    )
-                )
-                ->when($request->status, fn($q) =>
-                    $q->where('status', $request->status)
-                )
-                ->latest('created_at')
-                ->paginate(20);
-
-    $rejectionReasons = RejectionReason::orderBy('title')->get();
-
-    return view('admin.ak1.index', compact('apps', 'rejectionReasons'));
-}
+    public function index()
+    {
+        return view('admin.ak1.index');
+    }
     public function show(CardApplication $application)
     {
         $application->load(['user','logs.actor']);

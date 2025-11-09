@@ -1,7 +1,8 @@
 import './bootstrap';
 
-import Alpine from 'alpinejs';
+// Integrasi Livewire v3 via ESM agar tidak ada duplikasi Alpine
+import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
 
 window.Alpine = Alpine;
 
-Alpine.start();
+Livewire.start();

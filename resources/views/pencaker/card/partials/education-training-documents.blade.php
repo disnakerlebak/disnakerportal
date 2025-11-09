@@ -38,15 +38,11 @@
                                     <button type="button"
                                             class="p-2 rounded-full bg-slate-800 text-red-300 hover:bg-red-700/30"
                                             title="Hapus"
-                                            onclick="openDeleteConfirm('educationDeleteFormRenew-{{ $edu->id }}', 'Hapus riwayat pendidikan ini?')">
+                                            onclick="openDeleteConfirm('{{ route('pencaker.education.destroy', $edu->id) }}', 'Hapus riwayat pendidikan ini?')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
                                         </svg>
                                     </button>
-                                    <form id="educationDeleteFormRenew-{{ $edu->id }}" action="{{ route('pencaker.education.destroy', $edu->id) }}" method="POST" class="hidden">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -95,15 +91,11 @@
                                     <button type="button"
                                             class="p-2 rounded-full bg-slate-800 text-red-300 hover:bg-red-700/30"
                                             title="Hapus"
-                                            onclick="openDeleteConfirm('trainingDeleteFormRenew-{{ $training->id }}', 'Hapus riwayat pelatihan ini?')">
+                                            onclick="openDeleteConfirm('{{ route('pencaker.training.destroy', $training->id) }}', 'Hapus riwayat pelatihan ini?')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
                                         </svg>
                                     </button>
-                                    <form id="trainingDeleteFormRenew-{{ $training->id }}" action="{{ route('pencaker.training.destroy', $training->id) }}" method="POST" class="hidden">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
                                 </div>
                             </td>
                         </tr>
