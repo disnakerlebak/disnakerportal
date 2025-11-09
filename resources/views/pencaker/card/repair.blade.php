@@ -122,11 +122,11 @@
                     <table class="w-full text-sm md:text-base border-collapse text-slate-300">
                         <thead class="bg-slate-800 text-slate-200">
                             <tr>
-                                <th class="p-3 text-left">Tingkat</th>
-                                <th class="p-3 text-left">Lembaga / Sekolah</th>
-                                <th class="p-3 text-left">Jurusan</th>
-                                <th class="p-3 text-left">Tahun</th>
-                                <th class="p-3 text-left">Aksi</th>
+                                <th class="p-3 text-center">Tingkat</th>
+                                <th class="p-3 text-center">Lembaga / Sekolah</th>
+                                <th class="p-3 text-center">Jurusan</th>
+                                <th class="p-3 text-center">Tahun</th>
+                                <th class="p-3 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -137,7 +137,28 @@
                                     <td class="p-3">{{ $edu->jurusan ?: '-' }}</td>
                                     <td class="p-3">{{ $edu->tahun_mulai }} - {{ $edu->tahun_selesai }}</td>
                                     <td class="p-3">
-                                        <button type="button" data-modal-open="modalRepairEducationEdit{{ $edu->id }}" class="text-xs bg-yellow-600/20 text-yellow-200 px-2 py-1 rounded hover:bg-yellow-600/30">Edit</button>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button"
+                                                    data-modal-open="modalRepairEducationEdit{{ $edu->id }}"
+                                                    class="p-2 rounded-full bg-slate-800 text-blue-300 hover:bg-blue-700/30"
+                                                    title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 13.5V19h5.5L19 9.5l-5.5-5.5L4 13.5z" />
+                                                </svg>
+                                            </button>
+                                            <button type="button"
+                                                    class="p-2 rounded-full bg-slate-800 text-red-300 hover:bg-red-700/30"
+                                                    title="Hapus"
+                                                    onclick="openDeleteConfirm('educationDeleteForm-{{ $edu->id }}', 'Hapus riwayat pendidikan ini?')">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
+                                                </svg>
+                                            </button>
+                                            <form id="educationDeleteForm-{{ $edu->id }}" action="{{ route('pencaker.education.destroy', $edu->id) }}" method="POST" class="hidden">
+                                                @csrf
+                                                @method('DELETE')
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -173,7 +194,28 @@
                                     <td class="p-3">{{ $training->lembaga_pelatihan }}</td>
                                     <td class="p-3">{{ $training->tahun }}</td>
                                     <td class="p-3">
-                                        <button type="button" data-modal-open="modalRepairTrainingEdit{{ $training->id }}" class="text-xs bg-yellow-600/20 text-yellow-200 px-2 py-1 rounded hover:bg-yellow-600/30">Edit</button>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button"
+                                                    data-modal-open="modalRepairTrainingEdit{{ $training->id }}"
+                                                    class="p-2 rounded-full bg-slate-800 text-blue-300 hover:bg-blue-700/30"
+                                                    title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 13.5V19h5.5L19 9.5l-5.5-5.5L4 13.5z" />
+                                                </svg>
+                                            </button>
+                                            <button type="button"
+                                                    class="p-2 rounded-full bg-slate-800 text-red-300 hover:bg-red-700/30"
+                                                    title="Hapus"
+                                                    onclick="openDeleteConfirm('trainingDeleteForm-{{ $training->id }}', 'Hapus riwayat pelatihan ini?')">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
+                                                </svg>
+                                            </button>
+                                            <form id="trainingDeleteForm-{{ $training->id }}" action="{{ route('pencaker.training.destroy', $training->id) }}" method="POST" class="hidden">
+                                                @csrf
+                                                @method('DELETE')
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -265,8 +307,12 @@
         </div>
         <div>
             <label class="block text-sm text-slate-400">Agama</label>
-            <input type="text" name="agama" value="{{ old('agama', $profile->agama) }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+            <select name="agama" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+                <option value="">Pilih</option>
+                @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
+                    <option value="{{ $agama }}" @selected(old('agama', $profile->agama) == $agama)>{{ $agama }}</option>
+                @endforeach
+            </select>
         </div>
         <div>
             <label class="block text-sm text-slate-400">Status Perkawinan</label>
@@ -278,9 +324,13 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm text-slate-400">Pendidikan Terakhir</label>
-            <input type="text" name="pendidikan_terakhir" value="{{ old('pendidikan_terakhir', $profile->pendidikan_terakhir) }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+            <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
+            <select name="pendidikan_terakhir" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+                <option value="">Pilih</option>
+                @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
+                    <option value="{{ $tingkat }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir) == $tingkat)>{{ $tingkat }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="sm:col-span-2">
             <label class="block text-sm text-slate-400">Alamat Lengkap</label>
@@ -452,10 +502,23 @@
     </div>
 </div>
 
+<div id="deleteConfirmOverlay" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
+    <div class="bg-slate-950 border border-slate-800 rounded-xl p-6 max-w-md w-full text-slate-100">
+        <h3 class="text-lg font-semibold mb-2">Konfirmasi Hapus Data</h3>
+        <p class="text-sm text-slate-300" id="deleteConfirmMessage">Apakah Anda yakin?</p>
+        <div class="mt-5 flex justify-end gap-3">
+            <button type="button" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700" onclick="toggleDeleteConfirm(false)">Batal</button>
+            <button type="button" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700" onclick="submitDeleteForm()">Hapus</button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
+    let deleteFormTarget = null;
+
     function toggleConfirm(show) {
         document.getElementById('confirmOverlay').classList.toggle('hidden', !show);
     }
@@ -483,6 +546,24 @@
             e.preventDefault();
             toggleConfirm(true);
         });
+    }
+
+    function openDeleteConfirm(formId, message) {
+        deleteFormTarget = formId;
+        document.getElementById('deleteConfirmMessage').textContent = message || 'Apakah Anda yakin?';
+        toggleDeleteConfirm(true);
+    }
+
+    function toggleDeleteConfirm(show) {
+        document.getElementById('deleteConfirmOverlay').classList.toggle('hidden', !show);
+    }
+
+    function submitDeleteForm() {
+        if (!deleteFormTarget) return;
+        const form = document.getElementById(deleteFormTarget);
+        if (form) form.submit();
+        toggleDeleteConfirm(false);
+        deleteFormTarget = null;
     }
 
     function previewImage(event) {

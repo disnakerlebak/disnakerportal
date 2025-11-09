@@ -97,7 +97,7 @@
                         <div x-show="open" x-collapse class="space-y-1 pl-11" x-cloak>
                             {!! $ak1SubLink('Pengajuan Kartu AK1 Baru', route('pencaker.card.index'), request()->routeIs('pencaker.card.index')) !!}
                             {!! $ak1SubLink('Perbaikan AK1', route('pencaker.card.repair'), request()->routeIs('pencaker.card.repair')) !!}
-                            {!! $ak1SubLink('Perpanjangan AK1', '#', request()->routeIs('pencaker.card.renew')) !!}
+                            {!! $ak1SubLink('Perpanjangan AK1', route('pencaker.card.renewal'), request()->routeIs('pencaker.card.renewal')) !!}
                         </div>
                     </div>
 

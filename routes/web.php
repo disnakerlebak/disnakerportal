@@ -120,6 +120,8 @@ Route::middleware(['auth', 'role:pencaker'])
         Route::post('/card-application', [CardApplicationController::class, 'store'])->name('card.store');
         Route::get('/card-application/repair',  [CardApplicationController::class, 'repairForm'])->name('card.repair');
         Route::post('/card-application/repair', [CardApplicationController::class, 'submitRepair'])->name('card.repair.submit');
+        Route::get('/card-application/renewal',  [CardApplicationController::class, 'renewalForm'])->name('card.renewal');
+        Route::post('/card-application/renewal', [CardApplicationController::class, 'submitRenewal'])->name('card.renewal.submit');
         // Unduh/Cetak Kartu AK1 (hanya milik sendiri dan jika disetujui)
         Route::get('/card-application/{application}/cetak', [CardApplicationController::class, 'cetakPdf'])
             ->name('card.cetak');

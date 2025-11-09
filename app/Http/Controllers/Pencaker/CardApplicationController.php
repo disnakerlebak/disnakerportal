@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Support\CardApplicationSnapshot;
+use Carbon\Carbon;
 use App\Models\{
     JobseekerProfile,
     Education,
@@ -98,7 +99,8 @@ class CardApplicationController extends Controller
         $currentSnapshot = CardApplicationSnapshot::captureFromContext($user, $activeApp->documents);
         $snapshotChanged = $this->snapshotHash($baselineSnapshot) !== $this->snapshotHash($currentSnapshot);
 
-        $approvedAt = $activeApp->approved_at ?? optional($activeApp->logs->firstWhere('action', 'approve'))->created_at;
+        $activeApp->loadMissing('logs');
+        $approvedAt = $this->approvedLogAt($activeApp);
 
         return view('pencaker.card.repair', [
             'profile' => $profile,
@@ -233,6 +235,205 @@ class CardApplicationController extends Controller
 
             return back()->with('error', 'Gagal mengajukan perbaikan: ' . $e->getMessage());
         }
+    }
+
+    public function renewalForm(Request $request)
+    {
+        $user = $request->user();
+
+        $activeCard = CardApplication::with(['documents', 'logs' => fn ($q) => $q->latest()])
+            ->where('user_id', $user->id)
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
+
+        $latestApproved = CardApplication::with(['documents', 'logs' => fn ($q) => $q->latest()])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['Disetujui', 'Dicetak', 'Diambil'])
+            ->latest('id')
+            ->first();
+
+        if (!$latestApproved) {
+            return redirect()->route('pencaker.card.index')
+                ->with('error', 'Belum ada kartu AK1 yang dapat diperpanjang.');
+        }
+
+        $referenceCard = $activeCard ?? $latestApproved;
+
+        $referenceCard->loadMissing('documents', 'logs');
+        $currentSnapshot = CardApplicationSnapshot::captureFromContext($user, $referenceCard->documents);
+        $baselineSnapshot = $referenceCard->snapshot_after ?? $currentSnapshot;
+        $snapshotChanged = $baselineSnapshot !== $currentSnapshot;
+        $approvedAt = $this->approvedLogAt($referenceCard);
+        $expiresAt = $approvedAt ? Carbon::parse($approvedAt)->copy()->addYears(2) : null;
+        $isExpired = $expiresAt ? Carbon::now()->greaterThanOrEqualTo($expiresAt) : false;
+
+        if ($activeCard && $isExpired && $activeCard->is_active) {
+            $activeCard->update(['is_active' => false]);
+            $activeCard = null;
+        }
+
+        $hasPendingRenewal = CardApplication::where('user_id', $user->id)
+            ->where('type', 'perpanjangan')
+            ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'])
+            ->exists();
+
+        $profile = JobseekerProfile::where('user_id', $user->id)->first();
+        $educations = Education::whereHas('profile', fn ($q) => $q->where('user_id', $user->id))->get();
+        $trainings = Training::whereHas('profile', fn ($q) => $q->where('user_id', $user->id))->get();
+
+        $previewCard = $activeCard ?? $latestApproved;
+
+        return view('pencaker.card.renewal', [
+            'profile' => $profile,
+            'educations' => $educations,
+            'trainings' => $trainings,
+            'application' => $referenceCard,
+            'currentSnapshot' => $currentSnapshot,
+            'snapshotChanged' => $snapshotChanged,
+            'kecamatanList' => $this->districtOptions(),
+            'approvedAt' => $approvedAt,
+            'expiresAt' => $expiresAt,
+            'isExpired' => $isExpired,
+            'hasPendingRenewal' => $hasPendingRenewal,
+            'previewCard' => $previewCard,
+            'canApply' => $isExpired && !$hasPendingRenewal,
+        ]);
+    }
+
+    public function submitRenewal(Request $request)
+    {
+        $user = $request->user();
+        $mode = $request->input('mode', 'quick');
+
+        $baseCard = CardApplication::with(['documents', 'logs' => fn ($q) => $q->latest()])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['Disetujui', 'Dicetak', 'Diambil'])
+            ->latest('id')
+            ->first();
+
+        if (!$baseCard) {
+            return redirect()->route('pencaker.card.index')
+                ->with('error', 'Belum ada kartu AK1 yang dapat diperpanjang.');
+        }
+
+        $baseCard->loadMissing('logs');
+        $approvedAt = $this->approvedLogAt($baseCard);
+        $expiresAt = $approvedAt ? Carbon::parse($approvedAt)->copy()->addYears(2) : null;
+
+        if (!$expiresAt || Carbon::now()->lt($expiresAt)) {
+            return back()->with('error', 'Kartu AK1 Anda masih dalam masa berlaku.');
+        }
+
+        $hasPendingRenewal = CardApplication::where('user_id', $user->id)
+            ->where('type', 'perpanjangan')
+            ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'])
+            ->exists();
+
+        if ($hasPendingRenewal) {
+            return back()->with('error', 'Masih ada pengajuan perpanjangan yang belum diproses.');
+        }
+
+        $docRules = [
+            'foto_closeup' => 'nullable|image|max:2048',
+            'ktp_file' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+            'ijazah_file' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+        ];
+
+        if ($mode === 'update') {
+            $request->validate($docRules);
+        } else {
+            $request->validate([
+                'mode' => 'in,quick',
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $snapshotBefore = $baseCard->snapshot_after ?? CardApplicationSnapshot::capture($baseCard);
+
+            $renewal = CardApplication::create([
+                'user_id' => $user->id,
+                'status' => 'Menunggu Verifikasi',
+                'type' => 'perpanjangan',
+                'parent_id' => $baseCard->id,
+                'nomor_ak1' => $baseCard->nomor_ak1,
+                'tanggal_pengajuan' => now(),
+                'is_active' => false,
+                'snapshot_before' => $snapshotBefore,
+            ]);
+
+            $docTypes = [
+                'foto_closeup' => ['folder' => 'ak1/foto'],
+                'ktp_file' => ['folder' => 'ak1/ktp'],
+                'ijazah_file' => ['folder' => 'ak1/ijazah'],
+            ];
+
+            $baseDocs = $baseCard->documents->keyBy('type');
+
+            foreach ($docTypes as $field => $meta) {
+                if ($mode === 'update' && $request->hasFile($field)) {
+                    $path = $request->file($field)->store($meta['folder'], 'public');
+                    $renewal->documents()->create([
+                        'type' => $field,
+                        'file_path' => $path,
+                    ]);
+                } elseif ($baseDocs->has($field)) {
+                    $renewal->documents()->create([
+                        'type' => $field,
+                        'file_path' => $baseDocs[$field]->file_path,
+                    ]);
+                }
+            }
+
+            if ($mode === 'update') {
+                $renewal->load('documents', 'user.jobseekerProfile.educations', 'user.jobseekerProfile.trainings');
+                $renewal->snapshot_after = CardApplicationSnapshot::captureFromContext($user, $renewal->documents);
+            } else {
+                $renewal->snapshot_after = $snapshotBefore;
+            }
+
+            $renewal->save();
+
+            CardApplicationLog::create([
+                'card_application_id' => $renewal->id,
+                'actor_id' => $user->id,
+                'action' => 'renewal_submit',
+                'from_status' => $baseCard->status,
+                'to_status' => 'Menunggu Verifikasi',
+                'notes' => $mode === 'update'
+                    ? 'Pengajuan perpanjangan dengan pembaruan data.'
+                    : 'Pengajuan perpanjangan tanpa perubahan data.',
+                'ip' => $request->ip(),
+                'user_agent' => substr($request->userAgent() ?? '', 0, 255),
+            ]);
+
+            if ($baseCard->is_active) {
+                $baseCard->update(['is_active' => false]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('pencaker.card.renewal')
+                ->with('success', 'Pengajuan perpanjangan AK1 berhasil dikirim. Menunggu verifikasi admin.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('AK1 renewal submit error', [
+                'user_id' => $user->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'Gagal mengajukan perpanjangan: ' . $e->getMessage());
+        }
+    }
+
+    protected function approvedLogAt(CardApplication $application)
+    {
+        $logs = $application->relationLoaded('logs') ? $application->logs : $application->logs()->latest()->get();
+        $log = $logs->first(fn ($log) => $log->action === 'approve' && $log->to_status === 'Disetujui');
+        return optional($log)->created_at;
     }
 
     /**
