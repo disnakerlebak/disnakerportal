@@ -439,6 +439,9 @@
                         dropUp: false,
                         style: '',
                         width: 224, // w-56
+                        init() {
+                            window.addEventListener('close-dropdowns', () => { this.open = false; });
+                        },
                         toggle(e) {
                             this.open = !this.open;
                             if (this.open) {
@@ -602,6 +605,8 @@
                 }
 
                 window.showDetail = async function (id) {
+                    // tutup semua dropdown aksi lebih dulu
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
                     const body = getEl('modalContent');
                     window.dispatchEvent(new CustomEvent('open-modal', { detail: 'detail-ak1' }));
                     if (body) body.innerHTML = "<p class='text-gray-400'>Memuat data...</p>";
@@ -754,6 +759,7 @@
                 };
 
                 window.openLogModal = function (button) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
                     window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-ak1' }));
                     const logModalTitle = getEl('logModalTitle');
                     const logModalSubtitle = getEl('logModalSubtitle');
@@ -828,6 +834,7 @@
                 };
 
                 window.openUnapproveModal = function (button) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
                     window.dispatchEvent(new CustomEvent('open-modal', { detail: 'unapprove-ak1' }));
                     const form = getEl('unapproveForm');
                     const subtitle = getEl('unapproveModalSubtitle');
@@ -848,6 +855,7 @@
                 };
 
                 window.openApproveModal = function (button) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
                     window.dispatchEvent(new CustomEvent('open-modal', { detail: 'approve-ak1' }));
                     const form = getEl('approveForm');
                     const subtitle = getEl('approveModalSubtitle');
@@ -867,6 +875,7 @@
                 };
 
                 window.openRejectModal = function (id) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
                     window.dispatchEvent(new CustomEvent('open-modal', { detail: 'reject-ak1' }));
                     const form = getEl('rejectForm');
                     if (!form) return;
@@ -878,6 +887,7 @@
                 };
 
                 window.openRevisionModal = function (id) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
                     window.dispatchEvent(new CustomEvent('open-modal', { detail: 'revision-ak1' }));
                     const form = getEl('revisionForm');
                     if (!form) return;
