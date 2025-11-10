@@ -14,20 +14,46 @@ use App\Models\CardApplication;
 
 class JobseekerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Hanya user yang punya CardApplication berstatus "Disetujui"
-        $users = User::query()
+        $query = User::query()
             ->whereHas('cardApplications', fn($q) => $q->where('status', 'Disetujui')->where('is_active', true))
             ->with([
-                'jobseekerProfile',
+                // ambil profil + hitung jumlah pelatihan/pengalaman kerja (efisien)
+                'jobseekerProfile' => fn($q) => $q->withCount(['trainings', 'workExperiences']),
                 // ambil 1 aplikasi AK1 yang disetujui paling terbaru (untuk foto/berkas)
                 'cardApplications' => fn($q) => $q->where('status', 'Disetujui')->where('is_active', true)->latest()->limit(1),
-            ])
-            ->latest()
-            ->paginate(20);
+            ]);
 
-        return view('admin.pencaker.index', compact('users'));
+        // Filter: kata kunci (nama)
+        if ($request->filled('q')) {
+            $keyword = trim($request->string('q'));
+            $query->where(function ($w) use ($keyword) {
+                $w->where('name', 'like', "%{$keyword}%")
+                  ->orWhereHas('jobseekerProfile', function ($p) use ($keyword) {
+                      $p->where('nama_lengkap', 'like', "%{$keyword}%");
+                  });
+            });
+        }
+
+        // Filter: memiliki pelatihan / pengalaman
+        if ($request->boolean('has_training')) {
+            $query->whereHas('jobseekerProfile.trainings');
+        }
+        if ($request->boolean('has_work')) {
+            $query->whereHas('jobseekerProfile.workExperiences');
+        }
+
+        $users = $query->latest()->paginate(20);
+
+        return view('admin.pencaker.index', [
+            'users' => $users,
+            'filters' => [
+                'has_training' => $request->boolean('has_training'),
+                'has_work' => $request->boolean('has_work'),
+            ],
+        ]);
     }
 
     public function show(User $user)
