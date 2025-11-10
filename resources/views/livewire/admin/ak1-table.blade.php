@@ -1,9 +1,9 @@
 <div class="max-w-6xl mx-auto h-full min-h-0 flex flex-col px-6 py-8 gap-6 box-border">
-    <div class="flex justify-between items-center">
+    <!-- <div class="flex justify-between items-center">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">
             Verifikasi Pengajuan AK1
         </h2>
-    </div>
+    </div> -->
 
     {{-- ===== Filter (Livewire reactive) ===== --}}
     <form wire:submit.prevent="noop" class="flex flex-wrap items-center gap-3">
@@ -53,13 +53,13 @@
             </div>
         </div>
 
-        <div class="flex-1 min-h-0 overflow-hidden"
+        <div class="flex-1 min-h-0 overflow-visible"
              wire:target="search,status,type,noop,setType,clearFilters"
              wire:loading.class="blur-[1px] opacity-60">
-            <div class="overflow-x-auto h-full min-h-0">
-                <div class="h-full min-h-0 overflow-y-auto lg:overflow-y-visible">
-                    <table class="min-w-full w-full text-sm text-gray-200">
-                        <thead class="bg-gray-700 text-gray-100 uppercase text-xs whitespace-nowrap">
+            <div class="overflow-x-auto h-full min-h-0 pb-10">
+                <div class="h-full min-h-0 overflow-visible">
+                    <table class="min-w-full w-full text-sm text-slate-200">
+                        <thead class="bg-slate-800 text-slate-200 uppercase text-xs whitespace-nowrap sticky top-0 z-20 border-b border-slate-700 shadow-md shadow-slate-900/30">
                         <tr>
                             <th class="p-3 text-center whitespace-nowrap">Pemohon</th>
                             <th class="p-3 text-center whitespace-nowrap">Tanggal</th>
@@ -72,7 +72,7 @@
                         </tr>
                         </thead>
 
-                        <tbody class="divide-y divide-gray-800 text-gray-200">
+                        <tbody class="divide-y divide-slate-800 text-slate-200">
                         @forelse ($apps as $app)
                             @php
                                 $badgeClass = match($app->status) {
@@ -175,8 +175,8 @@
                                 {{-- Aksi --}}
                                 <td class="relative p-3 align-top text-center">
                                     <div class="flex items-center justify-center">
-                                        <div class="relative" x-data="{ open: false }" x-id="['action-menu']">
-                                            <button @click="open = !open"
+                                        <div class="relative" x-data="dropdownMenu()" x-id="['action-menu']">
+                                            <button @click="toggle($event)"
                                                     type="button"
                                                     class="rounded-md border border-slate-700 bg-slate-800 p-2 text-white text-sm transition duration-200 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -187,14 +187,17 @@
                                                 </svg>
                                             </button>
 
-                                            <div x-show="open" @click.away="open = false"
-                                                 x-transition:enter="transition ease-out duration-150"
-                                                 x-transition:enter-start="opacity-0 transform scale-95"
-                                                 x-transition:enter-end="opacity-100 transform scale-100"
-                                                 x-transition:leave="transition ease-in duration-100"
-                                                 x-transition:leave-start="opacity-100 transform scale-100"
-                                                 x-transition:leave-end="opacity-0 transform scale-95"
-                                                 class="absolute left-0 z-50 mt-2 w-48 origin-top-left rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800 md:left-auto md:right-0 md:origin-top-right">
+                                            <template x-teleport="body">
+                                                <div x-show="open" @click.away="close()" @keydown.escape.window="close()"
+                                                     x-transition:enter="transition ease-out duration-150"
+                                                     x-transition:enter-start="opacity-0 transform scale-95"
+                                                     x-transition:enter-end="opacity-100 transform scale-100"
+                                                     x-transition:leave="transition ease-in duration-100"
+                                                     x-transition:leave-start="opacity-100 transform scale-100"
+                                                     x-transition:leave-end="opacity-0 transform scale-95"
+                                                     :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
+                                                     class="fixed z-[70] w-56 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
+                                                     :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
 
                                                 {{-- 👁️ Detail --}}
                                                 <button onclick="showDetail({{ $app->id }})"
@@ -278,7 +281,8 @@
                                                     </svg>
                                                     Riwayat
                                                 </button>
-                                            </div>
+                                                </div>
+                                            </template>
                                         </div>
                                     </div>
                                 </td>
@@ -301,167 +305,157 @@
         </div>
     </div>
 
-    {{-- ===== Modal Detail ===== --}}
-    <div id="detailModal"
-         wire:ignore
-         class="fixed inset-0 z-50 hidden bg-black bg-opacity-60 flex items-center justify-center">
-        <div class="bg-gray-900 w-11/12 max-w-4xl p-6 rounded-xl shadow-lg relative text-gray-100 border border-gray-800">
-            <div class="relative">
-                <div id="modalScroll" class="overflow-y-auto max-h-[75vh] pr-2 md:pr-3">
-                    <div class="sticky top-0 z-10 flex justify-end pt-1 pb-1 -mt-2 -mr-2 md:-mr-3 bg-gray-900/80">
-                        <button onclick="closeModal()" class="h-10 w-10 inline-flex items-center justify-center rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-gray-200 shadow transition" aria-label="Tutup">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
-                                <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 11-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="modalContent" class=""></div>
-                </div>
+    {{-- ===== Modal Detail (x-modal) ===== --}}
+    <x-modal name="detail-ak1" :show="false" maxWidth="6xl" animation="zoom">
+        <div class="px-4 py-3 border-b border-slate-800 sticky top-0 bg-slate-900 z-10 flex justify-end">
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'detail-ak1'}))" class="h-9 w-9 inline-flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-gray-200">
+                ✕
+            </button>
+        </div>
+        <div id="modalContent" class="px-6 pb-6"></div>
+    </x-modal>
+
+    {{-- ===== Modal Tolak (x-modal) ===== --}}
+    <x-modal name="reject-ak1" :show="false" maxWidth="md" animation="slide-up">
+        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Tolak Pengajuan</h3>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'reject-ak1'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <form id="rejectForm" method="POST" class="px-6 py-5">
+            @csrf
+            <div class="mb-3">
+                <label class="block text-sm mb-1">Pilih Alasan Penolakan:</label>
+                <select name="reason_id" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200">
+                    @foreach($rejectionReasons as $reason)
+                        <option value="{{ $reason['id'] }}">{{ $reason['title'] }}</option>
+                    @endforeach
+                </select>
             </div>
-        </div>
-    </div>
-
-    {{-- ===== Modal Tolak ===== --}}
-    <div id="rejectModal"
-         wire:ignore
-         class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-        <div class="bg-gray-900 w-full max-w-md p-6 rounded-xl shadow-lg text-gray-100 relative">
-            <h3 class="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">Tolak Pengajuan</h3>
-            <form id="rejectForm" method="POST">
-                @csrf
-                <div class="mb-3">
-                    <label class="block text-sm mb-1">Pilih Alasan Penolakan:</label>
-                    <select name="reason_id" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200">
-                        @foreach($rejectionReasons as $reason)
-                            <option value="{{ $reason['id'] }}">{{ $reason['title'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm mb-1">Catatan Tambahan (opsional):</label>
-                    <textarea name="notes" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200"></textarea>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeRejectModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
-                    <button type="submit" class="px-3 py-1.5 rounded bg-red-700 hover:bg-red-800">Tolak</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- ===== Modal Riwayat ===== --}}
-    <div id="logModal"
-         wire:ignore
-         class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-        <div class="bg-gray-900 w-full max-w-3xl rounded-xl shadow-xl text-gray-100 relative overflow-hidden">
-            <div class="flex items-start justify-between border-b border-gray-800 px-6 py-5">
-                <div>
-                    <h3 class="text-lg font-semibold" id="logModalTitle">Riwayat Pengajuan</h3>
-                    <p class="text-sm text-gray-400 mt-1" id="logModalSubtitle"></p>
-                </div>
-                <button type="button" onclick="closeLogModal()" class="text-gray-400 hover:text-gray-200 transition">
-                    ✕
-                </button>
+            <div class="mb-4">
+                <label class="block text-sm mb-1">Catatan Tambahan (opsional):</label>
+                <textarea name="notes" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200"></textarea>
             </div>
-            <div id="logModalBody" class="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4"></div>
-        </div>
-    </div>
-
-    {{-- ===== Modal Batalkan Persetujuan ===== --}}
-    <div id="unapproveModal"
-         wire:ignore
-         class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-        <div class="bg-gray-900 w-full max-w-lg rounded-xl shadow-xl text-gray-100 relative overflow-hidden border border-gray-800">
-            <div class="flex items-center justify-between border-b border-gray-800 px-6 py-4">
-                <div>
-                    <h3 class="text-lg font-semibold">Batalkan Persetujuan</h3>
-                    <p class="text-sm text-gray-400 mt-1" id="unapproveModalSubtitle"></p>
-                </div>
-                <button type="button" onclick="closeUnapproveModal()" class="text-gray-400 hover:text-gray-200 transition">✕</button>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeRejectModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
+                <button type="submit" class="px-3 py-1.5 rounded bg-red-700 hover:bg-red-800">Tolak</button>
             </div>
-            <form id="unapproveForm" method="POST" class="px-6 py-5 space-y-4">
-                @csrf
-                <p class="text-sm text-gray-300 leading-relaxed">
-                    Apakah Anda yakin ingin membatalkan persetujuan pengajuan ini? Status akan diubah menjadi
-                    <span class="font-semibold text-orange-300">Batal</span> dan nomor AK1 akan dinonaktifkan. Pemohon dapat memperbarui data dan mengajukan ulang.
-                </p>
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1" for="unapproveNotes">Catatan (opsional)</label>
-                    <textarea name="notes" id="unapproveNotes" rows="4"
-                              class="w-full resize-none bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
-                              placeholder="Catat alasan pembatalan jika diperlukan..."></textarea>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeUnapproveModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">
-                        Ya, Batalkan Persetujuan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+        </form>
+    </x-modal>
 
-    {{-- ===== Modal Setujui ===== --}}
-    <div id="approveModal"
-         wire:ignore
-         class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-        <div class="bg-gray-900 w-full max-w-lg rounded-xl shadow-xl text-gray-100 relative overflow-hidden border border-gray-800">
-            <div class="flex items-center justify-between border-b border-gray-800 px-6 py-4">
-                <div>
-                    <h3 class="text-lg font-semibold">Konfirmasi Persetujuan</h3>
-                    <p class="text-sm text-gray-400 mt-1" id="approveModalSubtitle"></p>
-                </div>
-                <button type="button" onclick="closeApproveModal()" class="text-gray-400 hover:text-gray-200 transition">✕</button>
+    {{-- ===== Modal Riwayat (x-modal) ===== --}}
+    <x-modal name="log-ak1" :show="false" maxWidth="3xl" animation="zoom">
+        <div class="flex items-start justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold" id="logModalTitle">Riwayat Pengajuan</h3>
+                <p class="text-sm text-gray-400 mt-1" id="logModalSubtitle"></p>
             </div>
-            <form id="approveForm" method="POST" class="px-6 py-5 space-y-4">
-                @csrf
-                <p class="text-sm text-gray-300 leading-relaxed">
-                    Sebelum menyetujui pastikan data diri, riwayat pendidikan sudah sesuai dengan dokumen yang telah diunggah oleh pencaker.
-                </p>
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1" for="approveNotes">Catatan (opsional)</label>
-                    <textarea name="notes" id="approveNotes" rows="4"
-                              class="w-full resize-none bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
-                              placeholder="Catatan untuk pemohon..."></textarea>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeApproveModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition text-sm font-semibold text-white">
-                        Ya, Setujui
-                    </button>
-                </div>
-            </form>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'log-ak1'}))" class="text-slate-300 hover:text-white">✕</button>
         </div>
-    </div>
+        <div id="logModalBody" class="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4"></div>
+    </x-modal>
 
-    {{-- ===== Modal Revisi ===== --}}
-    <div id="revisionModal"
-         wire:ignore
-         class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-        <div class="bg-gray-900 w-full max-w-md p-6 rounded-xl shadow-lg text-gray-100 relative">
-            <h3 class="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">Minta Revisi Pengajuan</h3>
-            <form id="revisionForm" method="POST">
-                @csrf
-                <div class="mb-4">
-                    <label class="block text-sm mb-1">Catatan Revisi:</label>
-                    <textarea name="notes" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200" required></textarea>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeRevisionModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
-                    <button type="submit" class="px-3 py-1.5 rounded bg-yellow-600 hover:bg-yellow-700">Kirim</button>
-                </div>
-            </form>
+    {{-- ===== Modal Batalkan Persetujuan (x-modal) ===== --}}
+    <x-modal name="unapprove-ak1" :show="false" maxWidth="lg" animation="slide-up">
+        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold">Batalkan Persetujuan</h3>
+                <p class="text-sm text-gray-400 mt-1" id="unapproveModalSubtitle"></p>
+            </div>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'unapprove-ak1'}))" class="text-slate-300 hover:text-white">✕</button>
         </div>
-    </div>
+        <form id="unapproveForm" method="POST" class="px-6 py-5 space-y-4">
+            @csrf
+            <p class="text-sm text-gray-300 leading-relaxed">
+                Apakah Anda yakin ingin membatalkan persetujuan pengajuan ini? Status akan diubah menjadi
+                <span class="font-semibold text-orange-300">Batal</span> dan nomor AK1 akan dinonaktifkan. Pemohon dapat memperbarui data dan mengajukan ulang.
+            </p>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1" for="unapproveNotes">Catatan (opsional)</label>
+                <textarea name="notes" id="unapproveNotes" rows="4"
+                          class="w-full resize-none bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                          placeholder="Catat alasan pembatalan jika diperlukan..."></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeUnapproveModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Ya, Batalkan Persetujuan</button>
+            </div>
+        </form>
+    </x-modal>
+
+    {{-- ===== Modal Setujui (x-modal) ===== --}}
+    <x-modal name="approve-ak1" :show="false" maxWidth="md" animation="slide-up">
+        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold">Konfirmasi Persetujuan</h3>
+                <p class="text-sm text-gray-400 mt-1" id="approveModalSubtitle"></p>
+            </div>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'approve-ak1'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <form id="approveForm" method="POST" class="px-6 py-5 space-y-4">
+            @csrf
+            <p class="text-sm text-gray-300 leading-relaxed">
+                Sebelum menyetujui pastikan data diri, riwayat pendidikan sudah sesuai dengan dokumen yang telah diunggah oleh pencaker.
+            </p>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1" for="approveNotes">Catatan (opsional)</label>
+                <textarea name="notes" id="approveNotes" rows="4"
+                          class="w-full resize-none bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                          placeholder="Catatan untuk pemohon..."></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeApproveModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition text-sm font-semibold text-white">Ya, Setujui</button>
+            </div>
+        </form>
+    </x-modal>
+
+    {{-- ===== Modal Revisi (x-modal) ===== --}}
+    <x-modal name="revision-ak1" :show="false" maxWidth="md" animation="slide-up">
+        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Minta Revisi Pengajuan</h3>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'revision-ak1'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <form id="revisionForm" method="POST" class="px-6 py-5">
+            @csrf
+            <div class="mb-4">
+                <label class="block text-sm mb-1">Catatan Revisi:</label>
+                <textarea name="notes" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200" required></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeRevisionModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
+                <button type="submit" class="px-3 py-1.5 rounded bg-yellow-600 hover:bg-yellow-700">Kirim</button>
+            </div>
+        </form>
+    </x-modal>
 
 @once
     @push('scripts')
         <script>
             (() => {
+                // Helper dropdown agar bisa flip ke atas saat dekat tepi bawah
+                window.dropdownMenu = function () {
+                    return {
+                        open: false,
+                        dropUp: false,
+                        style: '',
+                        width: 224, // w-56
+                        toggle(e) {
+                            this.open = !this.open;
+                            if (this.open) {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const spaceBelow = window.innerHeight - rect.bottom;
+                                this.dropUp = spaceBelow < 240; // flip jika ruang bawah sedikit
+
+                                let left = rect.right - this.width;
+                                left = Math.max(8, Math.min(left, window.innerWidth - this.width - 8));
+                                let top = this.dropUp ? rect.top - 8 : rect.bottom + 8;
+                                this.style = `left:${left}px;top:${top}px`;
+                            }
+                        },
+                        close() { this.open = false; }
+                    }
+                }
+
                 const statusLabels = {
                     'Menunggu Verifikasi': 'Menunggu Verifikasi',
                     'Menunggu Revisi Verifikasi': 'Menunggu Revisi Verifikasi',
@@ -494,7 +488,7 @@
                 const getEl = (id) => document.getElementById(id);
 
                 window.closeModal = function () {
-                    getEl('detailModal')?.classList.add('hidden');
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'detail-ak1' }));
                 };
 
                 function renderSnapshotBlock(title, snapshot, includeDocuments = true) {
@@ -608,10 +602,8 @@
                 }
 
                 window.showDetail = async function (id) {
-                    const modal = getEl('detailModal');
                     const body = getEl('modalContent');
-
-                    modal?.classList.remove('hidden');
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'detail-ak1' }));
                     if (body) body.innerHTML = "<p class='text-gray-400'>Memuat data...</p>";
 
                     try {
@@ -762,7 +754,7 @@
                 };
 
                 window.openLogModal = function (button) {
-                    const logModalEl = getEl('logModal');
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-ak1' }));
                     const logModalTitle = getEl('logModalTitle');
                     const logModalSubtitle = getEl('logModalSubtitle');
                     const logModalBody = getEl('logModalBody');
@@ -828,21 +820,20 @@
                         `;
                     }
 
-                    logModalEl?.classList.remove('hidden');
+                    // shown via x-modal open event
                 };
 
                 window.closeLogModal = function () {
-                    getEl('logModal')?.classList.add('hidden');
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'log-ak1' }));
                 };
 
                 window.openUnapproveModal = function (button) {
-                    const modal = getEl('unapproveModal');
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'unapprove-ak1' }));
                     const form = getEl('unapproveForm');
                     const subtitle = getEl('unapproveModalSubtitle');
                     const notes = getEl('unapproveNotes');
 
-                    if (!modal || !form) return;
-
+                    if (!form) return;
                     form.action = button.getAttribute('data-unapprove-url');
                     if (notes) notes.value = '';
                     if (subtitle) {
@@ -850,19 +841,18 @@
                         const email = button.getAttribute('data-app-email') || '';
                         subtitle.textContent = email ? `${name} · ${email}` : name;
                     }
-                    modal.classList.remove('hidden');
                 };
 
                 window.closeUnapproveModal = function () {
-                    getEl('unapproveModal')?.classList.add('hidden');
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'unapprove-ak1' }));
                 };
 
                 window.openApproveModal = function (button) {
-                    const modal = getEl('approveModal');
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'approve-ak1' }));
                     const form = getEl('approveForm');
                     const subtitle = getEl('approveModalSubtitle');
                     const notes = getEl('approveNotes');
-                    if (!modal || !form) return;
+                    if (!form) return;
                     form.action = button.getAttribute('data-approve-url');
                     if (notes) notes.value = '';
                     if (subtitle) {
@@ -870,35 +860,32 @@
                         const email = button.getAttribute('data-app-email') || '';
                         subtitle.textContent = email ? `${name} · ${email}` : name;
                     }
-                    modal.classList.remove('hidden');
                 };
 
                 window.closeApproveModal = function () {
-                    getEl('approveModal')?.classList.add('hidden');
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'approve-ak1' }));
                 };
 
                 window.openRejectModal = function (id) {
-                    const modal = getEl('rejectModal');
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'reject-ak1' }));
                     const form = getEl('rejectForm');
-                    if (!modal || !form) return;
+                    if (!form) return;
                     form.action = `/admin/ak1/${id}/reject`;
-                    modal.classList.remove('hidden');
                 };
 
                 window.closeRejectModal = function () {
-                    getEl('rejectModal')?.classList.add('hidden');
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'reject-ak1' }));
                 };
 
                 window.openRevisionModal = function (id) {
-                    const modal = getEl('revisionModal');
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'revision-ak1' }));
                     const form = getEl('revisionForm');
-                    if (!modal || !form) return;
+                    if (!form) return;
                     form.action = `/admin/ak1/${id}/revision`;
-                    modal.classList.remove('hidden');
                 };
 
                 window.closeRevisionModal = function () {
-                    getEl('revisionModal')?.classList.add('hidden');
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'revision-ak1' }));
                 };
 
                 const escapeHtml = (unsafe) => (unsafe ?? '')
@@ -910,15 +897,7 @@
 
                 const formatStatus = (status) => statusLabels[status] || status || '-';
 
-                ['detailModal', 'logModal', 'unapproveModal', 'rejectModal', 'revisionModal', 'approveModal'].forEach((id) => {
-                    const modal = getEl(id);
-                    if (!modal) return;
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            modal.classList.add('hidden');
-                        }
-                    });
-                });
+                // x-modal already handles overlay click to close
             })();
         </script>
     @endpush

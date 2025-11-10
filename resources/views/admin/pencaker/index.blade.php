@@ -12,10 +12,10 @@
   </div>
 
   {{-- TABEL Pencaker --}}
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow">
+  <div class="rounded-xl border border-slate-800 bg-slate-900/70 shadow">
     <div class="overflow-x-auto">
-      <table class="min-w-full text-sm text-gray-200">
-        <thead class="bg-gray-700 text-gray-100">
+      <table class="min-w-full text-sm text-slate-200">
+        <thead class="bg-slate-800 text-slate-200">
           <tr>
             <th class="p-3 text-left">Nama Lengkap</th>
             <th class="p-3 text-left">Jenis Kelamin</th>
@@ -25,7 +25,7 @@
             <th class="p-3 text-left">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-700">
+        <tbody class="divide-y divide-slate-800">
           @forelse ($users as $u)
             @php
               $p = $u->jobseekerProfile;
@@ -36,7 +36,7 @@
               $ijz  = $app?->ijazah_file ? asset('storage/'.$app->ijazah_file) : null;
             @endphp
 
-            <tr>
+            <tr class="hover:bg-slate-800/50 transition">
               <td class="p-3">{{ $p->nama_lengkap ?? '-' }}</td>
               <td class="p-3">{{ $p->jenis_kelamin ?? '-' }}</td>
               <td class="p-3">{{ $usia }}</td>
@@ -48,13 +48,13 @@
               </td>
             </tr>
           @empty
-            <tr><td colspan="6" class="p-6 text-center text-gray-400">Belum ada data pencaker disetujui.</td></tr>
+            <tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada data pencaker disetujui.</td></tr>
           @endforelse
         </tbody>
       </table>
     </div>
 
-    <div class="p-4 border-t border-gray-700">
+    <div class="p-4 border-t border-slate-800">
       {{ $users->withQueryString()->links() }}
     </div>
   </div>
@@ -62,14 +62,14 @@
   {{-- MODAL DETAIL (AJAX) --}}
   <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
        @keydown.escape.window="open=false">
-    <div @click.outside="open=false" class="bg-gray-900 w-full max-w-5xl rounded-2xl shadow-lg overflow-hidden border border-gray-700">
-      <div class="flex items-center justify-between px-6 py-3 border-b border-gray-800 sticky top-0 bg-gray-900 z-10">
-        <h3 class="text-lg font-semibold text-gray-100">Detail Pencaker</h3>
-        <button class="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600" @click="open=false">Tutup</button>
+    <div @click.outside="open=false" class="bg-slate-900 w-full max-w-5xl rounded-2xl shadow-lg overflow-hidden border border-slate-800">
+      <div class="flex items-center justify-between px-6 py-3 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
+        <h3 class="text-lg font-semibold text-slate-100">Detail Pencaker</h3>
+        <button class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700" @click="open=false">Tutup</button>
       </div>
       <div class="max-h-[85vh] overflow-y-auto">
         <template x-if="loading">
-          <div class="p-6 text-gray-300">Memuat...</div>
+          <div class="p-6 text-slate-300">Memuat...</div>
         </template>
         <div class="p-6" x-html="html"></div>
       </div>

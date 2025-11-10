@@ -17,16 +17,16 @@
     <livewire:styles />
 </head>
 
-<body class="flex h-screen bg-slate-950 text-slate-100">
+<body class="flex h-screen bg-slate-950 text-slate-100 overflow-x-hidden">
 
  <!-- ===== Sidebar ===== -->
 <!-- Overlay mobile -->
 <div x-show="sidebarOpen" x-transition.opacity
-     class="fixed inset-0 z-10 bg-black/60 md:hidden"
+     class="fixed inset-0 z-30 bg-black/40 md:hidden"
      @click="sidebarOpen = false"></div>
 
 <aside
-  class="fixed inset-y-0 left-0 z-20 flex flex-col overflow-y-auto bg-slate-900/95 shadow-xl transition-transform duration-200 md:translate-x-0"
+  class="fixed inset-y-0 left-0 z-40 flex flex-col overflow-y-auto bg-slate-900/95 shadow-xl transition-[width,transform] duration-200 md:translate-x-0"
   :class="[
     sidebarCollapsed ? 'w-20' : 'w-64',
     sidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -200,7 +200,7 @@
 
 
     <!-- ===== Main Content ===== -->
-    <div class="flex-1 flex flex-col transition-all duration-200 bg-slate-950 border-l border-slate-800"
+    <div class="flex-1 min-w-0 flex flex-col transition-all duration-200 bg-slate-950 border-l border-slate-800"
          x-bind:class="sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'">
         <header class="flex justify-between items-center px-4 py-4 border-b border-slate-800 bg-slate-900/60 backdrop-blur">
             <div class="flex items-center space-x-3">
@@ -219,7 +219,11 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto bg-slate-950 p-6">@yield('content')</main>
+<main
+  class="flex-1 min-w-0 overflow-y-auto bg-slate-950 p-6"
+>
+  @yield('content')
+</main>
     </div>
     @stack('scripts')
 
