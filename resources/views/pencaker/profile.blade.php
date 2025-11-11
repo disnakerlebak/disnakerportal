@@ -71,11 +71,14 @@
                     @if ($locked)
                         <button id="openEdit" disabled
                                 title="Terkunci karena pengajuan AK1 sedang diproses/diterima"
-                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 cursor-not-allowed">
-                            Edit Profil (Terkunci)
+                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 cursor-not-allowed flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="sr-only">Terkunci</span>
                         </button>
                     @else
-                        <button id="openEdit"
+                        <button data-modal-open="modalProfileEdit"
                                 class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition">
                             Edit Profil
                         </button>
@@ -83,8 +86,11 @@
                 </div>
 
                 @if ($locked)
-                    <div class="mb-4 rounded-lg bg-yellow-600/20 border border-yellow-600 text-yellow-100 px-4 py-3">
-                        Pengeditan data diri terkunci karena pengajuan AK1 berstatus Menunggu Verifikasi atau Disetujui.
+                    <div class="mb-4 rounded-lg bg-yellow-600/20 border border-yellow-600 text-yellow-100 px-4 py-3 flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 mt-0.5">
+                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Pengeditan data diri terkunci karena pengajuan AK1 berstatus Menunggu Verifikasi atau Disetujui.</span>
                     </div>
                 @endif
 
@@ -182,18 +188,26 @@
                                     </td>
                                     <td class="border border-slate-800 p-2 text-center">
                                         @if ($locked)
-                                            <span class="text-slate-400">Terkunci</span>
+                                            <span class="inline-flex items-center justify-center text-slate-400" title="Terkunci">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                                    <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
                                         @else
-                                            <a href="javascript:void(0)"
-                                               data-modal-open="modalEducationEdit{{ $edu->id }}"
-                                               class="text-yellow-400 hover:text-yellow-300 mr-2">
-                                                Edit
-                                            </a>
-                                            <button type="button"
-                                                    class="text-red-500 hover:text-red-400"
+                                            <button type="button" title="Edit"
+                                                    data-modal-open="modalEducationEdit{{ $edu->id }}"
+                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-yellow-400 hover:bg-slate-700 mr-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                </svg>
+                                            </button>
+                                            <button type="button" title="Hapus"
+                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-red-500 hover:bg-slate-700"
                                                     data-delete-modal="modalEducationDelete"
                                                     data-action="{{ route('pencaker.education.destroy', $edu) }}">
-                                                Hapus
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                                    <path fill-rule="evenodd" d="M9 3.75A1.5 1.5 0 0110.5 2.25h3A1.5 1.5 0 0115 3.75V4.5h4.5a.75.75 0 010 1.5H4.5a.75.75 0 010-1.5H9V3.75zM6.75 7.5A.75.75 0 017.5 6.75h9a.75.75 0 01.75.75v10.5A3.75 3.75 0 0113.5 21.75h-3A3.75 3.75 0 016.75 18V7.5z" clip-rule="evenodd"/>
+                                                </svg>
                                             </button>
                                         @endif
                                     </td>
@@ -283,18 +297,26 @@
                                     </td>
                                     <td class="border border-slate-800 p-2 text-center">
                                         @if ($locked)
-                                            <span class="text-slate-400">Terkunci</span>
+                                            <span class="inline-flex items-center justify-center text-slate-400" title="Terkunci">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                                    <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
                                         @else
-                                            <a href="javascript:void(0)"
-                                               data-modal-open="modalTrainingEdit{{ $train->id }}"
-                                               class="text-yellow-400 hover:text-yellow-300 mr-2">
-                                                Edit
-                                            </a>
-                                            <button type="button"
-                                                    class="text-red-500 hover:text-red-400"
+                                            <button type="button" title="Edit"
+                                                    data-modal-open="modalTrainingEdit{{ $train->id }}"
+                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-yellow-400 hover:bg-slate-700 mr-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                </svg>
+                                            </button>
+                                            <button type="button" title="Hapus"
+                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-red-500 hover:bg-slate-700"
                                                     data-delete-modal="modalTrainingDelete"
                                                     data-action="{{ route('pencaker.training.destroy', $train) }}">
-                                                Hapus
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                                    <path fill-rule="evenodd" d="M9 3.75A1.5 1.5 0 0110.5 2.25h3A1.5 1.5 0 0115 3.75V4.5h4.5a.75.75 0 010 1.5H4.5a.75.75 0 010-1.5H9V3.75zM6.75 7.5A.75.75 0 017.5 6.75h9a.75.75 0 01.75.75v10.5A3.75 3.75 0 0113.5 21.75h-3A3.75 3.75 0 016.75 18V7.5z" clip-rule="evenodd"/>
+                                                </svg>
                                             </button>
                                         @endif
                                     </td>
@@ -371,16 +393,20 @@
                                         @endif
                                     </td>
                                     <td class="border border-slate-800 p-2 text-center">
-                                        <a href="javascript:void(0)"
-                                           data-modal-open="modalWorkEdit{{ $work->id }}"
-                                           class="text-yellow-400 hover:text-yellow-300 mr-2">
-                                            Edit
-                                        </a>
-                                        <button type="button"
-                                                class="text-red-500 hover:text-red-400"
+                                        <button type="button" title="Edit"
+                                                data-modal-open="modalWorkEdit{{ $work->id }}"
+                                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-yellow-400 hover:bg-slate-700 mr-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" title="Hapus"
+                                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-red-500 hover:bg-slate-700"
                                                 data-delete-modal="modalWorkDelete"
                                                 data-action="{{ route('pencaker.work.destroy', $work) }}">
-                                            Hapus
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                                <path fill-rule="evenodd" d="M9 3.75A1.5 1.5 0 0110.5 2.25h3A1.5 1.5 0 0115 3.75V4.5h4.5a.75.75 0 010 1.5H4.5a.75.75 0 010-1.5H9V3.75zM6.75 7.5A.75.75 0 017.5 6.75h9a.75.75 0 01.75.75v10.5A3.75 3.75 0 0113.5 21.75h-3A3.75 3.75 0 016.75 18V7.5z" clip-rule="evenodd"/>
+                                            </svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -448,141 +474,114 @@
     </div>
 </div>
 
-{{-- Modal: Edit Profil --}}
-<div id="profileModal"
-     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm">
-    <div class="min-h-0 flex w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900 shadow-2xl"
-         style="max-height:90vh">
+{{-- Modal: Edit Profil (refactor ke komponen) --}}
+<x-modal-form id="modalProfileEdit"
+              title="Edit Data Diri"
+              action="{{ route('pencaker.profile.update') }}"
+              method="PUT"
+              submitLabel="Simpan" cancelLabel="Batal">
+    <input type="hidden" name="__accordion" value="profile">
 
-        <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-900 px-5 py-4">
-            <h3 class="text-lg font-semibold text-slate-100">Edit Data Diri</h3>
-            <button id="closeModal" class="text-2xl font-bold text-slate-400 transition hover:text-slate-200">&times;</button>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+            <label class="block text-sm text-slate-400">Nama Lengkap</label>
+            <input type="text" name="nama_lengkap"
+                   value="{{ old('nama_lengkap', $profile->nama_lengkap ?? '') }}"
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
+                   required>
         </div>
 
-        <form method="POST" action="{{ route('pencaker.profile.update') }}"
-              class="grow space-y-4 overflow-y-auto p-6">
-            @csrf
-            @method('PUT')
-            <input type="hidden" name="__accordion" value="profile">
+        <div>
+            <label class="block text-sm text-slate-400">NIK</label>
+            <input type="text" name="nik"
+                   value="{{ old('nik', $profile->nik ?? '') }}"
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
+                   required>
+        </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                    <label class="block text-sm text-slate-400">Nama Lengkap</label>
-                    <input type="text" name="nama_lengkap"
-                           value="{{ old('nama_lengkap', $profile->nama_lengkap ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500"
-                           required>
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">Tempat Lahir</label>
+            <input type="text" name="tempat_lahir"
+                   value="{{ old('tempat_lahir', $profile->tempat_lahir ?? '') }}"
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">NIK</label>
-                    <input type="text" name="nik"
-                           value="{{ old('nik', $profile->nik ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500"
-                           required>
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">Tanggal Lahir</label>
+            <input type="date" name="tanggal_lahir"
+                   value="{{ old('tanggal_lahir', $profile->tanggal_lahir ?? '') }}"
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">Tempat Lahir</label>
-                    <input type="text" name="tempat_lahir"
-                           value="{{ old('tempat_lahir', $profile->tempat_lahir ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">Jenis Kelamin</label>
+            <select name="jenis_kelamin"
+                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih</option>
+                <option value="Laki-laki" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Laki-laki')>Laki-laki</option>
+                <option value="Perempuan" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Perempuan')>Perempuan</option>
+            </select>
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">Tanggal Lahir</label>
-                    <input type="date" name="tanggal_lahir"
-                           value="{{ old('tanggal_lahir', $profile->tanggal_lahir ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">Agama</label>
+            <select name="agama"
+                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih</option>
+                @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
+                    <option value="{{ $agama }}" @selected(old('agama', $profile->agama ?? '') == $agama)>{{ $agama }}</option>
+                @endforeach
+            </select>
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">Jenis Kelamin</label>
-                    <select name="jenis_kelamin"
-                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                        <option value="">Pilih</option>
-                        <option value="Laki-laki" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Laki-laki')>
-                            Laki-laki
-                        </option>
-                        <option value="Perempuan" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Perempuan')>
-                            Perempuan
-                        </option>
-                    </select>
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">Status Perkawinan</label>
+            <select name="status_perkawinan"
+                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih</option>
+                @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
+                    <option value="{{ $status }}" @selected(old('status_perkawinan', $profile->status_perkawinan ?? '') == $status)>{{ $status }}</option>
+                @endforeach
+            </select>
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">Agama</label>
-                    <select name="agama"
-                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                        <option value="">Pilih</option>
-                        @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
-                            <option value="{{ $agama }}" @selected(old('agama', $profile->agama ?? '') == $agama)>
-                                {{ $agama }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">Pendidikan Terakhir</label>
+            <select name="pendidikan_terakhir"
+                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                @php($listPendidikan = ['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'])
+                <option value="">Pilih</option>
+                @foreach ($listPendidikan as $pd)
+                    <option value="{{ $pd }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir ?? '') === $pd)>{{ $pd }}</option>
+                @endforeach
+            </select>
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">Status Perkawinan</label>
-                    <select name="status_perkawinan"
-                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                        <option value="">Pilih</option>
-                        @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
-                            <option value="{{ $status }}" @selected(old('status_perkawinan', $profile->status_perkawinan ?? '') == $status)>
-                                {{ $status }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">Kecamatan Domisili</label>
+            <select name="domisili_kecamatan"
+                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih Kecamatan</option>
+                @foreach ($kecamatan as $kec)
+                    <option value="{{ $kec }}" @selected(old('domisili_kecamatan', $profile->domisili_kecamatan ?? '') == $kec)>{{ $kec }}</option>
+                @endforeach
+            </select>
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">Pendidikan Terakhir</label>
-                    <input type="text" name="pendidikan_terakhir"
-                           value="{{ old('pendidikan_terakhir', $profile->pendidikan_terakhir ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                </div>
+        <div>
+            <label class="block text-sm text-slate-400">No. Telepon</label>
+            <input type="text" name="no_telepon"
+                   value="{{ old('no_telepon', $profile->no_telepon ?? '') }}"
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400">
+        </div>
 
-                <div>
-                    <label class="block text-sm text-slate-400">Kecamatan Domisili</label>
-                    <select name="domisili_kecamatan"
-                            class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                        <option value="">Pilih Kecamatan</option>
-                        @foreach ($kecamatan as $kec)
-                            <option value="{{ $kec }}" @selected(old('domisili_kecamatan', $profile->domisili_kecamatan ?? '') == $kec)>
-                                {{ $kec }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm text-slate-400">Alamat Lengkap</label>
-                    <textarea name="alamat_lengkap" rows="2"
-                              class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">{{ old('alamat_lengkap', $profile->alamat_lengkap ?? '') }}</textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm text-slate-400">No. Telepon</label>
-                    <input type="text" name="no_telepon"
-                           value="{{ old('no_telepon', $profile->no_telepon ?? '') }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3 border-t border-slate-800 pt-4">
-                <button type="button" id="cancelEdit"
-                        class="rounded-lg border border-slate-700 px-4 py-2 text-slate-300 transition hover:bg-slate-800">
-                    Batal
-                </button>
-                <button type="submit"
-                        class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-500">
-                    Simpan
-                </button>
-            </div>
-        </form>
+        <div class="md:col-span-2">
+            <label class="block text-sm text-slate-400">Alamat Lengkap</label>
+            <textarea name="alamat_lengkap" rows="2"
+                      class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">{{ old('alamat_lengkap', $profile->alamat_lengkap ?? '') }}</textarea>
+        </div>
     </div>
-</div>
+</x-modal-form>
 
 {{-- Modal: Tambah Pendidikan --}}
 {{-- Modal: Tambah Pendidikan --}}
@@ -595,8 +594,7 @@
     <div>
         <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
         <select name="tingkat"
-                class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                       dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
+                class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500" required>
             <option value="">- Pilih -</option>
             @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
                 <option value="{{ $tingkat }}">{{ $tingkat }}</option>
@@ -607,29 +605,25 @@
     <div>
         <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
         <input type="text" name="nama_institusi"
-               class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                      dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
+               class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
     </div>
 
     <div>
         <label class="block text-sm text-slate-400">Jurusan</label>
         <input type="text" name="jurusan"
-               class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                      dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
+               class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
     </div>
 
     <div class="grid grid-cols-2 gap-3">
         <div>
             <label class="block text-sm text-slate-400">Tahun Mulai</label>
             <input type="number" name="tahun_mulai" placeholder="contoh: 2018"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
         </div>
         <div>
             <label class="block text-sm text-slate-400">Tahun Selesai</label>
             <input type="number" name="tahun_selesai" placeholder="contoh: 2022"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
         </div>
     </div>
 
@@ -648,8 +642,7 @@
         <div>
             <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
             <select name="tingkat"
-                    class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                           dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
+                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500" required>
                 @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
                     <option value="{{ $tingkat }}" @selected($edu->tingkat == $tingkat)>{{ $tingkat }}</option>
                 @endforeach
@@ -659,29 +652,25 @@
         <div>
             <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
             <input type="text" name="nama_institusi" value="{{ old('nama_institusi', $edu->nama_institusi) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
         </div>
 
         <div>
             <label class="block text-sm text-slate-400">Jurusan</label>
             <input type="text" name="jurusan" value="{{ old('jurusan', $edu->jurusan) }}"
-                   class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                          dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-sm text-slate-400">Tahun Mulai</label>
                 <input type="number" name="tahun_mulai" value="{{ old('tahun_mulai', $edu->tahun_mulai) }}"
-                       class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                              dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
             </div>
             <div>
                 <label class="block text-sm text-slate-400">Tahun Selesai</label>
                 <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}"
-                       class="mt-1 w-full rounded-lg border-gray-300 dark:border-slate-800
-                              dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500" required>
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
             </div>
         </div>
 
@@ -807,15 +796,11 @@
                 Minat Lokasi Kerja (boleh lebih dari satu)
             </label>
             <div class="flex flex-wrap gap-3">
-                @php
-                    $lokasiList = ['Kabupaten Lebak', 'Luar Kabupaten Lebak', 'Luar Negeri'];
-                    $selectedLokasi = old('minat_lokasi', $preference->minat_lokasi ?? []);
-                @endphp
-                @foreach ($lokasiList as $lokasi)
+                @foreach (['Kabupaten Lebak', 'Luar Kabupaten Lebak', 'Luar Negeri'] as $lokasi)
                     <label class="inline-flex items-center space-x-2">
                         <input type="checkbox" name="minat_lokasi[]" value="{{ $lokasi }}"
                                class="rounded border-slate-600 dark:border-slate-700"
-                               {{ in_array($lokasi, $selectedLokasi ?? []) ? 'checked' : '' }}>
+                               {{ in_array($lokasi, old('minat_lokasi', $preference->minat_lokasi ?? [])) ? 'checked' : '' }}>
                         <span>{{ $lokasi }}</span>
                     </label>
                 @endforeach
@@ -827,15 +812,11 @@
                 Minat Bidang Usaha (boleh lebih dari satu)
             </label>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                @php
-                    $bidangList = ['IT', 'Jasa', 'Pertambangan', 'Kelautan', 'Pertanian', 'Pendidikan', 'Kesehatan', 'Konstruksi', 'Transportasi', 'Administrasi'];
-                    $selectedBidang = old('minat_bidang', $preference->minat_bidang ?? []);
-                @endphp
-                @foreach ($bidangList as $bidang)
+                @foreach (['IT','Jasa','Pertambangan','Kelautan','Pertanian','Pendidikan','Kesehatan','Konstruksi','Transportasi','Administrasi'] as $bidang)
                     <label class="inline-flex items-center space-x-2">
                         <input type="checkbox" name="minat_bidang[]" value="{{ $bidang }}"
                                class="rounded border-slate-600 dark:border-slate-700"
-                               {{ in_array($bidang, $selectedBidang ?? []) ? 'checked' : '' }}>
+                               {{ in_array($bidang, old('minat_bidang', $preference->minat_bidang ?? [])) ? 'checked' : '' }}>
                         <span>{{ $bidang }}</span>
                     </label>
                 @endforeach
@@ -850,41 +831,13 @@
                 Deskripsi Singkat Tentang Diri Anda
             </label>
             <textarea name="deskripsi_diri" rows="4"
-                      class="w-full rounded-lg border-gray-300 dark:border-slate-800 dark:bg-gray-900 text-gray-900 focus:ring-2 focus:ring-indigo-500">{{ old('deskripsi_diri', $preference->deskripsi_diri ?? '') }}</textarea>
+                      class="w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">{{ old('deskripsi_diri', $preference->deskripsi_diri ?? '') }}</textarea>
         </div>
     </div>
 </x-modal-form>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const profileModal = document.getElementById('profileModal');
-    const openBtn = document.getElementById('openEdit');
-    const closeBtn = document.getElementById('closeModal');
-    const cancelBtn = document.getElementById('cancelEdit');
-
-    const openProfileModal = () => {
-        if (!profileModal) return;
-        profileModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    };
-
-    const closeProfileModal = () => {
-        if (!profileModal) return;
-        profileModal.classList.add('hidden');
-        document.body.style.overflow = '';
-    };
-
-    if (openBtn && !openBtn.disabled) {
-        openBtn.addEventListener('click', openProfileModal);
-    }
-    closeBtn?.addEventListener('click', closeProfileModal);
-    cancelBtn?.addEventListener('click', closeProfileModal);
-    profileModal?.addEventListener('click', (event) => {
-        if (event.target === profileModal) {
-            closeProfileModal();
-        }
-    });
-
     const registerDeleteModal = (selector) => {
         document.querySelectorAll(selector).forEach(button => {
             button.addEventListener('click', (event) => {
@@ -899,6 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     form.setAttribute('action', action);
                 }
 
+                // Buka modal via komponen (tanpa duplikasi logika open)
                 modal.classList.remove('hidden');
                 document.body.classList.add('overflow-hidden');
             });

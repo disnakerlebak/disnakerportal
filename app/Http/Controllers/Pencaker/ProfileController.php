@@ -77,10 +77,7 @@ class ProfileController extends Controller
             'no_telepon'          => ['nullable', 'string', 'max:20'],
         ]);
 
-        // Cegah edit ulang NIK jika sudah ada
-        if ($profile->nik && $profile->nik !== $data['nik']) {
-            unset($data['nik']);
-        }
+        // Izinkan NIK diubah, tetap dengan validasi unik (sudah ditangani di rules)
 
         $data['user_id'] = $userId;
         $data['email_cache'] = $request->user()->email;

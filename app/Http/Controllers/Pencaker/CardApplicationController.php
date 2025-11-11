@@ -154,12 +154,25 @@ class CardApplicationController extends Controller
         }
 
         $docRules = [
-            'foto_closeup' => 'nullable|image|max:2048',
-            'ktp_file' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
-            'ijazah_file' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
+            'foto_closeup' => 'nullable|image|min:20|max:1024',
+            'ktp_file'     => 'nullable|mimes:jpg,jpeg,png,pdf|min:20|max:1024',
+            'ijazah_file'  => 'nullable|mimes:jpg,jpeg,png,pdf|min:20|max:1024',
         ];
 
-        $request->validate($docRules);
+        $messages = [
+            'required' => ':attribute wajib diunggah.',
+            'image'    => ':attribute harus berupa gambar (JPG/PNG).',
+            'mimes'    => ':attribute harus bertipe: :values.',
+            'max'      => ':attribute tidak boleh lebih dari :max kilobyte.',
+            'min'      => ':attribute minimal :min kilobyte.',
+        ];
+        $attributes = [
+            'foto_closeup' => 'Foto close-up',
+            'ktp_file'     => 'Scan KTP',
+            'ijazah_file'  => 'Scan Ijazah',
+        ];
+
+        $request->validate($docRules, $messages, $attributes);
 
         try {
             DB::beginTransaction();
@@ -457,17 +470,17 @@ class CardApplicationController extends Controller
         $requiredDocs = [
             'foto_closeup' => [
                 'label' => 'Foto close-up',
-                'rule'  => 'image|max:2048',
+                'rule'  => 'image|min:20|max:1024',
                 'folder'=> 'ak1/foto',
             ],
             'ktp_file' => [
                 'label' => 'Scan KTP',
-                'rule'  => 'mimes:jpg,jpeg,png,pdf|max:2048',
+                'rule'  => 'mimes:jpg,jpeg,png,pdf|min:20|max:1024',
                 'folder'=> 'ak1/ktp',
             ],
             'ijazah_file' => [
                 'label' => 'Scan Ijazah Terakhir',
-                'rule'  => 'mimes:jpg,jpeg,png,pdf|max:2048',
+                'rule'  => 'mimes:jpg,jpeg,png,pdf|min:20|max:1024',
                 'folder'=> 'ak1/ijazah',
             ],
         ];
@@ -488,7 +501,20 @@ class CardApplicationController extends Controller
             }
         }
 
-        $validator = Validator::make($request->all(), $baseRules);
+        $messages = [
+            'required' => ':attribute wajib diunggah.',
+            'image'    => ':attribute harus berupa gambar (JPG/PNG).',
+            'mimes'    => ':attribute harus bertipe: :values.',
+            'max'      => ':attribute tidak boleh lebih dari :max kilobyte.',
+            'min'      => ':attribute minimal :min kilobyte.',
+        ];
+        $attributes = [
+            'foto_closeup' => 'Foto close-up',
+            'ktp_file'     => 'Scan KTP',
+            'ijazah_file'  => 'Scan Ijazah',
+        ];
+
+        $validator = Validator::make($request->all(), $baseRules, $messages, $attributes);
 
         $validator->after(function ($validator) use ($requiredDocs, $request, $existingDocs, $isResubmission) {
             foreach ($requiredDocs as $field => $meta) {

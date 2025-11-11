@@ -26,11 +26,15 @@
         </div>
 
         {{-- ================= FORM BODY ================= --}}
-        <form method="{{ $method }}" action="{{ $action }}" enctype="multipart/form-data"
+        @php
+            $httpMethod = strtoupper($method);
+            $formMethod = in_array($httpMethod, ['PUT','PATCH','DELETE']) ? 'POST' : $httpMethod;
+        @endphp
+        <form method="{{ $formMethod }}" action="{{ $action }}" enctype="multipart/form-data"
               class="p-6 overflow-y-auto grow space-y-4">
             @csrf
-            @if(in_array(strtoupper($method), ['PUT', 'PATCH', 'DELETE']))
-                @method($method)
+            @if(in_array($httpMethod, ['PUT', 'PATCH', 'DELETE']))
+                @method($httpMethod)
             @endif
 
             {{-- Slot konten form --}}
