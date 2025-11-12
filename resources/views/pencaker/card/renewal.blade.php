@@ -163,7 +163,7 @@
                                     Ganti Foto
                                 </label>
                             </div>
-                            <p class="text-center text-xs text-slate-400 sm:text-left">Format JPG/PNG &bull; Maks 2 MB</p>
+                            <p class="text-center text-xs text-slate-400 sm:text-left">Format JPG/PNG &bull; Maks 1 MB</p>
                             <input id="fotoCloseup" name="foto_closeup" type="file" accept="image/*" class="hidden" onchange="previewImage(event); enableRenewalButton();">
                             <button type="button" class="text-xs text-blue-400 hover:text-blue-300" data-modal-open="modalRepairProfile">Ubah Data Diri</button>
                         </div>

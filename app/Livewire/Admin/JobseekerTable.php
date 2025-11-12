@@ -34,6 +34,12 @@ class JobseekerTable extends Component
         $this->resetPage();
     }
 
+    public function apply()
+    {
+        // Terapkan perubahan filter yang di-bind dengan defer
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = User::query()
@@ -69,4 +75,3 @@ class JobseekerTable extends Component
         ]);
     }
 }
-

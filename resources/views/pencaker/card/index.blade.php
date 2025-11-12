@@ -406,6 +406,9 @@
 
     if (form) {
       form.addEventListener('submit', (e) => {
+        if (form.dataset.confirmed === 'true') {
+          return;
+        }
         // Validasi wajib unggah foto, KTP, dan Ijazah bila editable
         const editable = {{ $editable ? 'true' : 'false' }};
         if (editable) {
@@ -449,6 +452,10 @@
               return;
             }
           }
+          // Jika lolos validasi, munculkan modal konfirmasi lebih dulu
+          e.preventDefault();
+          toggleSubmitConfirm(true);
+          return;
         }
 
         const submitBtn = form.querySelector('button[type="submit"]');
@@ -508,5 +515,29 @@
         },
       }));
     });
+  </script>
+  <div id="confirmOverlay" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
+    <div class="bg-slate-950 border border-slate-800 rounded-xl p-6 max-w-md w-full text-slate-100">
+      <h3 class="text-lg font-semibold mb-2">Konfirmasi Pengajuan AK1</h3>
+      <p class="text-sm text-slate-300">Apakah Anda yakin seluruh data dan dokumen sudah benar dan ingin mengirim pengajuan AK1 ke admin?</p>
+      <div class="mt-5 flex justify-end gap-3">
+        <button type="button" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700" onclick="toggleSubmitConfirm(false)">Batal</button>
+        <button type="button" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700" onclick="submitAk1Form()">Kirim</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    function toggleSubmitConfirm(show){
+      const el = document.getElementById('confirmOverlay');
+      if(el) el.classList.toggle('hidden', !show);
+    }
+    function submitAk1Form(){
+      const form = document.getElementById('ak1Form');
+      const spn  = document.getElementById('submitSpinner');
+      toggleSubmitConfirm(false);
+      if (spn) spn.classList.remove('hidden');
+      form.dataset.confirmed = 'true';
+      form.submit();
+    }
   </script>
 @endsection

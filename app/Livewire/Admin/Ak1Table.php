@@ -25,6 +25,9 @@ class Ak1Table extends Component
     #[Url(except: '')]
     public string $type = '';
 
+    #[Url(as: 'aktif', except: true)]
+    public bool $activeOnly = true;
+
     /** @var array<int, array{id:int,title:string}> */
     public array $rejectionReasons = [];
 
@@ -83,6 +86,7 @@ class Ak1Table extends Component
         $this->search = '';
         $this->status = '';
         $this->type = '';
+        $this->activeOnly = true;
         $this->resetPage();
     }
 
@@ -105,6 +109,9 @@ class Ak1Table extends Component
             })
             ->when($this->type !== '', function (Builder $query) {
                 $query->whereRaw('LOWER(type) = ?', [strtolower($this->type)]);
+            })
+            ->when($this->activeOnly, function (Builder $query) {
+                $query->where('is_active', true);
             })
             ->latest('created_at')
             ->paginate(20);

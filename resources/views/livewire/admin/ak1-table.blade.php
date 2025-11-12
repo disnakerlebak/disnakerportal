@@ -5,19 +5,24 @@
         </h2>
     </div> -->
 
-    {{-- ===== Filter (Livewire reactive) ===== --}}
-    <form wire:submit.prevent="noop" class="flex flex-wrap items-center gap-3">
+    {{-- ===== Filter (submit or Enter applies) ===== --}}
+    <form wire:submit.prevent="applyFilters" @keydown.enter.prevent="$wire.applyFilters()" class="flex flex-wrap items-center gap-3">
         <input type="text"
-               wire:model.debounce.500ms="search"
+               wire:model.defer="search"
                placeholder="Cari nama / email"
                class="w-64 max-w-full rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
 
-        <select wire:model="status" class="rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
+        <select wire:model.defer="status" class="rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
             <option value="">Semua Status</option>
             @foreach ($statusOptions as $option)
                 <option value="{{ $option }}">{{ $option }}</option>
             @endforeach
         </select>
+
+        <label class="inline-flex items-center gap-2 text-sm text-slate-200 bg-slate-800/60 px-3 py-2 rounded border border-slate-700">
+            <input type="checkbox" wire:model.defer="activeOnly" class="rounded border-slate-600 bg-slate-800">
+            <span>Hanya kartu aktif</span>
+        </label>
 
         <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-500">Filter</button>
 
@@ -42,7 +47,7 @@
     <div class="relative flex-1 min-h-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow">
         <!-- Overlay loading terpusat + blur konten -->
         <div wire:loading.flex
-             wire:target="search,status,type,noop,setType,clearFilters"
+             wire:target="search,status,type,applyFilters,setType,clearFilters"
              class="absolute inset-0 z-20 items-center justify-center bg-slate-950/30 backdrop-blur-sm">
             <div class="flex items-center gap-3 px-4 py-2 rounded-lg bg-slate-900/70 border border-slate-700 shadow text-indigo-200">
                 <svg class="animate-spin h-5 w-5 text-indigo-400" viewBox="0 0 24 24">
@@ -54,7 +59,7 @@
         </div>
 
         <div class="flex-1 min-h-0 overflow-visible"
-             wire:target="search,status,type,noop,setType,clearFilters"
+             wire:target="search,status,type,applyFilters,setType,clearFilters"
              wire:loading.class="blur-[1px] opacity-60">
             <div class="overflow-x-auto h-full min-h-0 pb-10">
                 <div class="h-full min-h-0 overflow-visible">
@@ -143,20 +148,48 @@
                                     </span>
                                 </td>
 
-                                {{-- Keterangan --}}
-                                <td class="p-3 align-top text-sm">
-                                    @if($app->status === 'Ditolak')
-                                        <span class="text-red-400">{{ $catatan ?: '—' }}</span>
-                                    @elseif(in_array($app->status, ['Revisi Diminta','Batal']))
-                                        <span class="text-yellow-400">{{ $catatan ?: '—' }}</span>
+                                {{-- Keterangan (expandable on click) --}}
+                                <td class="p-3 align-middle text-left text-sm">
+                                    @php
+                                        $hasNote = filled($catatan);
+                                        $noteColor = $app->status === 'Ditolak' ? 'text-red-400' : (in_array($app->status, ['Revisi Diminta','Batal']) ? 'text-yellow-400' : 'text-gray-400');
+                                    @endphp
+                                    @if(in_array($app->status, ['Ditolak','Revisi Diminta','Batal']))
+                                        @if($hasNote)
+                                            <div x-data="{ open:false }" class="{{ $noteColor }} max-w-[38ch]">
+                                                <button type="button" @click="open = !open" class="text-left w-full">
+                                                    <span class="block whitespace-pre-line"
+                                                          :style="open ? '' : '-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;'">
+                                                        {{ $catatan }}
+                                                    </span>
+                                                    <span class="mt-1 inline-block text-xs text-slate-400 hover:text-slate-200 underline">
+                                                        <span x-show="!open">Selengkapnya</span>
+                                                        <span x-show="open">Tutup</span>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
                                     @else
                                         <span class="text-gray-400">—</span>
                                     @endif
                                 </td>
 
-                                {{-- Nomor AK/1 --}}
+                                {{-- Nomor AK/1 + badge aktif/nonaktif --}}
                                 <td class="p-3 align-top text-center whitespace-nowrap">
-                                    {{ $app->nomor_ak1 ?? '-' }}
+                                    @if($app->nomor_ak1)
+                                        <div class="flex flex-col items-center gap-1">
+                                            <span>{{ $app->nomor_ak1 }}</span>
+                                            @if($app->is_active)
+                                                <span class="inline-flex items-center rounded-full bg-green-700/80 text-green-100 px-2 py-0.5 text-[10px] uppercase tracking-wide">Aktif</span>
+                                            @else
+                                                <span class="inline-flex items-center rounded-full bg-slate-700 text-slate-300 px-2 py-0.5 text-[10px] uppercase tracking-wide">Nonaktif</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span>-</span>
+                                    @endif
                                 </td>
 
                                 {{-- Ditangani Oleh --}}
@@ -230,19 +263,11 @@
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                         </svg>
-                                                        Tolak
-                                                    </button>
-
-                                                    <button onclick="openRevisionModal({{ $app->id }})"
-                                                            class="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-yellow-700/20 flex items-center gap-2 transition">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17h2m-1-12a9 9 0 11-9 9 9 9 0 019-9z" />
-                                                        </svg>
-                                                        Revisi
+                                                        Tolak/Minta Revisi
                                                     </button>
                                                 @endif
 
-                                                @if ($app->status === 'Disetujui')
+                                                @if ($app->status === 'Disetujui' && $app->is_active)
                                                     <button
                                                         type="button"
                                                         onclick="openUnapproveModal(this)"
@@ -257,7 +282,7 @@
                                                     </button>
                                                 @endif
 
-                                                @if ($app->status === 'Disetujui' && $app->nomor_ak1)
+                                                @if ($app->status === 'Disetujui' && $app->nomor_ak1 && $app->is_active)
                                                     <a href="{{ route('admin.ak1.cetak', $app->id) }}" target="_blank"
                                                        class="block px-4 py-2 text-sm text-indigo-400 hover:bg-indigo-700/20 flex items-center gap-2 transition">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -315,14 +340,27 @@
         <div id="modalContent" class="px-6 pb-6"></div>
     </x-modal>
 
-    {{-- ===== Modal Tolak (x-modal) ===== --}}
+    {{-- ===== Modal Tolak/Minta Revisi (x-modal) ===== --}}
     <x-modal name="reject-ak1" :show="false" maxWidth="md" animation="slide-up">
         <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Tolak Pengajuan</h3>
+            <h3 class="text-lg font-semibold">Tolak / Minta Revisi</h3>
             <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'reject-ak1'}))" class="text-slate-300 hover:text-white">✕</button>
         </div>
         <form id="rejectForm" method="POST" class="px-6 py-5">
             @csrf
+            <fieldset class="mb-4">
+                <legend class="block text-sm mb-2 text-gray-300">Pilih jenis tindakan:</legend>
+                <div class="flex gap-4 text-sm text-gray-200">
+                    <label class="inline-flex items-center gap-2">
+                        <input type="radio" name="reject_mode" value="reject" class="text-red-500" checked>
+                        Tolak
+                    </label>
+                    <label class="inline-flex items-center gap-2">
+                        <input type="radio" name="reject_mode" value="revision" class="text-yellow-500">
+                        Minta Revisi
+                    </label>
+                </div>
+            </fieldset>
             <div class="mb-3">
                 <label class="block text-sm mb-1">Pilih Alasan Penolakan:</label>
                 <select name="reason_id" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200">
@@ -332,12 +370,12 @@
                 </select>
             </div>
             <div class="mb-4">
-                <label class="block text-sm mb-1">Catatan Tambahan (opsional):</label>
+                <label class="block text-sm mb-1">Catatan</label>
                 <textarea name="notes" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200"></textarea>
-            </div>
+                </div>
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeRejectModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
-                <button type="submit" class="px-3 py-1.5 rounded bg-red-700 hover:bg-red-800">Tolak</button>
+                <button type="submit" class="px-3 py-1.5 rounded bg-red-700 hover:bg-red-800">Kirim</button>
             </div>
         </form>
     </x-modal>
@@ -409,24 +447,7 @@
         </form>
     </x-modal>
 
-    {{-- ===== Modal Revisi (x-modal) ===== --}}
-    <x-modal name="revision-ak1" :show="false" maxWidth="md" animation="slide-up">
-        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Minta Revisi Pengajuan</h3>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'revision-ak1'}))" class="text-slate-300 hover:text-white">✕</button>
-        </div>
-        <form id="revisionForm" method="POST" class="px-6 py-5">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-sm mb-1">Catatan Revisi:</label>
-                <textarea name="notes" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200" required></textarea>
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeRevisionModal()" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
-                <button type="submit" class="px-3 py-1.5 rounded bg-yellow-600 hover:bg-yellow-700">Kirim</button>
-            </div>
-        </form>
-    </x-modal>
+    {{-- (Modal Revisi dihapus karena fungsi digabung dalam modal Tolak) --}}
 
 @once
     @push('scripts')
@@ -879,24 +900,22 @@
                     window.dispatchEvent(new CustomEvent('open-modal', { detail: 'reject-ak1' }));
                     const form = getEl('rejectForm');
                     if (!form) return;
+                    // default ke penolakan
                     form.action = `/admin/ak1/${id}/reject`;
+                    const radios = form.querySelectorAll('input[name="reject_mode"]');
+                    radios.forEach(r => r.checked = (r.value === 'reject'));
+                    radios.forEach(r => {
+                        r.onchange = () => {
+                            form.action = (r.value === 'revision') ? `/admin/ak1/${id}/revision` : `/admin/ak1/${id}/reject`;
+                        };
+                    });
                 };
 
                 window.closeRejectModal = function () {
                     window.dispatchEvent(new CustomEvent('close-modal', { detail: 'reject-ak1' }));
                 };
 
-                window.openRevisionModal = function (id) {
-                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'revision-ak1' }));
-                    const form = getEl('revisionForm');
-                    if (!form) return;
-                    form.action = `/admin/ak1/${id}/revision`;
-                };
-
-                window.closeRevisionModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'revision-ak1' }));
-                };
+                // fungsi revisi dihapus, digantikan oleh openRejectModal di atas
 
                 const escapeHtml = (unsafe) => (unsafe ?? '')
                     .replace(/&/g, '&amp;')

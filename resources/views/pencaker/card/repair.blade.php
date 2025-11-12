@@ -52,7 +52,7 @@
                                 Ganti Foto
                             </label>
                         </div>
-                        <p class="text-center text-xs text-slate-400 sm:text-left">Format JPG/PNG &bull; Maks 2 MB</p>
+                        <p class="text-center text-xs text-slate-400 sm:text-left">Format JPG/PNG &bull; Maks 1 MB</p>
                         <input id="fotoCloseup" name="foto_closeup" type="file" accept="image/*" class="hidden" onchange="previewImage(event); enableRepairButton();">
                         <button type="button" class="text-xs text-blue-400 hover:text-blue-300" data-modal-open="modalRepairProfile">Ubah Data Diri</button>
                     </div>
@@ -218,27 +218,93 @@
         </div>
 
         {{-- Dokumen --}}
+        @php
+            $ktpPath = optional($application->documents->firstWhere('type', 'ktp_file'))->file_path;
+            $ktpUrl  = $ktpPath ? asset('storage/' . $ktpPath) : '';
+            $ktpName = $ktpPath ? basename($ktpPath) : '';
+            $ktpType = ($ktpPath && str_ends_with(strtolower($ktpPath), '.pdf')) ? 'pdf' : 'image';
+
+            $ijPath = optional($application->documents->firstWhere('type', 'ijazah_file'))->file_path;
+            $ijUrl  = $ijPath ? asset('storage/' . $ijPath) : '';
+            $ijName = $ijPath ? basename($ijPath) : '';
+            $ijType = ($ijPath && str_ends_with(strtolower($ijPath), '.pdf')) ? 'pdf' : 'image';
+        @endphp
         <div class="rounded-2xl bg-slate-900 shadow-lg">
             <div class="max-w-6xl mx-auto p-6 sm:p-8 lg:p-10">
                 <h3 class="text-lg font-semibold text-white mb-4">Unggah Dokumen</h3>
-                <div class="grid gap-6 md:grid-cols-2">
-                    <div>
-                        <label class="block font-medium mb-2">KTP</label>
-                        @if ($ktp = optional($application->documents->firstWhere('type', 'ktp_file'))->file_path)
-                            <a href="{{ asset('storage/'.$ktp) }}" target="_blank" class="text-sm text-blue-300 hover:underline">Lihat Dokumen Saat Ini</a>
-                        @endif
-                        <input type="file" name="ktp_file" accept=".jpg,.jpeg,.png,.pdf"
-                               class="mt-2 block w-full text-sm text-slate-300"
-                               onchange="enableRepairButton();">
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {{-- Dropzone KTP --}}
+                    <div x-data='dropzoneInline("#repairKtpFile", @json($ktpUrl), @json($ktpType), @json($ktpName))' class="space-y-3">
+                        <label class="block font-medium">KTP</label>
+                        <div class="relative rounded-2xl border border-dashed border-slate-600/60 bg-slate-800/40 p-0 text-center text-slate-300 cursor-pointer hover:border-slate-500 transition overflow-hidden"
+                             :class="{ 'ring-2 ring-indigo-500': dragging }"
+                             @click.prevent="browse()"
+                             @dragover.prevent="dragging = true"
+                             @dragleave.prevent="dragging = false"
+                             @drop.prevent="handleDrop($event)">
+                            <template x-if="hasPreview && !isPdf">
+                                <img :src="src" alt="Pratinjau KTP" class="w-full aspect-video object-cover">
+                            </template>
+                            <template x-if="hasPreview && isPdf">
+                                <div class="w-full aspect-video flex items-center justify-center">
+                                    <div class="text-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-8 h-8 mx-auto text-rose-400">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-6a2.25 2.25 0 00-2.25-2.25H8.25A2.25 2.25 0 006 8.25v9a2.25 2.25 0 002.25 2.25h4.5M9 8.25h6M9 11.25h6M9 14.25h3M15.75 18.75l1.5 1.5 3-3" />
+                                        </svg>
+                                        <div class="mt-2 text-sm text-slate-200 truncate" x-text="fileName || 'Berkas PDF'"></div>
+                                        <template x-if="fileUrl"><a :href="fileUrl" target="_blank" class="text-indigo-400 underline text-xs">Lihat</a></template>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="!hasPreview" class="p-8">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15.75V18a3 3 0 003 3h12a3 3 0 003-3v-2.25M16.5 9.75 12 5.25m0 0L7.5 9.75M12 5.25v12" />
+                                    </svg>
+                                    <div class="text-base font-semibold">Klik untuk memilih berkas atau seret ke sini</div>
+                                    <div class="text-xs text-slate-400">Menerima berkas .jpg, .jpeg, .png, .pdf</div>
+                                    <div class="text-xs text-slate-400">Ukuran: minimal 20KB, maksimal 1MB</div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" name="ktp_file" id="repairKtpFile" accept=".jpg,.jpeg,.png,.pdf" class="hidden" @change="handleChange($event); window.enableRepairButton && window.enableRepairButton();">
                     </div>
-                    <div>
-                        <label class="block font-medium mb-2">Ijazah Terakhir</label>
-                        @if ($ijazah = optional($application->documents->firstWhere('type', 'ijazah_file'))->file_path)
-                            <a href="{{ asset('storage/'.$ijazah) }}" target="_blank" class="text-sm text-blue-300 hover:underline">Lihat Dokumen Saat Ini</a>
-                        @endif
-                        <input type="file" name="ijazah_file" accept=".jpg,.jpeg,.png,.pdf"
-                               class="mt-2 block w-full text-sm text-slate-300"
-                               onchange="enableRepairButton();">
+
+                    {{-- Dropzone Ijazah --}}
+                    <div x-data='dropzoneInline("#repairIjazahFile", @json($ijUrl), @json($ijType), @json($ijName))' class="space-y-3">
+                        <label class="block font-medium">Ijazah Terakhir</label>
+                        <div class="relative rounded-2xl border border-dashed border-slate-600/60 bg-slate-800/40 p-0 text-center text-slate-300 cursor-pointer hover:border-slate-500 transition overflow-hidden"
+                             :class="{ 'ring-2 ring-indigo-500': dragging }"
+                             @click.prevent="browse()"
+                             @dragover.prevent="dragging = true"
+                             @dragleave.prevent="dragging = false"
+                             @drop.prevent="handleDrop($event)">
+                            <template x-if="hasPreview && !isPdf">
+                                <img :src="src" alt="Pratinjau Ijazah" class="w-full aspect-video object-cover">
+                            </template>
+                            <template x-if="hasPreview && isPdf">
+                                <div class="w-full aspect-video flex items-center justify-center">
+                                    <div class="text-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-8 h-8 mx-auto text-rose-400">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-6a2.25 2.25 0 00-2.25-2.25H8.25A2.25 2.25 0 006 8.25v9a2.25 2.25 0 002.25 2.25h4.5M9 8.25h6M9 11.25h6M9 14.25h3M15.75 18.75l1.5 1.5 3-3" />
+                                        </svg>
+                                        <div class="mt-2 text-sm text-slate-200 truncate" x-text="fileName || 'Berkas PDF'"></div>
+                                        <template x-if="fileUrl"><a :href="fileUrl" target="_blank" class="text-indigo-400 underline text-xs">Lihat</a></template>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="!hasPreview" class="p-8">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15.75V18a3 3 0 003 3h12a3 3 0 003-3v-2.25M16.5 9.75 12 5.25m0 0L7.5 9.75M12 5.25v12" />
+                                    </svg>
+                                    <div class="text-base font-semibold">Klik untuk memilih berkas atau seret ke sini</div>
+                                    <div class="text-xs text-slate-400">Menerima berkas .jpg, .jpeg, .png, .pdf</div>
+                                    <div class="text-xs text-slate-400">Ukuran: minimal 20KB, maksimal 1MB</div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" name="ijazah_file" id="repairIjazahFile" accept=".jpg,.jpeg,.png,.pdf" class="hidden" @change="handleChange($event); window.enableRepairButton && window.enableRepairButton();">
                     </div>
                 </div>
             </div>
@@ -589,5 +655,65 @@
             reader.readAsDataURL(event.target.files[0]);
         }
     }
+</script>
+<script>
+// Dropzone inline (gambar/PDF) – sama seperti halaman pengajuan baru
+if (!window.__dzInlineDefined) {
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('dropzoneInline', (inputSel, initialUrl = '', initialType = 'image', initialName = '') => ({
+      dragging: false,
+      src: initialType === 'image' ? initialUrl : '',
+      isPdf: initialType === 'pdf',
+      fileName: initialName,
+      fileUrl: initialType === 'pdf' ? initialUrl : '',
+      get hasPreview() { return this.isPdf || !!this.src; },
+      browse() {
+        const input = document.querySelector(inputSel);
+        if (input && !input.disabled) input.click();
+      },
+      handleChange(e) {
+        const file = e.target.files?.[0];
+        if (file) this.processFile(file);
+      },
+      handleDrop(e) {
+        this.dragging = false;
+        const file = e.dataTransfer?.files?.[0];
+        if (!file) return;
+        if (!['image/jpeg','image/png','application/pdf'].includes(file.type)) {
+          (window.Toastify ? Toastify({text:'Format tidak didukung. Gunakan JPG/PNG/PDF.',duration:3500,backgroundColor:'#f59e0b',gravity:'bottom',position:'right',close:true}).showToast() : alert('Format tidak didukung. Gunakan JPG/PNG/PDF.'));
+          return;
+        }
+        const MAX = 1 * 1024 * 1024; // 1MB
+        const MIN = 20 * 1024; // 20KB
+        if (file.size > MAX) {
+          (window.Toastify ? Toastify({text:'Ukuran berkas melebihi 1MB.',duration:3500,backgroundColor:'#f59e0b',gravity:'bottom',position:'right',close:true}).showToast() : alert('Ukuran berkas melebihi 1MB.'));
+          return;
+        }
+        if (file.size < MIN) {
+          (window.Toastify ? Toastify({text:'Ukuran berkas terlalu kecil (minimal 20KB).',duration:3500,backgroundColor:'#f59e0b',gravity:'bottom',position:'right',close:true}).showToast() : alert('Ukuran berkas terlalu kecil (minimal 20KB).'));
+          return;
+        }
+        const input = document.querySelector(inputSel);
+        if (input) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          input.files = dt.files;
+        }
+        this.processFile(file);
+      },
+      processFile(file) {
+        if (file.type === 'application/pdf') {
+          this.isPdf = true; this.src = ''; this.fileName = file.name; this.fileUrl = URL.createObjectURL(file);
+        } else {
+          const reader = new FileReader();
+          reader.onload = () => { this.src = reader.result; this.isPdf = false; this.fileName=''; this.fileUrl=''; };
+          reader.readAsDataURL(file);
+        }
+        if (window.enableRepairButton) window.enableRepairButton();
+      },
+    }));
+  });
+  window.__dzInlineDefined = true;
+}
 </script>
 @endpush

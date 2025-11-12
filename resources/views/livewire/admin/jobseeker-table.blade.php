@@ -3,24 +3,25 @@
         <h2 class="font-semibold text-xl text-gray-100">Daftar Pencaker Disetujui</h2>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
+    <form wire:submit.prevent="apply" class="flex flex-wrap items-center gap-3" @keydown.enter.prevent="$wire.apply()">
         <input type="text"
-               wire:model.debounce.500ms="q"
+               wire:model.defer="q"
                placeholder="Cari nama..."
                class="w-64 max-w-full rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500" />
 
         <label class="inline-flex items-center gap-2 text-sm text-slate-200 bg-slate-800/60 px-3 py-1.5 rounded border border-slate-700">
-            <input type="checkbox" wire:model="hasTraining" class="rounded border-slate-600 bg-slate-800">
+            <input type="checkbox" wire:model.defer="hasTraining" class="rounded border-slate-600 bg-slate-800">
             <span>Memiliki Pelatihan</span>
         </label>
 
         <label class="inline-flex items-center gap-2 text-sm text-slate-200 bg-slate-800/60 px-3 py-1.5 rounded border border-slate-700">
-            <input type="checkbox" wire:model="hasWork" class="rounded border-slate-600 bg-slate-800">
+            <input type="checkbox" wire:model.defer="hasWork" class="rounded border-slate-600 bg-slate-800">
             <span>Memiliki Pengalaman</span>
         </label>
 
+        <button type="submit" class="px-4 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm">Terapkan</button>
         <button type="button" wire:click="clearFilters" class="px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-sm">Reset</button>
-    </div>
+    </form>
 
     <div class="relative flex-1 min-h-0 flex flex-col rounded-xl border border-slate-800 bg-slate-900/70 shadow">
         <div wire:loading.flex class="absolute inset-0 z-10 items-center justify-center bg-slate-950/30 backdrop-blur-sm">
@@ -165,4 +166,3 @@
         @endpush
     @endonce
 </div>
-
