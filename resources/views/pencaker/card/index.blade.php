@@ -138,7 +138,7 @@
                 </label>
               @endif
             </div>
-            <p class="text-center text-xs text-slate-400 sm:text-left">Format: JPG/PNG &bull; Maks: 2 MB</p>
+            <p class="text-center text-xs text-slate-400 sm:text-left">Format: JPG/PNG &bull; Maks: 1 MB</p>
             <input id="fotoCloseup" name="foto_closeup" type="file" accept="image/*"
                    class="hidden" onchange="previewImage(event)" @disabled(!$editable) @if($editable && !$fotoDoc) required @endif>
           </div>
@@ -519,10 +519,10 @@
   <div id="confirmOverlay" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
     <div class="bg-slate-950 border border-slate-800 rounded-xl p-6 max-w-md w-full text-slate-100">
       <h3 class="text-lg font-semibold mb-2">Konfirmasi Pengajuan AK1</h3>
-      <p class="text-sm text-slate-300">Apakah Anda yakin seluruh data dan dokumen sudah benar dan ingin mengirim pengajuan AK1 ke admin?</p>
+      <p class="text-sm text-slate-300">Apakah Anda yakin seluruh data dan dokumen sudah sesuai?</p>
       <div class="mt-5 flex justify-end gap-3">
         <button type="button" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700" onclick="toggleSubmitConfirm(false)">Batal</button>
-        <button type="button" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700" onclick="submitAk1Form()">Kirim</button>
+        <button type="button" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700" onclick="submitAk1Form()">Ya, Ajukan</button>
       </div>
     </div>
   </div>

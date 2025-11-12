@@ -24,16 +24,16 @@
   <div class="absolute inset-0 bg-black/50" @click="$dispatch('close-modal-{{ $modalId }}')"></div>
 
   <!-- Panel -->
-  <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden"
+  <div class="relative w-full max-w-lg mx-4 overflow-hidden rounded-xl border border-slate-800 bg-slate-900 text-slate-100 shadow-xl"
        x-transition:enter="ease-out duration-200"
        x-transition:enter-start="translate-y-4 sm:translate-y-0 sm:scale-95"
        x-transition:enter-end="translate-y-0 sm:scale-100"
        x-transition:leave="ease-in duration-150"
        x-transition:leave-start="translate-y-0 sm:scale-100"
        x-transition:leave-end="translate-y-4 sm:translate-y-0 sm:scale-95">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $title }}</h3>
-      <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" @click="$dispatch('close-modal-{{ $modalId }}')">&times;</button>
+    <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+      <h3 class="text-lg font-semibold text-slate-100">{{ $title }}</h3>
+      <button class="text-slate-400 hover:text-slate-200" @click="$dispatch('close-modal-{{ $modalId }}')">&times;</button>
     </div>
 
     <form method="POST" action="{{ $action }}" class="px-8 py-6 flex flex-col gap-5">
@@ -89,9 +89,9 @@
     />
 </div>
   {{-- Tombol Aksi --}}
-  <div class="flex justify-end gap-2 pt-4 mt-2 border-t border-gray-600/50">
+  <div class="flex justify-end gap-2 pt-4 mt-2 border-t border-slate-800">
     <button type="button" @click="$dispatch('close-modal-{{ $modalId }}')"
-            class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">
+            class="px-4 py-2 rounded-md border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
       {{ __('Batal') }}
     </button>
     <x-primary-button>{{ __('Simpan') }}</x-primary-button>

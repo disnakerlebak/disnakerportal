@@ -13,6 +13,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') | Admin Disnaker</title>
+    <script>
+      // Early theme loader (sementara paksa dark agar konsisten)
+      (function(){
+        try {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        } catch (e) {}
+      })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <livewire:styles />
 </head>

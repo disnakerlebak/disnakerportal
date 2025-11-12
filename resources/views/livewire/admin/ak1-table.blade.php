@@ -44,7 +44,7 @@
 
 
     {{-- ===== Tabel Daftar Pengajuan ===== --}}
-    <div class="relative flex-1 min-h-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow">
+    <div class="relative flex-1 min-h-0 flex flex-col rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-hidden">
         <!-- Overlay loading terpusat + blur konten -->
         <div wire:loading.flex
              wire:target="search,status,type,applyFilters,setType,clearFilters"

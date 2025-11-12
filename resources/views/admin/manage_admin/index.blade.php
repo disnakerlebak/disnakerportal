@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', '')
+@section('title', 'Kelola Admin')
 
 @section('content')
   <div class="max-w-7xl mx-auto">
@@ -26,28 +26,28 @@
       </div>
     @endif
 
-    <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+    <div class="rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-700">
-          <thead class="bg-gray-900">
+        <table class="min-w-full text-sm text-slate-200">
+          <thead class="bg-slate-800 text-slate-200 uppercase text-xs">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Nama</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Email</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Dibuat</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Aksi</th>
+              <th class="px-4 py-3 text-left">Nama</th>
+              <th class="px-4 py-3 text-left">Email</th>
+              <th class="px-4 py-3 text-left">Status</th>
+              <th class="px-4 py-3 text-left">Dibuat</th>
+              <th class="px-4 py-3 text-left">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-700">
+          <tbody class="divide-y divide-slate-800">
             @forelse($admins as $admin)
-              <tr class="hover:bg-gray-700/30">
+              <tr class="hover:bg-slate-800/50 transition">
                 <td class="px-4 py-3">{{ $admin->name }}</td>
                 <td class="px-4 py-3">{{ $admin->email }}</td>
                 <td class="px-4 py-3">
                   @if($admin->status === 'active')
-                    <span class="px-2 py-1 text-xs rounded bg-green-500/20 text-green-300 border border-green-500/30">Active</span>
+                    <span class="px-2 py-1 text-[11px] rounded-full bg-green-700/30 text-green-200 border border-green-600/40">Active</span>
                   @else
-                    <span class="px-2 py-1 text-xs rounded bg-red-500/20 text-red-300 border border-red-500/30">Inactive</span>
+                    <span class="px-2 py-1 text-[11px] rounded-full bg-red-700/30 text-red-200 border border-red-600/40">Inactive</span>
                   @endif
                 </td>
                 <td class="px-4 py-3">{{ $admin->created_at->format('d M Y H:i') }}</td>
@@ -66,7 +66,7 @@
               />
             @empty
               <tr>
-                <td colspan="5" class="px-4 py-6 text-center text-gray-400">Belum ada admin.</td>
+                <td colspan="5" class="px-4 py-6 text-center text-slate-400">Belum ada admin.</td>
               </tr>
             @endforelse
           </tbody>

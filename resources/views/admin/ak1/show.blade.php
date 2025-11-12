@@ -161,16 +161,7 @@
                         </form>
                     </div>
 
-                    <div class="flex gap-3">
-                        <form method="POST" action="{{ route('admin.ak1.printed',$application) }}">
-                            @csrf
-                            <button class="px-3 py-2 bg-blue-700 text-white rounded">Tandai Dicetak</button>
-                        </form>
-                        <form method="POST" action="{{ route('admin.ak1.picked',$application) }}">
-                            @csrf
-                            <button class="px-3 py-2 bg-indigo-700 text-white rounded">Tandai Diambil</button>
-                        </form>
-                    </div>
+                    {{-- Aksi cetak/diambil dinonaktifkan --}}
                 </div>
 
             </div>

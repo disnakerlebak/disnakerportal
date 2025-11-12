@@ -62,8 +62,7 @@ Route::middleware(['auth', 'role:admin,admin_ak1,superadmin'])
         Route::post('/ak1/{application}/approve', [CardVerificationController::class, 'approve'])->name('ak1.approve');
         Route::post('/ak1/{application}/reject', [CardVerificationController::class, 'reject'])->name('ak1.reject');
         Route::post('/ak1/{application}/revision', [CardVerificationController::class, 'requestRevision'])->name('ak1.revision');
-        Route::post('/ak1/{application}/printed', [CardVerificationController::class, 'markPrinted'])->name('ak1.printed');
-        Route::post('/ak1/{application}/picked-up', [CardVerificationController::class, 'markPickedUp'])->name('ak1.picked');
+        // Fitur tandai Dicetak/Diambil dinonaktifkan
         Route::post('/ak1/{application}/unapprove', [CardVerificationController::class, 'unapprove'])->name('ak1.unapprove');
 
         // Daftar Pencari Kerja
