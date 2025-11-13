@@ -72,14 +72,21 @@ class CardApplicationController extends Controller
                 ->with('error', 'Tidak ada kartu AK1 aktif yang dapat diperbaiki.');
         }
 
+        $pendingRepairStatuses = ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'];
+
         $hasPendingRepair = CardApplication::where('user_id', $user->id)
-            ->whereIn('type', ['perbaikan'])
-            ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'])
+            ->where('type', 'perbaikan')
+            ->whereIn('status', $pendingRepairStatuses)
             ->exists();
 
+        $pendingRepair = null;
         if ($hasPendingRepair) {
-            return redirect()->route('pencaker.card.index')
-                ->with('error', 'Pengajuan perbaikan sebelumnya masih diproses.');
+            $pendingRepair = CardApplication::with(['logs' => fn ($q) => $q->latest()])
+                ->where('user_id', $user->id)
+                ->where('type', 'perbaikan')
+                ->whereIn('status', $pendingRepairStatuses)
+                ->latest('id')
+                ->first();
         }
 
         $request->session()->put('ak1_repair_mode', true);
@@ -111,6 +118,8 @@ class CardApplicationController extends Controller
             'snapshotChanged' => $snapshotChanged,
             'kecamatanList' => $this->districtOptions(),
             'approvedAt' => $approvedAt,
+            'hasPendingRepair' => $hasPendingRepair,
+            'pendingRepair' => $pendingRepair,
         ]);
     }
 
@@ -128,13 +137,15 @@ class CardApplicationController extends Controller
             return redirect()->route('pencaker.card.index')->with('error', 'Tidak ada kartu AK1 aktif yang dapat diperbaiki.');
         }
 
+        $pendingRepairStatuses = ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'];
+
         $hasPendingRepair = CardApplication::where('user_id', $user->id)
             ->where('type', 'perbaikan')
-            ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi', 'Revisi Diminta'])
+            ->whereIn('status', $pendingRepairStatuses)
             ->exists();
 
         if ($hasPendingRepair) {
-            return redirect()->route('pencaker.card.index')->with('error', 'Pengajuan perbaikan sebelumnya masih diproses.');
+            return redirect()->route('pencaker.card.repair')->with('error', 'Pengajuan perbaikan sebelumnya masih diproses.');
         }
 
         $activeApp->loadMissing('documents');
@@ -237,7 +248,7 @@ class CardApplicationController extends Controller
 
             $request->session()->forget('ak1_repair_mode');
 
-            return redirect()->route('pencaker.card.index')->with('success', 'Pengajuan perbaikan AK1 berhasil dikirim. Menunggu verifikasi admin.');
+            return redirect()->route('pencaker.card.repair')->with('success', 'Pengajuan perbaikan AK1 berhasil dikirim. Menunggu verifikasi admin.');
         } catch (\Throwable $e) {
             DB::rollBack();
 

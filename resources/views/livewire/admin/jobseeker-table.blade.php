@@ -1,7 +1,7 @@
 <div class="max-w-6xl mx-auto h-full min-h-0 flex flex-col gap-4">
-    <div class="flex items-center justify-between">
+    <!-- <div class="flex items-center justify-between">
         <h2 class="font-semibold text-xl text-gray-100">Daftar Pencaker Disetujui</h2>
-    </div>
+    </div> -->
 
     <form wire:submit.prevent="apply" class="flex flex-wrap items-center gap-3" @keydown.enter.prevent="$wire.apply()">
         <input type="text"

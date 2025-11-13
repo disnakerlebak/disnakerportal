@@ -2,18 +2,17 @@
 @section('title', 'Pengajuan Kartu (AK1)')
 @section('content')
 <div class="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 py-8 text-slate-100">
-  <!-- @if (session('success'))
+  @if (session('success'))
     <div class="mb-4 bg-green-800 border border-green-600 text-green-100 px-4 py-3 rounded">
       ✅ {{ session('success') }}
     </div>
-  @endif -->
+  @endif
 
-  <!-- {{-- ALERTS (gagal / error validasi) --}}
-    @if (session('error'))
-      <div class="mb-4 rounded-lg bg-red-600/20 border border-red-600 text-red-200 px-4 py-3">
-        {{ session('error') }}
-      </div>
-    @endif -->
+  @if (session('error'))
+    <div class="mb-4 rounded-lg bg-red-600/20 border border-red-600 text-red-200 px-4 py-3">
+      {{ session('error') }}
+    </div>
+  @endif
 
     @if ($errors->any())
       <div class="mb-4 rounded-lg bg-yellow-600/20 border border-yellow-600 text-yellow-100 px-4 py-3">

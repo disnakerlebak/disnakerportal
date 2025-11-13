@@ -2,6 +2,12 @@
 @section('title', 'Dashboard Admin')
 
 @section('content')
+    {{-- Migrated to Livewire component for performance & interactivity --}}
+    <livewire:admin.dashboard-stats />
+@endsection
+
+{{-- Old static dashboard content removed --}}
+@if(false)
     <div class="py-8">
         <div class="max-w-6xl mx-auto px-6 space-y-8 text-slate-100">
             {{-- KPI Utama: AK1 & Pencaker --}}
@@ -259,7 +265,7 @@
           plugins: {
             ...commonOpts.plugins,
             legend: {
-              position: 'right',
+              position: 'bottom',
               labels: { color: textColor, boxWidth: 10, usePointStyle: true, pointStyle: 'circle', padding: 10, font: { size: 11 } }
             },
             tooltip: {
@@ -324,3 +330,4 @@
       });
     </script>
 @endpush
+@endif

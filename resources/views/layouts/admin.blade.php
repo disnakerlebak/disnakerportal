@@ -24,6 +24,19 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <livewire:styles />
+    <style>
+      /* Override autofill warna pada tema gelap agar konsisten */
+      .dark input:-webkit-autofill,
+      .dark input:-webkit-autofill:hover,
+      .dark input:-webkit-autofill:focus,
+      .dark textarea:-webkit-autofill,
+      .dark select:-webkit-autofill {
+        -webkit-text-fill-color: #e2e8f0; /* slate-200 */
+        -webkit-box-shadow: 0 0 0px 1000px #0f172a inset; /* slate-900 */
+        caret-color: #e2e8f0;
+        transition: background-color 9999s ease-out 0s;
+      }
+    </style>
 </head>
 
 <body class="flex h-screen bg-slate-950 text-slate-100 overflow-x-hidden">

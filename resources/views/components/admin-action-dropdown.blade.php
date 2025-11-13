@@ -1,7 +1,7 @@
 @props(['admin'])
 
-<div x-data="{ open:false }" class="relative inline-block text-left">
-  <button @click="open = !open" type="button"
+<div x-data="dropdownMenu()" x-id="['action-menu']" class="relative inline-block text-left">
+  <button @click="toggle($event)" type="button"
           class="inline-flex justify-center w-10 h-9 items-center rounded-md border border-slate-700 bg-slate-800 text-white hover:bg-slate-700 focus:outline-none"
           aria-haspopup="true" aria-expanded="true">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -9,10 +9,18 @@
     </svg>
   </button>
 
-  <div x-cloak x-show="open" @click.outside="open=false"
-       x-transition
-       class="origin-top-right absolute right-0 mt-2 w-56 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800 z-50">
-    <div class="py-1 text-sm">
+  <template x-teleport="body">
+  <div x-cloak x-show="open" @click.away="close()" @keydown.escape.window="close()"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 transform scale-95"
+       x-transition:enter-end="opacity-100 transform scale-100"
+       x-transition:leave="transition ease-in duration-100"
+       x-transition:leave-start="opacity-100 transform scale-100"
+       x-transition:leave-end="opacity-0 transform scale-95"
+       :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
+       class="fixed z-[70] w-56 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
+       :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
+    <div class="py-1 text-sm text-slate-200">
       <button type="button" @click="$dispatch('open-modal-edit-admin-{{ $admin->id }}'); open=false"
               class="w-full text-left px-4 py-2 text-blue-400 hover:bg-blue-700/20 flex items-center gap-2 transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -38,6 +46,7 @@
       </button>
     </div>
   </div>
+  </template>
 
   <!-- Confirm Delete Modal menggunakan komponen -->
   <x-modal name="confirm-delete-{{ $admin->id }}" maxWidth="md">

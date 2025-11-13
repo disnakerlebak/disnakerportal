@@ -24,7 +24,25 @@
 
     @php
         $snapshotChanged = $snapshotChanged ?? false;
+        $hasPendingRepair = $hasPendingRepair ?? false;
+        $pendingRepair = $pendingRepair ?? null;
     @endphp
+
+    @if ($hasPendingRepair && $pendingRepair)
+        <div class="mb-6 rounded-lg border border-yellow-700 bg-yellow-900/40 px-4 py-3 text-sm text-yellow-100">
+            ⏳ Pengajuan perbaikan terakhir ({{ optional($pendingRepair->created_at)->format('d M Y H:i') }}) berstatus
+            <span class="font-semibold text-white">{{ $pendingRepair->status }}</span>. Harap tunggu proses verifikasi admin.
+            @php
+                $pendingNote = optional($pendingRepair->logs->first())->notes;
+            @endphp
+            @if ($pendingNote)
+                <div class="mt-2 text-xs text-slate-200">
+                    <span class="font-semibold text-yellow-200">Catatan Admin:</span>
+                    {{ $pendingNote }}
+                </div>
+            @endif
+        </div>
+    @endif
 
     <form id="repairForm" action="{{ route('pencaker.card.repair.submit') }}" method="POST" enctype="multipart/form-data" class="space-y-8" data-snapshot-changed="{{ $snapshotChanged ? 'true' : 'false' }}">
         @csrf
@@ -310,15 +328,26 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button type="submit" id="repairSubmitBtn"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    @if(!$snapshotChanged) disabled @endif>
-                Ajukan Perbaikan
-            </button>
-            <span id="submitSpinner" class="hidden text-sm text-slate-300">Mengirim… mohon tunggu.</span>
+        <div class="flex flex-col gap-2">
+            @if ($hasPendingRepair)
+                <div class="flex flex-wrap items-center gap-3">
+                    <button type="button" class="bg-slate-800 text-slate-300 px-5 py-2 rounded-lg cursor-not-allowed">
+                        Menunggu Verifikasi Perbaikan
+                    </button>
+                    <span class="text-sm text-slate-400">Anda akan mendapat notifikasi setelah proses selesai.</span>
+                </div>
+            @else
+                <div class="flex items-center gap-3">
+                    <button type="submit" id="repairSubmitBtn"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            @if(!$snapshotChanged) disabled @endif>
+                        Ajukan Perbaikan
+                    </button>
+                    <span id="submitSpinner" class="hidden text-sm text-slate-300">Mengirim… mohon tunggu.</span>
+                </div>
+                <p class="text-xs mt-1 text-yellow-400">⚠️ Setelah pengajuan perbaikan dikirim, data tidak dapat diubah sebelum diverifikasi.</p>
+            @endif
         </div>
-        <p class="text-xs mt-1 text-yellow-400">⚠️ Setelah pengajuan perbaikan dikirim, data tidak dapat diubah sebelum diverifikasi.</p>
     </form>
 </div>
 

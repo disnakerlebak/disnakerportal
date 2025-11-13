@@ -29,7 +29,7 @@
     <div class="rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-hidden">
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm text-slate-200">
-          <thead class="bg-slate-800 text-slate-200 uppercase text-xs">
+          <thead class="bg-slate-800 text-slate-200 uppercase text-xs sticky top-0 z-20 border-b border-slate-700 shadow-md shadow-slate-900/30">
             <tr>
               <th class="px-4 py-3 text-left">Nama</th>
               <th class="px-4 py-3 text-left">Email</th>
@@ -83,3 +83,33 @@
     />
   </div>
 @endsection
+
+@once
+    @push('scripts')
+        <script>
+            // Dropdown util (dipakai juga di halaman lain) — posisi fixed, teleport ke body
+            window.dropdownMenu = window.dropdownMenu || function () {
+                return {
+                    open: false,
+                    dropUp: false,
+                    style: '',
+                    width: 224,
+                    init() { window.addEventListener('close-dropdowns', () => { this.open = false; }); },
+                    toggle(e) {
+                        this.open = !this.open;
+                        if (this.open) {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const spaceBelow = window.innerHeight - rect.bottom;
+                            this.dropUp = spaceBelow < 240;
+                            let left = rect.right - this.width;
+                            left = Math.max(8, Math.min(left, window.innerWidth - this.width - 8));
+                            let top = this.dropUp ? rect.top - 8 : rect.bottom + 8;
+                            this.style = `left:${left}px;top:${top}px`;
+                        }
+                    },
+                    close() { this.open = false; }
+                }
+            }
+        </script>
+    @endpush
+@endonce

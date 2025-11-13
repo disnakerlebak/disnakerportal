@@ -36,7 +36,7 @@
       <button class="text-slate-400 hover:text-slate-200" @click="$dispatch('close-modal-{{ $modalId }}')">&times;</button>
     </div>
 
-    <form method="POST" action="{{ $action }}" class="px-8 py-6 flex flex-col gap-5">
+    <form method="POST" action="{{ $action }}" class="px-6 py-6 flex flex-col gap-5">
   @csrf
   @if (strtoupper($method) !== 'POST')
     @method($method)
