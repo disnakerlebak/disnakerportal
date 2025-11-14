@@ -107,6 +107,7 @@
                         'Alamat Lengkap' => $profile->alamat_lengkap ?? '-',
                         'Domisili Kecamatan' => $profile->domisili_kecamatan ?? '-',
                         'No. Telepon' => $profile->no_telepon ?? '-',
+                        'Status Disabilitas' => $profile->status_disabilitas ?? '-',
                     ];
                 @endphp
 
@@ -573,6 +574,25 @@
             <input type="text" name="no_telepon"
                    value="{{ old('no_telepon', $profile->no_telepon ?? '') }}"
                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400">
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-400">Status Disabilitas</label>
+            <select name="status_disabilitas"
+                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                @php($opsiDisabilitas = [
+                    'Tidak',
+                    'Ya, disabilitas fisik',
+                    'Ya, disabilitas netra',
+                    'Ya, disabilitas rungu',
+                    'Ya, disabilitas intelektual',
+                    'Ya, lainnya',
+                ])
+                <option value="">Pilih</option>
+                @foreach ($opsiDisabilitas as $opsi)
+                    <option value="{{ $opsi }}" @selected(old('status_disabilitas', $profile->status_disabilitas ?? '') === $opsi)>{{ $opsi }}</option>
+                @endforeach
+            </select>
         </div>
 
         <div class="md:col-span-2">

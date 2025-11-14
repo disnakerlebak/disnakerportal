@@ -78,6 +78,14 @@ class ProfileController extends Controller
             'alamat_lengkap'      => ['nullable', 'string', 'max:255'],
             'domisili_kecamatan'  => ['nullable', 'string', 'max:100'],
             'no_telepon'          => ['nullable', 'string', 'max:20'],
+            'status_disabilitas'  => ['nullable', Rule::in([
+                'Tidak',
+                'Ya, disabilitas fisik',
+                'Ya, disabilitas netra',
+                'Ya, disabilitas rungu',
+                'Ya, disabilitas intelektual',
+                'Ya, lainnya',
+            ])],
         ]);
 
         // Izinkan NIK diubah, tetap dengan validasi unik (sudah ditangani di rules)
