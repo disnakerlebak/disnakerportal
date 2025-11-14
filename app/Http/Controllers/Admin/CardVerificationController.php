@@ -421,6 +421,7 @@ class CardVerificationController extends Controller
                 'status_perkawinan' => $profile->status_perkawinan ?? '-',
                 'agama'             => $profile->agama ?? '-',
                 'alamat_lengkap'    => $profile->alamat_lengkap ?? '-',
+                'status_disabilitas'=> $profile->status_disabilitas ?? '-',
             ],
             'educations' => $educations,
             'trainings'  => $trainings,

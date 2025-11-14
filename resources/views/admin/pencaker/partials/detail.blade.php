@@ -18,9 +18,20 @@
         <div><span class="text-gray-400 w-40 inline-block">Agama</span>: {{ $profile->agama ?? '-' }}</div>
         <div><span class="text-gray-400 w-40 inline-block">Kecamatan</span>: {{ $profile->kecamatan ?? $profile->domisili_kecamatan ?? '-' }}</div>
         <div><span class="text-gray-400 w-40 inline-block">No. HP</span>: {{ $profile->no_hp ?? $profile->no_telepon ?? '-' }}</div>
-        <div><span class="text-gray-400 w-40 inline-block">Email</span>: {{ $user->email }}</div>
-        <div><span class="text-gray-400 w-40 inline-block">Status Disabilitas</span>: {{ $profile->status_disabilitas ?? '-' }}</div>
-        <div class="md:col-span-2"><span class="text-gray-400 w-40 inline-block">Alamat</span>: {{ $profile->alamat_lengkap ?? '-' }}</div>
+        <div class="md:col-span-2">
+          <span class="text-gray-400 w-40 inline-block align-top">Email</span>:
+          <span class="inline-block break-all">
+            {{ $profile->email_cache ?? $user->email }}
+          </span>
+        </div>
+        <div class="md:col-span-2">
+          <span class="text-gray-400 w-40 inline-block">Status Disabilitas</span>:
+          {{ $profile->status_disabilitas ?? '-' }}
+        </div>
+        <div class="md:col-span-2">
+          <span class="text-gray-400 w-40 inline-block">Alamat</span>:
+          {{ $profile->alamat_lengkap ?? '-' }}
+        </div>
       </div>
     </div>
   </div>
@@ -62,6 +73,7 @@
             <th class="px-3 py-2 text-left">Jenis</th>
             <th class="px-3 py-2 text-left">Lembaga</th>
             <th class="px-3 py-2 text-left">Tahun</th>
+            <th class="px-3 py-2 text-left">Sertifikat</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
@@ -70,9 +82,18 @@
             <td class="px-3 py-2">{{ $t->jenis_pelatihan }}</td>
             <td class="px-3 py-2">{{ $t->lembaga_pelatihan }}</td>
             <td class="px-3 py-2">{{ $t->tahun }}</td>
+            <td class="px-3 py-2">
+              @if($t->sertifikat_file)
+                <a href="{{ asset('storage/'.$t->sertifikat_file) }}" target="_blank" class="text-indigo-300 hover:underline">
+                  Lihat
+                </a>
+              @else
+                <span class="text-gray-500 italic">Tidak ada</span>
+              @endif
+            </td>
           </tr>
         @empty
-          <tr><td colspan="3" class="px-3 py-4 text-center text-gray-400">Belum ada data</td></tr>
+          <tr><td colspan="4" class="px-3 py-4 text-center text-gray-400">Belum ada data</td></tr>
         @endforelse
         </tbody>
       </table>
@@ -88,6 +109,7 @@
             <th class="px-3 py-2 text-left">Perusahaan</th>
             <th class="px-3 py-2 text-left">Jabatan</th>
             <th class="px-3 py-2 text-left">Tahun</th>
+            <th class="px-3 py-2 text-left">Surat Pengalaman</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
@@ -96,9 +118,18 @@
             <td class="px-3 py-2">{{ $w->nama_perusahaan }}</td>
             <td class="px-3 py-2">{{ $w->jabatan }}</td>
             <td class="px-3 py-2">{{ $w->tahun_mulai }} - {{ $w->tahun_selesai ?? 'Sekarang' }}</td>
+            <td class="px-3 py-2">
+              @if($w->surat_pengalaman)
+                <a href="{{ asset('storage/'.$w->surat_pengalaman) }}" target="_blank" class="text-indigo-300 hover:underline">
+                  Lihat
+                </a>
+              @else
+                <span class="text-gray-500 italic">Tidak ada</span>
+              @endif
+            </td>
           </tr>
         @empty
-          <tr><td colspan="3" class="px-3 py-4 text-center text-gray-400">Belum ada data</td></tr>
+          <tr><td colspan="4" class="px-3 py-4 text-center text-gray-400">Belum ada data</td></tr>
         @endforelse
         </tbody>
       </table>

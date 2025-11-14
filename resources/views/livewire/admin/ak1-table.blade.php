@@ -532,6 +532,7 @@
                         ['Jenis Kelamin', profile.jenis_kelamin],
                         ['Status', profile.status_perkawinan],
                         ['Agama', profile.agama],
+                        ['Status Disabilitas', profile.status_disabilitas],
                         ['Alamat Domisili', profile.alamat_lengkap],
                     ].map(([label, value]) => `
                         <div class="flex text-xs sm:text-sm text-gray-300">
@@ -694,6 +695,7 @@
                                         ${row('Jenis Kelamin', profile.jenis_kelamin)}
                                         ${row('Agama', profile.agama)}
                                         <div class="sm:col-span-2">${row('Status', profile.status_perkawinan)}</div>
+                                        <div class="sm:col-span-2">${row('Status Disabilitas', profile.status_disabilitas)}</div>
                                         <div class="sm:col-span-2">${row('Alamat Lengkap', profile.alamat_lengkap)}</div>
                                     </div>`;
 
