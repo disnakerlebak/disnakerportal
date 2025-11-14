@@ -11,3 +11,27 @@ body {
 @tailwind components;
 @tailwind utilities;
 @import "./forms.css";
+
+/* Global scrollbar styling (tipis, menyatu dengan latar) */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent; /* Firefox */
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.3); /* selalu sedikit terlihat */
+    border-radius: 9999px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.65); /* lebih jelas saat dihover/scroll */
+}

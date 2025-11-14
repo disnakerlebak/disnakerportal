@@ -181,28 +181,54 @@
                                             </button>
 
                                             {{-- Riwayat --}}
-                                            <a href="{{ route('admin.pencaker.history', $u->id) }}"
-                                               class="w-full text-left px-4 py-2 text-sm text-purple-400 hover:bg-purple-700/20 flex items-center gap-2 transition"
-                                               @click="window.dispatchEvent(new CustomEvent('close-dropdowns'))">
+                                            <button type="button"
+                                                class="w-full text-left px-4 py-2 text-sm text-purple-300 hover:bg-purple-600/20 flex items-center gap-2 transition"
+                                                @click="
+                                                    console.log('CLICKED riwayat');
+                                                    console.log('URL:', '{{ route('admin.manage.history', $u->id) }}');
+                                                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                                                    window.dispatchEvent(
+                                                        new CustomEvent('open-history-modal', {
+                                                            detail: {
+                                                                url: '{{ route('admin.manage.history', $u->id) }}'
+                                                            }
+                                                        })
+                                                    );
+                                                ">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                                 Riwayat
-                                            </a>
-
-                                            {{-- Nonaktifkan --}}
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-amber-300 hover:bg-amber-600/20 flex items-center gap-2 transition"
-                                                    onclick="openDeactivateModal(this)"
-                                                    data-user-id="{{ $u->id }}"
-                                                    data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                                    data-user-email="{{ $u->email }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                          d="M18.364 18.364A9 9 0 1 1 5.636 5.636m12.728 12.728L5.636 5.636"/>
-                                                </svg>
-                                                Nonaktifkan Akun
                                             </button>
+
+
+
+                                            {{-- Nonaktifkan / Aktifkan --}}
+                                            @if($isActive)
+                                                <button type="button"
+                                                        class="w-full text-left px-4 py-2 text-sm text-amber-300 hover:bg-amber-600/20 flex items-center gap-2 transition"
+                                                        onclick="openDeactivateModal(this)"
+                                                        data-user-id="{{ $u->id }}"
+                                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                                        data-user-email="{{ $u->email }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6" />
+                                                    </svg>
+                                                    Nonaktifkan Akun
+                                                </button>
+                                            @else
+                                                <button type="button"
+                                                        class="w-full text-left px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-600/20 flex items-center gap-2 transition"
+                                                        onclick="openActivateModal(this)"
+                                                        data-user-id="{{ $u->id }}"
+                                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                                        data-user-email="{{ $u->email }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6" />
+                                                    </svg>
+                                                    Aktifkan Akun
+                                                </button>
+                                            @endif
 
                                             {{-- Reset profil --}}
                                             <button type="button"
@@ -213,7 +239,7 @@
                                                     data-user-email="{{ $u->email }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                          d="M4 4v6h6M20 20v-6h-6M5 19A9 9 0 0 1 19 5"/>
+                                                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
                                                 </svg>
                                                 Reset Profil
                                             </button>
@@ -283,17 +309,69 @@
         </div>
     </div>
 
-    {{-- Modal Konfirmasi Nonaktifkan Akun --}}
+    {{-- MODAL RIWAYAT Pencaker --}}
+    <div 
+        x-data="{ showHistory:false, html:'', loading:false }"
+        @open-history-modal.window="
+            console.log('EVENT MASUK:', $event.detail.url);
+            showHistory = true;
+            loading = true;
+            html = '';
+
+            fetch($event.detail.url, {
+                headers: { 'X-Requested-With':'XMLHttpRequest' }
+            })
+            .then(r => r.text())
+            .then(t => { html = t })
+            .catch(() => { html = '<div class=\'p-6 text-red-400\'>Gagal memuat riwayat.</div>' })
+            .finally(() => { loading = false });
+        "
+    >
+        <div 
+            x-show="showHistory"
+            x-transition.opacity.duration.200ms
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            @keydown.escape.window="showHistory = false"
+        >
+            <div @click.outside="showHistory = false"
+                 x-transition.scale.origin-top.duration.200ms
+                 class="bg-slate-900 w-full max-w-5xl rounded-2xl shadow-xl border border-slate-700 overflow-hidden max-h-[85vh] flex flex-col"
+            >
+                {{-- Header --}}
+                <div class="px-6 py-3 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-slate-100">Riwayat Pencaker</h3>
+                    <button class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded" @click="showHistory = false">
+                        Tutup
+                    </button>
+                </div>
+
+                {{-- Body --}}
+                <div class="flex-1 overflow-y-auto p-6">
+
+                    {{-- Loading --}}
+                    <template x-if="loading">
+                        <div class="text-slate-300">Memuat riwayat...</div>
+                    </template>
+
+                    {{-- Content --}}
+                    <div x-html="html"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Konfirmasi Nonaktifkan / Aktifkan Akun --}}
     <x-modal name="confirm-deactivate" :show="false" maxWidth="md" animation="slide-up">
         <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
             <div>
-                <h3 class="text-lg font-semibold">Nonaktifkan Akun Pencaker</h3>
+                <h3 id="deactivateModalTitle" class="text-lg font-semibold">Nonaktifkan Akun Pencaker</h3>
                 <p class="text-sm text-gray-400 mt-1" id="deactivateModalSubtitle"></p>
             </div>
             <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-deactivate'}))" class="text-slate-300 hover:text-white">✕</button>
         </div>
         <div class="px-6 py-5 space-y-4">
-            <p class="text-sm text-gray-300 leading-relaxed">
+            <p id="deactivateModalBody" class="text-sm text-gray-300 leading-relaxed">
                 Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.
             </p>
             <div class="flex justify-end gap-2 pt-2">
@@ -383,12 +461,18 @@
                     const name = button.getAttribute('data-user-name') || '';
                     const email = button.getAttribute('data-user-email') || '';
                     const subtitle = document.getElementById('deactivateModalSubtitle');
-                    if (subtitle) {
-                        subtitle.textContent = email ? `${name} · ${email}` : name;
-                    }
-                    // Set event listener untuk tombol konfirmasi
+                    const title = document.getElementById('deactivateModalTitle');
+                    const body = document.getElementById('deactivateModalBody');
                     const confirmBtn = document.getElementById('confirmDeactivateBtn');
+
+                    if (title) title.textContent = 'Nonaktifkan Akun Pencaker';
+                    if (body) body.textContent = 'Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.';
+                    if (subtitle) subtitle.textContent = email ? `${name} · ${email}` : name;
+
                     if (confirmBtn) {
+                        confirmBtn.textContent = 'Nonaktifkan';
+                        confirmBtn.classList.remove('bg-emerald-600','hover:bg-emerald-700');
+                        confirmBtn.classList.add('bg-amber-600','hover:bg-amber-700');
                         confirmBtn.onclick = function() {
                             const wireComponent = document.querySelector('[wire\\:id]');
                             if (wireComponent && window.Livewire) {
@@ -402,6 +486,36 @@
 
                 window.closeDeactivateModal = function () {
                     window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-deactivate' }));
+                };
+
+                // Modal Aktifkan
+                window.openActivateModal = function (button) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-deactivate' }));
+                    currentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+                    const subtitle = document.getElementById('deactivateModalSubtitle');
+                    const title = document.getElementById('deactivateModalTitle');
+                    const body = document.getElementById('deactivateModalBody');
+                    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+
+                    if (title) title.textContent = 'Aktifkan Akun Pencaker';
+                    if (body) body.textContent = 'Aktifkan kembali akun pencaker ini? Mereka akan dapat login dan mengakses layanan kembali.';
+                    if (subtitle) subtitle.textContent = email ? `${name} · ${email}` : name;
+                    if (confirmBtn) {
+                        confirmBtn.textContent = 'Aktifkan';
+                        confirmBtn.classList.remove('bg-amber-600','hover:bg-amber-700');
+                        confirmBtn.classList.add('bg-emerald-600','hover:bg-emerald-700');
+                        confirmBtn.onclick = function () {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).activateUser(currentUserId);
+                            }
+                            closeDeactivateModal();
+                        };
+                    }
                 };
 
                 // Modal Reset

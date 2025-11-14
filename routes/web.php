@@ -158,6 +158,10 @@ Route::middleware(['auth', 'role:superadmin'])
         Route::get('/pencaker', function () {
             return view('admin.pencaker.manage');
         })->name('pencaker');
+
+        Route::get('{id}/history', 
+        [\App\Http\Controllers\Admin\PencakerHistoryController::class, 'history']
+    )->name('history');
         // Route::get('/pencaker', [AdminManagementController::class, 'managePencaker'])->name('pencaker');
         
     });

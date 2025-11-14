@@ -113,6 +113,18 @@ class ManageJobseekersTable extends Component
         $this->resetPage();
     }
 
+    // === ACTION: Aktifkan kembali user ===
+    public function activateUser(int $userId): void
+    {
+        $user = User::where('role', 'pencaker')->findOrFail($userId);
+
+        $user->status = 'active';
+        $user->save();
+
+        session()->flash('success', 'Pencaker berhasil diaktifkan kembali.');
+        $this->resetPage();
+    }
+
     // === ACTION: Reset profil pencaker (hapus data profil & riwayat) ===
     public function resetProfile(int $userId): void
     {

@@ -48,7 +48,7 @@
      @click="sidebarOpen = false"></div>
 
 <aside
-  class="fixed inset-y-0 left-0 z-40 flex flex-col overflow-y-auto bg-slate-900/95 shadow-xl transition-[width,transform] duration-200 md:translate-x-0"
+  class="fixed inset-y-0 left-0 z-40 flex flex-col overflow-y-hidden bg-slate-900/95 shadow-xl transition-[width,transform] duration-200 md:translate-x-0"
   :class="[
     sidebarCollapsed ? 'w-20' : 'w-64',
     sidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -80,7 +80,7 @@
   </div>
 
   <!-- Menu -->
-  <nav class="p-3 flex-1 overflow-y-auto" x-bind:class="sidebarCollapsed ? 'space-y-0.5' : 'space-y-1'">
+  <nav class="p-3 flex-1" :class="[sidebarCollapsed ? 'space-y-0.5 overflow-y-hidden' : 'space-y-1 overflow-y-auto']">
 
     <!-- ITEM: helper class pattern (Flowbite style) -->
     @php
