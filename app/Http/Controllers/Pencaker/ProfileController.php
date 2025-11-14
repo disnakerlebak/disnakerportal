@@ -62,6 +62,9 @@ class ProfileController extends Controller
         }
         $userId = $request->user()->id;
         $profile = JobseekerProfile::firstOrNew(['user_id' => $userId]);
+        
+        // Simpan status apakah ini create atau update sebelum save
+        $isNew = !$profile->exists;
 
         $data = $request->validate([
             'nama_lengkap'        => ['required', 'regex:/^[A-Za-z\s]+$/', 'max:255'],
@@ -86,10 +89,10 @@ class ProfileController extends Controller
 
         ActivityLog::create([
             'user_id' => $userId,
-            'action' => $profile->wasRecentlyCreated ? 'created' : 'updated',
+            'action' => $isNew ? 'created' : 'updated',
             'model_type' => JobseekerProfile::class,
             'model_id' => $profile->id,
-            'description' => $profile->wasRecentlyCreated ? 'Isi Data Diri pertama kali' : 'Perbarui Data Diri',
+            'description' => $isNew ? 'Isi Data Diri pertama kali' : 'Perbarui Data Diri',
         ]);
 
         $redirectRoute = $repairMode ? 'pencaker.card.repair' : 'pencaker.profile';

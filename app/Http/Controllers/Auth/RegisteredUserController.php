@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\JobseekerProfile;
+use App\Models\ActivityLog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,9 +53,18 @@ class RegisteredUserController extends Controller
             'role' => $validated['role'],
         ]);
 
+        // Log aktivitas pendaftaran
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'action' => 'created',
+            'model_type' => User::class,
+            'model_id' => $user->id,
+            'description' => 'Mendaftar akun pertama kali sebagai ' . $validated['role'],
+        ]);
+
         // Otomatis buat profil pencaker untuk role pencaker
         if ($user->role === 'pencaker') {
-            JobseekerProfile::firstOrCreate(
+            $profile = JobseekerProfile::firstOrCreate(
                 ['user_id' => $user->id],
                 [
                     'nama_lengkap' => $validated['name'],

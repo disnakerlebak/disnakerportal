@@ -69,6 +69,7 @@ Route::middleware(['auth', 'role:admin,admin_ak1,superadmin'])
         Route::get('/pencaker', [JobseekerController::class, 'index'])->name('pencaker.index');
         Route::get('/pencaker/{user}', [JobseekerController::class, 'show'])->name('pencaker.show');
         Route::get('/pencaker/{user}/detail', [JobseekerController::class, 'ajaxDetail'])->name('pencaker.detail');
+        Route::get('/pencaker/{user}/history', [JobseekerController::class, 'history'])->name('pencaker.history');
 
         // Detail AK1
         Route::get('/ak1/{application}/detail', [CardVerificationController::class, 'ajaxDetail'])

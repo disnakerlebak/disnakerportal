@@ -11,6 +11,7 @@ use App\Models\Training;
 use App\Models\WorkExperience;
 use App\Models\JobPreference;
 use App\Models\CardApplication;
+use App\Models\CardApplicationLog;
 
 class JobseekerController extends Controller
 {
@@ -86,5 +87,49 @@ class JobseekerController extends Controller
         return view('admin.pencaker.partials.detail', compact(
             'user','profile','educations','trainings','works','preference','latestApp','fotoPath'
         ));
+    }
+
+    public function history(User $user)
+    {
+        // Ambil riwayat aktivitas dari activity_logs
+        $activityLogs = ActivityLog::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Ambil riwayat pengajuan AK1 dari card_application_logs
+        $cardApplicationLogs = CardApplicationLog::whereHas('application', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->with(['application', 'actor'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Gabungkan dan urutkan berdasarkan waktu
+        $allLogs = collect();
+        
+        // Tambahkan activity logs
+        foreach ($activityLogs as $log) {
+            $allLogs->push([
+                'type' => 'activity',
+                'created_at' => $log->created_at,
+                'data' => $log,
+            ]);
+        }
+
+        // Tambahkan card application logs
+        foreach ($cardApplicationLogs as $log) {
+            $allLogs->push([
+                'type' => 'ak1',
+                'created_at' => $log->created_at,
+                'data' => $log,
+            ]);
+        }
+
+        // Urutkan berdasarkan waktu (terbaru dulu)
+        $allLogs = $allLogs->sortByDesc('created_at')->values();
+
+        $profile = JobseekerProfile::where('user_id', $user->id)->first();
+
+        return view('admin.pencaker.history', compact('user', 'profile', 'allLogs'));
     }
 }

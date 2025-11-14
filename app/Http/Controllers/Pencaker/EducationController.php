@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Education;
 use App\Models\JobseekerProfile;
 use App\Models\CardApplication;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class EducationController extends Controller
@@ -45,7 +46,15 @@ class EducationController extends Controller
 
         $profile = JobseekerProfile::firstOrCreate(['user_id' => $request->user()->id]);
 
-        $profile->educations()->create($validated);
+        $education = $profile->educations()->create($validated);
+
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'created',
+            'model_type' => Education::class,
+            'model_id' => $education->id,
+            'description' => 'Menambah riwayat pendidikan: ' . $validated['tingkat'] . ' - ' . $validated['nama_institusi'],
+        ]);
 
         if ($repairMode) {
             return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pendidikan berhasil ditambahkan.');
@@ -82,6 +91,14 @@ class EducationController extends Controller
 
         $education->update($validated);
 
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'updated',
+            'model_type' => Education::class,
+            'model_id' => $education->id,
+            'description' => 'Memperbarui riwayat pendidikan: ' . $validated['tingkat'] . ' - ' . $validated['nama_institusi'],
+        ]);
+
         if ($repairMode) {
             return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pendidikan berhasil diperbarui.');
         }
@@ -105,7 +122,18 @@ class EducationController extends Controller
         if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Menghapus pendidikan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
+        
+        $educationId = $education->id;
+        $educationInfo = $education->tingkat . ' - ' . $education->nama_institusi;
         $education->delete();
+
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'deleted',
+            'model_type' => Education::class,
+            'model_id' => $educationId,
+            'description' => 'Menghapus riwayat pendidikan: ' . $educationInfo,
+        ]);
         if ($repairMode) {
             return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pendidikan dihapus.');
         }

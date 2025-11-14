@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Training;
 use App\Models\JobseekerProfile;
 use App\Models\CardApplication;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -41,7 +42,15 @@ class TrainingController extends Controller
 
         $validated['jobseeker_profile_id'] = $profile->id;
 
-        Training::create($validated);
+        $training = Training::create($validated);
+
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'created',
+            'model_type' => Training::class,
+            'model_id' => $training->id,
+            'description' => 'Menambah riwayat pelatihan: ' . $validated['jenis_pelatihan'] . ' - ' . $validated['lembaga_pelatihan'],
+        ]);
 
         if ($repairMode) {
             return redirect()->route('pencaker.card.repair')->with('success', 'Riwayat pelatihan berhasil ditambahkan.');
@@ -80,6 +89,14 @@ class TrainingController extends Controller
 
     $training->update($validated);
 
+    ActivityLog::create([
+        'user_id' => $request->user()->id,
+        'action' => 'updated',
+        'model_type' => Training::class,
+        'model_id' => $training->id,
+        'description' => 'Memperbarui riwayat pelatihan: ' . $validated['jenis_pelatihan'] . ' - ' . $validated['lembaga_pelatihan'],
+    ]);
+
     if ($repairMode) {
         return redirect()->route('pencaker.card.repair')->with('success', 'Data pelatihan berhasil diperbarui.');
     }
@@ -97,10 +114,22 @@ class TrainingController extends Controller
         if ($this->isEditingLocked($request->user()->id) && !$repairMode) {
             return back()->with('error', 'Menghapus pelatihan dikunci karena pengajuan AK1 sedang diproses/diterima.');
         }
+        
+        $trainingId = $training->id;
+        $trainingInfo = $training->jenis_pelatihan . ' - ' . $training->lembaga_pelatihan;
+        
         if ($training->sertifikat_file) {
             Storage::disk('public')->delete($training->sertifikat_file);
         }
         $training->delete();
+
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'deleted',
+            'model_type' => Training::class,
+            'model_id' => $trainingId,
+            'description' => 'Menghapus riwayat pelatihan: ' . $trainingInfo,
+        ]);
 
         if ($repairMode) {
             return redirect()->route('pencaker.card.repair')->with('success', 'Data pelatihan berhasil dihapus.');
