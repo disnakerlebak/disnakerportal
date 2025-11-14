@@ -84,6 +84,10 @@ public function cardApplications()
 {
     return $this->hasMany(CardApplication::class);
 }
+public function latestCardApplication()
+{
+    return $this->hasOne(CardApplication::class)->latestOfMany();
+}
 
 
 }

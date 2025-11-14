@@ -151,4 +151,12 @@ Route::middleware(['auth', 'role:superadmin'])
         Route::post('/update/{id}', [AdminManagementController::class, 'update'])->name('update');
         Route::post('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('toggle');
         Route::delete('/{id}', [AdminManagementController::class, 'destroy'])->name('destroy');
+        // ===============================
+        // Kelola Pencaker ( NEW FEATURE )
+        // ===============================
+        Route::get('/pencaker', function () {
+            return view('admin.pencaker.manage');
+        })->name('pencaker');
+        // Route::get('/pencaker', [AdminManagementController::class, 'managePencaker'])->name('pencaker');
+        
     });
