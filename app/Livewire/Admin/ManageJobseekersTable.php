@@ -106,13 +106,7 @@ class ManageJobseekersTable extends Component
     {
         $user = User::where('role', 'pencaker')->findOrFail($userId);
 
-        // NOTE: sesuaikan field status aktif di tabel users.
-        // Misal kamu punya kolom 'is_active' (boolean).
-        if (property_exists($user, 'is_active') || isset($user->is_active)) {
-            $user->is_active = false;
-        }
-
-        // Kalau belum ada field, kamu bisa ganti logika ini sendiri.
+        $user->status = 'inactive';
         $user->save();
 
         session()->flash('success', 'Pencaker berhasil dinonaktifkan.');

@@ -57,6 +57,7 @@
                 <tr>
                     <th class="p-3 text-left">Nama Lengkap</th>
                     <th class="p-3 text-left">NIK</th>
+                    <th class="p-3 text-left">Status Pengguna</th>
                     <th class="p-3 text-left">Status Profil</th>
                     <th class="p-3 text-left">Status AK1</th>
                     <th class="p-3 text-left">Aksi</th>
@@ -67,6 +68,13 @@
                     <?php
                         $p   = $u->jobseekerProfile;
                         $app = $u->latestCardApplication;
+
+                        // Status pengguna (aktif/nonaktif)
+                        $isActive = ($u->status ?? 'active') === 'active';
+                        $userStatusLabel = $isActive ? 'Aktif' : 'Tidak Aktif';
+                        $userStatusClass = $isActive
+                            ? 'bg-emerald-600/90 text-emerald-50'
+                            : 'bg-slate-600/90 text-slate-100';
 
                         // Status profil
                         $profilLengkap = $p && $p->nik;
@@ -109,6 +117,12 @@
                             <div class="text-[11px] text-slate-400"><?php echo e($u->email); ?></div>
                         </td>
                         <td class="p-3"><?php echo e($p->nik ?? '-'); ?></td>
+                        <td class="p-3">
+                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold <?php echo e($userStatusClass); ?>">
+                                <?php echo e($userStatusLabel); ?>
+
+                            </span>
+                        </td>
                         <td class="p-3">
                             <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold <?php echo e($profilClass); ?>">
                                 <?php echo e($profilLabel); ?>
@@ -173,12 +187,10 @@
                                             
                                             <button type="button"
                                                     class="w-full text-left px-4 py-2 text-sm text-amber-300 hover:bg-amber-600/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                      if (confirm('Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.')) {
-                                                        $wire.deactivateUser(<?php echo e($u->id); ?>);
-                                                      }
-                                                    ">
+                                                    onclick="openDeactivateModal(this)"
+                                                    data-user-id="<?php echo e($u->id); ?>"
+                                                    data-user-name="<?php echo e($p->nama_lengkap ?? $u->name ?? '-'); ?>"
+                                                    data-user-email="<?php echo e($u->email); ?>">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M18.364 18.364A9 9 0 1 1 5.636 5.636m12.728 12.728L5.636 5.636"/>
@@ -189,12 +201,10 @@
                                             
                                             <button type="button"
                                                     class="w-full text-left px-4 py-2 text-sm text-sky-300 hover:bg-sky-600/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                      if (confirm('Reset seluruh profil & riwayat (pendidikan, pelatihan, pengalaman) pencaker ini? AK1 tetap dipertahankan.')) {
-                                                        $wire.resetProfile(<?php echo e($u->id); ?>);
-                                                      }
-                                                    ">
+                                                    onclick="openResetModal(this)"
+                                                    data-user-id="<?php echo e($u->id); ?>"
+                                                    data-user-name="<?php echo e($p->nama_lengkap ?? $u->name ?? '-'); ?>"
+                                                    data-user-email="<?php echo e($u->email); ?>">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M4 4v6h6M20 20v-6h-6M5 19A9 9 0 0 1 19 5"/>
@@ -205,12 +215,10 @@
                                             
                                             <button type="button"
                                                     class="w-full text-left px-4 py-2 text-sm text-rose-300 hover:bg-rose-700/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                      if (confirm('Hapus pencaker ini BESERTA seluruh data dan riwayat AK1? Tindakan ini tidak dapat dibatalkan.')) {
-                                                        $wire.deleteUser(<?php echo e($u->id); ?>);
-                                                      }
-                                                    ">
+                                                    onclick="openDeleteModal(this)"
+                                                    data-user-id="<?php echo e($u->id); ?>"
+                                                    data-user-name="<?php echo e($p->nama_lengkap ?? $u->name ?? '-'); ?>"
+                                                    data-user-email="<?php echo e($u->email); ?>">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M6 7h12M9 7V4h6v3m-7 4v7m4-7v7m4-7v7M5 7l1 13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-13"/>
@@ -225,7 +233,7 @@
                     </tr>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
-                        <td colspan="5" class="p-6 text-center text-slate-400">
+                        <td colspan="6" class="p-6 text-center text-slate-400">
                             Belum ada data pencaker.
                         </td>
                     </tr>
@@ -271,7 +279,121 @@
     </div>
 
     
-    <?php if (! $__env->hasRenderedOnce('d959c6eb-1183-43a1-aa90-5fd6e4404f17')): $__env->markAsRenderedOnce('d959c6eb-1183-43a1-aa90-5fd6e4404f17'); ?>
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'confirm-deactivate','show' => false,'maxWidth' => 'md','animation' => 'slide-up']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'confirm-deactivate','show' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(false),'maxWidth' => 'md','animation' => 'slide-up']); ?>
+        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold">Nonaktifkan Akun Pencaker</h3>
+                <p class="text-sm text-gray-400 mt-1" id="deactivateModalSubtitle"></p>
+            </div>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-deactivate'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">
+                Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.
+            </p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeDeactivateModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" id="confirmDeactivateBtn" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 transition text-sm font-semibold text-white">Nonaktifkan</button>
+            </div>
+        </div>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'confirm-reset','show' => false,'maxWidth' => 'md','animation' => 'slide-up']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'confirm-reset','show' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(false),'maxWidth' => 'md','animation' => 'slide-up']); ?>
+        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold">Reset Profil Pencaker</h3>
+                <p class="text-sm text-gray-400 mt-1" id="resetModalSubtitle"></p>
+            </div>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-reset'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">
+                Reset seluruh profil & riwayat (pendidikan, pelatihan, pengalaman) pencaker ini? AK1 tetap dipertahankan.
+            </p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeResetModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" id="confirmResetBtn" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 transition text-sm font-semibold text-white">Reset Profil</button>
+            </div>
+        </div>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+
+    
+    <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'confirm-delete','show' => false,'maxWidth' => 'md','animation' => 'slide-up']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'confirm-delete','show' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(false),'maxWidth' => 'md','animation' => 'slide-up']); ?>
+        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold">Hapus Pencaker</h3>
+                <p class="text-sm text-gray-400 mt-1" id="deleteModalSubtitle"></p>
+            </div>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-delete'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">
+                Hapus pencaker ini <span class="font-semibold text-rose-300">BESERTA seluruh data dan riwayat AK1</span>? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" id="confirmDeleteBtn" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 transition text-sm font-semibold text-white">Hapus Pencaker</button>
+            </div>
+        </div>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+
+    
+    <?php if (! $__env->hasRenderedOnce('3f3e5909-47be-410a-a49a-8baf820c8f43')): $__env->markAsRenderedOnce('3f3e5909-47be-410a-a49a-8baf820c8f43'); ?>
         <?php $__env->startPush('scripts'); ?>
             <script>
                 window.dropdownMenu = function () {
@@ -298,6 +420,96 @@
                         close() { this.open = false; }
                     }
                 }
+
+                // Variabel global untuk menyimpan data user yang akan dioperasikan
+                let currentUserId = null;
+
+                // Modal Nonaktifkan
+                window.openDeactivateModal = function (button) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-deactivate' }));
+                    currentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+                    const subtitle = document.getElementById('deactivateModalSubtitle');
+                    if (subtitle) {
+                        subtitle.textContent = email ? `${name} · ${email}` : name;
+                    }
+                    // Set event listener untuk tombol konfirmasi
+                    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+                    if (confirmBtn) {
+                        confirmBtn.onclick = function() {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).deactivateUser(currentUserId);
+                            }
+                            closeDeactivateModal();
+                        };
+                    }
+                };
+
+                window.closeDeactivateModal = function () {
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-deactivate' }));
+                };
+
+                // Modal Reset
+                window.openResetModal = function (button) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-reset' }));
+                    currentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+                    const subtitle = document.getElementById('resetModalSubtitle');
+                    if (subtitle) {
+                        subtitle.textContent = email ? `${name} · ${email}` : name;
+                    }
+                    // Set event listener untuk tombol konfirmasi
+                    const confirmBtn = document.getElementById('confirmResetBtn');
+                    if (confirmBtn) {
+                        confirmBtn.onclick = function() {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).resetProfile(currentUserId);
+                            }
+                            closeResetModal();
+                        };
+                    }
+                };
+
+                window.closeResetModal = function () {
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-reset' }));
+                };
+
+                // Modal Delete
+                window.openDeleteModal = function (button) {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-delete' }));
+                    currentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+                    const subtitle = document.getElementById('deleteModalSubtitle');
+                    if (subtitle) {
+                        subtitle.textContent = email ? `${name} · ${email}` : name;
+                    }
+                    // Set event listener untuk tombol konfirmasi
+                    const confirmBtn = document.getElementById('confirmDeleteBtn');
+                    if (confirmBtn) {
+                        confirmBtn.onclick = function() {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).deleteUser(currentUserId);
+                            }
+                            closeDeleteModal();
+                        };
+                    }
+                };
+
+                window.closeDeleteModal = function () {
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-delete' }));
+                };
             </script>
         <?php $__env->stopPush(); ?>
     <?php endif; ?>
