@@ -18,19 +18,13 @@
         <div><span class="text-gray-400 w-40 inline-block">Agama</span>: {{ $profile->agama ?? '-' }}</div>
         <div><span class="text-gray-400 w-40 inline-block">Kecamatan</span>: {{ $profile->kecamatan ?? $profile->domisili_kecamatan ?? '-' }}</div>
         <div><span class="text-gray-400 w-40 inline-block">No. HP</span>: {{ $profile->no_hp ?? $profile->no_telepon ?? '-' }}</div>
+        <div><span class="text-gray-400 w-40 inline-block">Status Disabilitas</span>: {{ $profile->status_disabilitas ?? '-' }}</div>
+        <div><span class="text-gray-400 w-40 inline-block">Akun Media Sosial</span>: {{ $profile->akun_media_sosial ?? '-' }}</div>
         <div class="md:col-span-2">
           <span class="text-gray-400 w-40 inline-block align-top">Email</span>:
           <span class="inline-block break-all">
             {{ $profile->email_cache ?? $user->email }}
           </span>
-        </div>
-        <div class="md:col-span-2">
-          <span class="text-gray-400 w-40 inline-block">Status Disabilitas</span>:
-          {{ $profile->status_disabilitas ?? '-' }}
-        </div>
-        <div class="md:col-span-2">
-          <span class="text-gray-400 w-40 inline-block">Akun Media Sosial</span>:
-          {{ $profile->akun_media_sosial ?? '-' }}
         </div>
         <div class="md:col-span-2">
           <span class="text-gray-400 w-40 inline-block">Alamat</span>:
