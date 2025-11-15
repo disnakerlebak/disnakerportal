@@ -15,6 +15,7 @@
             <div><b>Kecamatan:</b> {{ $profile->domisili_kecamatan }}</div>
             <div><b>No. HP:</b> {{ $profile->no_telepon }}</div>
             <div><b>Status Disabilitas:</b> {{ $profile->status_disabilitas ?? '-' }}</div>
+            <div><b>Akun Media Sosial:</b> {{ $profile->akun_media_sosial ?? '-' }}</div>
             <div><b>Email:</b> {{ $profile->email_cache }}</div>
         </div>
 

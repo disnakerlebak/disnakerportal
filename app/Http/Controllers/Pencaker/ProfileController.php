@@ -78,6 +78,7 @@ class ProfileController extends Controller
             'alamat_lengkap'      => ['nullable', 'string', 'max:255'],
             'domisili_kecamatan'  => ['nullable', 'string', 'max:100'],
             'no_telepon'          => ['nullable', 'string', 'max:20'],
+            'akun_media_sosial'   => ['nullable', 'string', 'max:255'],
             'status_disabilitas'  => ['nullable', Rule::in([
                 'Tidak',
                 'Ya, disabilitas fisik',

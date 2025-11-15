@@ -731,6 +731,7 @@
                                         ${row('No. HP', profile.no_telepon ?? '-')}
                                         <div class="sm:col-span-2">${row('Email', profile.email_cache ?? '-')}</div>
                                         <div class="sm:col-span-2">${row('Status Disabilitas', profile.status_disabilitas)}</div>
+                                        <div class="sm:col-span-2">${row('Akun Media Sosial', profile.akun_media_sosial)}</div>
                                         <div class="sm:col-span-2">${row('Alamat', profile.alamat_lengkap)}</div>
                                     </div>`;
 

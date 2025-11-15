@@ -71,6 +71,8 @@ class CardApplicationSnapshot
                 'alamat_lengkap' => $profile?->alamat_lengkap,
                 'domisili_kecamatan' => $profile?->domisili_kecamatan,
                 'no_telepon' => $profile?->no_telepon,
+                'status_disabilitas' => $profile?->status_disabilitas,
+                'akun_media_sosial' => $profile?->akun_media_sosial,
             ],
             'educations' => $educations,
             'trainings' => $trainings,

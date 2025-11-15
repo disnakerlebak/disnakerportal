@@ -29,6 +29,10 @@
           {{ $profile->status_disabilitas ?? '-' }}
         </div>
         <div class="md:col-span-2">
+          <span class="text-gray-400 w-40 inline-block">Akun Media Sosial</span>:
+          {{ $profile->akun_media_sosial ?? '-' }}
+        </div>
+        <div class="md:col-span-2">
           <span class="text-gray-400 w-40 inline-block">Alamat</span>:
           {{ $profile->alamat_lengkap ?? '-' }}
         </div>

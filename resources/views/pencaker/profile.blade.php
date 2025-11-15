@@ -108,6 +108,7 @@
                         'Domisili Kecamatan' => $profile->domisili_kecamatan ?? '-',
                         'No. Telepon' => $profile->no_telepon ?? '-',
                         'Status Disabilitas' => $profile->status_disabilitas ?? '-',
+                        'Akun Media Sosial' => $profile->akun_media_sosial ?? '-',
                     ];
                 @endphp
 
@@ -155,11 +156,15 @@
                 @endif
 
                 @if ($locked)
-                    <button disabled title="Terkunci saat pengajuan AK1 diproses/diterima"
-                            class="px-4 py-2 bg-slate-700 text-white rounded-lg cursor-not-allowed">
-                        + Tambah Pendidikan (Terkunci)
-                    </button>
-                @else
+                        <button id="openEdit" disabled
+                                title="Terkunci karena pengajuan AK1 sedang diproses/diterima"
+                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 cursor-not-allowed flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="sr-only">Terkunci</span>
+                        </button>
+                    @else
                     <button data-modal-open="modalEducationCreate"
                             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                         + Tambah Pendidikan
@@ -256,11 +261,15 @@
                 @endif
 
                 @if ($locked)
-                    <button disabled title="Terkunci saat pengajuan AK1 diproses/diterima"
-                            class="px-4 py-2 bg-slate-700 text-white rounded-lg cursor-not-allowed">
-                        + Tambah Pelatihan (Terkunci)
-                    </button>
-                @else
+                        <button id="openEdit" disabled
+                                title="Terkunci karena pengajuan AK1 sedang diproses/diterima"
+                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 cursor-not-allowed flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="sr-only">Terkunci</span>
+                        </button>
+                    @else
                     <button data-modal-open="modalTrainingCreate"
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                         + Tambah Pelatihan
@@ -593,6 +602,14 @@
                     <option value="{{ $opsi }}" @selected(old('status_disabilitas', $profile->status_disabilitas ?? '') === $opsi)>{{ $opsi }}</option>
                 @endforeach
             </select>
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-400">Akun Media Sosial</label>
+            <input type="text" name="akun_media_sosial"
+                   value="{{ old('akun_media_sosial', $profile->akun_media_sosial ?? '') }}"
+                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400"
+                   placeholder="@username / link profil (opsional)">
         </div>
 
         <div class="md:col-span-2">

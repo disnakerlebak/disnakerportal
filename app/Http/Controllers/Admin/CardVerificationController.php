@@ -432,6 +432,7 @@ class CardVerificationController extends Controller
                 'domisili_kecamatan'=> $profile->domisili_kecamatan ?? '-',
                 'email_cache'       => $profile->email_cache ?? ($app->user->email ?? '-'),
                 'no_telepon'        => $profile->no_telepon ?? '-',
+                'akun_media_sosial' => $profile->akun_media_sosial ?? '-',
             ],
             'educations' => $educations,
             'trainings'  => $trainings,

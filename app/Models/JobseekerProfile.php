@@ -9,7 +9,7 @@ class JobseekerProfile extends Model
     protected $fillable = [
         'user_id','nama_lengkap','nik','tempat_lahir','tanggal_lahir','jenis_kelamin',
         'agama','status_perkawinan','pendidikan_terakhir','alamat_lengkap',
-        'domisili_kecamatan','no_telepon','status_disabilitas','email_cache',
+        'domisili_kecamatan','no_telepon','status_disabilitas','akun_media_sosial','email_cache',
     ];
 
     public function user() { return $this->belongsTo(User::class); }
