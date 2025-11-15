@@ -34,8 +34,10 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-slate-200">
+        <div class="flex-1 min-h-0 overflow-visible">
+            <div class="overflow-x-auto h-full min-h-0 pb-4">
+                <div class="h-full min-h-0 overflow-visible">
+                    <table class="min-w-[960px] text-sm text-slate-200">
                 <thead class="bg-slate-800 text-slate-200">
                 <tr>
                     <th class="p-3 text-left">Nama Lengkap</th>
@@ -43,8 +45,10 @@
                     <th class="p-3 text-left">Usia</th>
                     <th class="p-3 text-left">Pendidikan</th>
                     <th class="p-3 text-left">Keahlian</th>
-                    <th class="p-3 text-left">Pengalaman Kerja</th>
+                    <th class="p-3 text-left whitespace-nowrap">Pengalaman Kerja</th>
+                    <th class="p-3 text-left whitespace-nowrap">Status Disabilitas</th>
                     <th class="p-3 text-left">Kecamatan</th>
+                    <th class="p-3 text-left whitespace-nowrap">No. AK/1</th>
                     <th class="p-3 text-left">Aksi</th>
                 </tr>
                 </thead>
@@ -62,9 +66,11 @@
                         <td class="p-3">{{ $p->jenis_kelamin ?? '-' }}</td>
                         <td class="p-3">{{ $usia }}</td>
                         <td class="p-3">{{ $p->pendidikan_terakhir ?? '-' }}</td>
-                        <td class="p-3">{{ $trainingCount }} Pelatihan</td>
-                        <td class="p-3">{{ $workCount }} Pengalaman</td>
+                        <td class="p-3 whitespace-nowrap">{{ $trainingCount }} Pelatihan</td>
+                        <td class="p-3 whitespace-nowrap">{{ $workCount }} Pengalaman</td>
+                        <td class="p-3 whitespace-nowrap">{{ $p->status_disabilitas ?? '-' }}</td>
                         <td class="p-3">{{ $p->domisili_kecamatan ?? '-' }}</td>
+                        <td class="p-3 whitespace-nowrap text-xs">{{ $app?->nomor_ak1 ?? '-' }}</td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center">
                                 <div class="relative" x-data="dropdownMenu()" x-init="init()">
@@ -108,11 +114,13 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="p-6 text-center text-slate-400">Belum ada data pencaker disetujui.</td>
+                        <td colspan="10" class="p-6 text-center text-slate-400">Belum ada data pencaker disetujui.</td>
                     </tr>
                 @endforelse
                 </tbody>
             </table>
+                </div>
+            </div>
         </div>
 
         <div class="p-4 border-t border-slate-800">

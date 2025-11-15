@@ -67,9 +67,9 @@
                         <thead class="bg-slate-800 text-slate-200 uppercase text-xs whitespace-nowrap sticky top-0 z-20 border-b border-slate-700 shadow-md shadow-slate-900/30">
                         <tr>
                             <th class="p-3 text-center whitespace-nowrap">Pemohon</th>
-                            <th class="p-3 text-center whitespace-nowrap">Tanggal</th>
-                            <th class="p-3 text-center whitespace-nowrap">Status</th>
+                            <th class="p-3 text-center whitespace-nowrap">Status Disabilitas</th>
                             <th class="p-3 text-center whitespace-nowrap">Tipe Pengajuan</th>
+                            <th class="p-3 text-center whitespace-nowrap">Status</th>
                             <th class="p-3 text-center whitespace-nowrap">Keterangan</th>
                             <th class="p-3 text-center whitespace-nowrap">Nomor AK/1</th>
                             <th class="p-3 text-center whitespace-nowrap">Ditangani Oleh</th>
@@ -102,6 +102,8 @@
                                     $catatan = $latestLog->notes;
                                 }
 
+                                $statusDisabilitas = optional($app->user->jobseekerProfile)->status_disabilitas ?? '-';
+
                                 $logPayload = $app->logs->sortBy('created_at')->values()->map(function ($log) {
                                     return [
                                         'id'          => $log->id,
@@ -119,25 +121,20 @@
                             <tr class="transition hover:bg-gray-800/60" wire:key="ak1-row-{{ $app->id }}">
                                 {{-- Pemohon --}}
                                 <td class="p-3 align-top">
-                                    <div class="font-semibold text-white">{{ $app->user->name }}</div>
-                                    <div class="text-xs text-gray-400">{{ $app->user->email }}</div>
-                                    <div class="text-xs text-gray-500 mt-1">
+                                    <div class="font-semibold text-white text-sm">{{ $app->user->name }}</div>
+                                    <div class="text-xs text-gray-400 mt-0.5">
+                                        {{ $app->created_at->format('d M Y') }}
+                                        <span class="text-gray-500">· {{ $app->created_at->diffForHumans() }}</span>
                                     </div>
                                 </td>
 
-                                {{-- Tanggal --}}
+                                {{-- Status Disabilitas --}}
                                 <td class="p-3 align-top text-center whitespace-nowrap">
-                                    <div>{{ $app->created_at->format('d M Y') }}</div>
-                                    <div class="text-xs text-gray-400">{{ $app->created_at->diffForHumans() }}</div>
-                                </td>
-
-                                {{-- Status --}}
-                                <td class="p-3 align-top text-center">
-                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $badgeClass }}">
-                                        {{ $app->status }}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-800 text-xs text-slate-100 max-w-[12rem] truncate">
+                                        {{ $statusDisabilitas }}
                                     </span>
                                 </td>
-
+                                
                                 {{-- Tipe Pengajuan --}}
                                 <td class="p-3 align-top text-center whitespace-nowrap">
                                     <span class="inline-flex items-center gap-2">
@@ -147,6 +144,13 @@
                                         {{ $typeLabel }}
                                     </span>
                                 </td>
+                                {{-- Status --}}
+                                <td class="p-3 align-top text-center">
+                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $badgeClass }}">
+                                        {{ $app->status }}
+                                    </span>
+                                </td>
+
 
                                 {{-- Keterangan (expandable on click) --}}
                                 <td class="p-3 align-middle text-left text-sm">

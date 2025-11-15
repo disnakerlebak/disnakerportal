@@ -97,7 +97,7 @@ class Ak1Table extends Component
 
     public function render(): View
     {
-        $apps = CardApplication::with(['user', 'lastHandler.actor', 'logs.actor'])
+        $apps = CardApplication::with(['user.jobseekerProfile', 'lastHandler.actor', 'logs.actor'])
             ->when($this->search, function (Builder $query) {
                 $query->whereHas('user', function (Builder $userQuery) {
                     $userQuery->where('name', 'like', '%' . $this->search . '%')
