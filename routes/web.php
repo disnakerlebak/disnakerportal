@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CardVerificationController;
 use App\Http\Controllers\Admin\JobseekerController;
 use App\Http\Controllers\Admin\AdminManagementController;
+use App\Http\Controllers\Admin\PencakerHistoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,7 +74,11 @@ Route::middleware(['auth', 'role:admin,admin_ak1,superadmin'])
 
         // Detail AK1
         Route::get('/ak1/{application}/detail', [CardVerificationController::class, 'ajaxDetail'])
-            ->name('admin.ak1.ajaxDetail');
+            ->name('ak1.ajaxDetail');
+
+        // Riwayat AK1 per user (JSON)
+        Route::get('/ak1/user/{user}/logs', [CardVerificationController::class, 'userLogs'])
+            ->name('ak1.userLogs');
 
         // Cetak PDF
         Route::get('/ak1/{application}/cetak', [CardVerificationController::class, 'cetakPdf'])

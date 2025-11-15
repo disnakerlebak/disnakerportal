@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ CardApplication, CardApplicationLog };
+use App\Models\{ CardApplication, CardApplicationLog, User };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf; // pastikan sudah install barryvdh/laravel-dompdf
@@ -436,7 +436,36 @@ class CardVerificationController extends Controller
             'educations' => $educations,
             'trainings'  => $trainings,
         ]);
-    }  
+    }
+
+    public function userLogs(User $user)
+    {
+        $logs = CardApplicationLog::whereHas('application', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->with(['application', 'actor'])
+            ->orderBy('created_at')
+            ->get();
+
+        $payload = $logs->map(function (CardApplicationLog $log) {
+            return [
+                'id'          => $log->id,
+                'action'      => $log->action,
+                'from_status' => $log->from_status,
+                'to_status'   => $log->to_status,
+                'notes'       => $log->notes,
+                'actor'       => $log->actor?->name,
+                'created_at'  => optional($log->created_at)->format('d M Y H:i'),
+                'timestamp'   => optional($log->created_at)?->timestamp,
+                'nomor_ak1'   => $log->application?->nomor_ak1,
+                'type'        => $log->application?->type,
+            ];
+        });
+
+        return response()->json([
+            'logs' => $payload,
+        ]);
+    }
 
 //cetak kartu pencaker
 public function cetakPdf($id)

@@ -91,7 +91,7 @@
                                              x-transition:leave="transition ease-in duration-100"
                                              x-transition:leave-start="opacity-100 transform scale-100"
                                              x-transition:leave-end="opacity-0 transform scale-95"
-                                             :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
+                                            :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
                                              class="fixed z-[70] w-56 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
                                              :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
                                             <button type="button"
@@ -105,6 +105,33 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                 </svg>
                                                 Detail
+                                            </button>
+
+                                            @if($app)
+                                                <a href="{{ route('admin.ak1.cetak', $app->id) }}"
+                                                   target="_blank"
+                                                   class="w-full text-left px-4 py-2 text-sm text-indigo-300 hover:bg-indigo-700/20 flex items-center gap-2 transition">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-3-3m3 3l3-3M6 20h12" />
+                                                    </svg>
+                                                    Unduh AK1
+                                                </a>
+                                            @endif
+
+                                            <button type="button"
+                                                    class="w-full text-left px-4 py-2 text-sm text-purple-300 hover:bg-purple-700/20 flex items-center gap-2 transition"
+                                                    @click="
+                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                                                      window.openUserAk1History(
+                                                        '{{ route('admin.ak1.userLogs', $u->id) }}',
+                                                        '{{ $p->nama_lengkap ?? $u->name ?? 'Pencaker' }}',
+                                                        '{{ $u->email }}'
+                                                      );
+                                                    ">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Riwayat AK1
                                             </button>
                                         </div>
                                     </template>
@@ -145,6 +172,17 @@
         </div>
     </div>
 
+    <x-modal name="log-ak1-user" :show="false" maxWidth="3xl" animation="zoom">
+        <div class="flex items-start justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold" id="userAk1LogTitle">Riwayat AK1 Pencaker</h3>
+                <p class="text-sm text-gray-400 mt-1" id="userAk1LogSubtitle"></p>
+            </div>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'log-ak1-user'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <div id="userAk1LogBody" class="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4"></div>
+    </x-modal>
+
     @once
         @push('scripts')
             <script>
@@ -170,6 +208,126 @@
                         close() { this.open = false; }
                     }
                 }
+
+                const statusLabels = {
+                    'Menunggu Verifikasi': 'Menunggu Verifikasi',
+                    'Menunggu Revisi Verifikasi': 'Menunggu Revisi Verifikasi',
+                    'Revisi Diminta': 'Revisi Diminta',
+                    'Batal': 'Batal',
+                    'Disetujui': 'Disetujui',
+                    'Ditolak': 'Ditolak',
+                    'Diambil': 'Diambil',
+                    'Dicetak': 'Dicetak'
+                };
+
+                const actionLabels = {
+                    approve: 'Disetujui',
+                    reject: 'Ditolak',
+                    revision: 'Revisi Diminta',
+                    unapprove: 'Persetujuan dibatalkan',
+                    printed: 'Dicetak',
+                    picked_up: 'Diambil',
+                    submitted: 'Pengajuan',
+                };
+
+                const actionColors = {
+                    approve: 'bg-green-400',
+                    reject: 'bg-red-400',
+                    revision: 'bg-yellow-400',
+                    unapprove: 'bg-orange-400',
+                    printed: 'bg-sky-400',
+                    picked_up: 'bg-indigo-400',
+                    submitted: 'bg-blue-400',
+                };
+
+                const escapeHtml = (unsafe) => (unsafe ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+
+                const formatStatus = (status) => statusLabels[status] || status || '-';
+
+                window.openUserAk1History = async function (url, name, email) {
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-ak1-user' }));
+                    const title = document.getElementById('userAk1LogTitle');
+                    const subtitle = document.getElementById('userAk1LogSubtitle');
+                    const body = document.getElementById('userAk1LogBody');
+
+                    if (title) title.textContent = `Riwayat AK1 — ${name || 'Pencaker'}`;
+                    if (subtitle) subtitle.textContent = email || '';
+                    if (body) body.innerHTML = '<p class="text-sm text-slate-300">Memuat riwayat...</p>';
+
+                    try {
+                        const res = await fetch(url, { headers: { 'Accept': 'application/json' }});
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+                        const logs = (data.logs || [])
+                            .slice()
+                            .sort((a, b) => {
+                                const aDate = a.timestamp ? new Date(a.timestamp * 1000) : new Date(a.created_at || 0);
+                                const bDate = b.timestamp ? new Date(b.timestamp * 1000) : new Date(b.created_at || 0);
+                                return aDate - bDate;
+                            });
+
+                        if (!logs.length) {
+                            if (body) body.innerHTML = '<p class="text-sm text-gray-400">Belum ada riwayat AK1.</p>';
+                            return;
+                        }
+
+                        const content = logs.map((log, idx) => {
+                            const label = actionLabels[log.action] || log.action;
+                            const noteSection = log.notes
+                                ? `<div class="mt-3 rounded-lg bg-gray-800/60 px-3 py-2 text-sm text-gray-200">
+                                        <span class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Catatan</span>
+                                        <p class="mt-1 leading-relaxed">${escapeHtml(log.notes).replace(/\\n/g, '<br>')}</p>
+                                   </div>`
+                                : '';
+                            const circleColor = actionColors[log.action] || 'bg-gray-400';
+                            const isLast = idx === logs.length - 1;
+
+                            const extra = [];
+                            if (log.nomor_ak1) extra.push(`No. AK1: ${escapeHtml(log.nomor_ak1)}`);
+                            if (log.type) extra.push(`Tipe: ${escapeHtml(log.type)}`);
+
+                            return `
+                                <div class="relative pl-10">
+                                    <span class="absolute left-1 top-1.5 inline-flex h-3 w-3 rounded-full ${circleColor} ring-4 ring-gray-900"></span>
+                                    ${isLast ? '' : '<span class="absolute left-2.5 top-4 bottom-0 border-l border-gray-700"></span>'}
+                                    <div class="rounded-xl border border-gray-800 bg-gray-900/60 px-4 py-3 shadow-sm">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <h4 class="text-sm font-semibold text-gray-100">${escapeHtml(label)}</h4>
+                                            <span class="text-xs text-gray-400">${log.created_at ?? '-'}</span>
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">Perubahan: <span class="text-gray-300">${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}</span></p>
+                                        <p class="mt-2 text-sm text-gray-300 leading-relaxed">
+                                            Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}</span>
+                                        </p>
+                                        ${extra.length ? `<p class="mt-1 text-xs text-gray-400">${extra.join(' · ')}</p>` : ''}
+                                        ${noteSection}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        if (body) {
+                            body.innerHTML = `
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-2 text-sm font-semibold text-gray-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Linimasa Pengajuan AK1
+                                    </div>
+                                    <div class="space-y-6">${content}</div>
+                                </div>
+                            `;
+                        }
+                    } catch (error) {
+                        if (body) body.innerHTML = `<p class="text-sm text-red-400">Gagal memuat riwayat. ${error.message}</p>`;
+                    }
+                };
             </script>
         @endpush
     @endonce
