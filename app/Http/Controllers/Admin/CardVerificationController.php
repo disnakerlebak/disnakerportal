@@ -393,8 +393,14 @@ class CardVerificationController extends Controller
                 'jenis_pelatihan'   => $t->jenis_pelatihan,
                 'lembaga_pelatihan' => $t->lembaga_pelatihan,
                 'tahun'             => $t->tahun,
+                'sertifikat_file'   => $t->sertifikat_file,
             ])
             : collect();
+
+        // Sertifikat keahlian (ambil satu contoh sertifikat jika ada)
+        $firstCertificate = $profile
+            ? $profile->trainings()->whereNotNull('sertifikat_file')->latest('tahun')->value('sertifikat_file')
+            : null;
     
         return response()->json([
             'application' => [
@@ -406,6 +412,7 @@ class CardVerificationController extends Controller
                 'foto_closeup' => $foto,
                 'ktp_file'     => $ktp,
                 'ijazah_file'  => $ijazah,
+                'sertifikat_keahlian' => $firstCertificate,
                 'snapshot_before' => $app->snapshot_before,
                 'snapshot_after'  => $app->snapshot_after,
                 'parent_id'       => $app->parent_id,
@@ -422,6 +429,9 @@ class CardVerificationController extends Controller
                 'agama'             => $profile->agama ?? '-',
                 'alamat_lengkap'    => $profile->alamat_lengkap ?? '-',
                 'status_disabilitas'=> $profile->status_disabilitas ?? '-',
+                'domisili_kecamatan'=> $profile->domisili_kecamatan ?? '-',
+                'email_cache'       => $profile->email_cache ?? ($app->user->email ?? '-'),
+                'no_telepon'        => $profile->no_telepon ?? '-',
             ],
             'educations' => $educations,
             'trainings'  => $trainings,

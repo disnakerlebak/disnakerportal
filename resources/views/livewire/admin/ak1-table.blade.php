@@ -336,7 +336,8 @@
 
     {{-- ===== Modal Detail (x-modal) ===== --}}
     <x-modal name="detail-ak1" :show="false" maxWidth="6xl" animation="zoom">
-        <div class="px-4 py-3 border-b border-slate-800 sticky top-0 bg-slate-900 z-10 flex justify-end">
+        <div class="px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-100">Detail Pemohon AK1</h3>
             <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'detail-ak1'}))" class="h-9 w-9 inline-flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-gray-200">
                 ✕
             </button>
@@ -585,27 +586,31 @@
                     `;
                 }
 
-                function renderDocumentsSection(fotoHtml, ktpHtml, ijazahHtml) {
+                function renderDocumentsSection(fotoHtml, ktpHtml, ijazahHtml, sertifikatHtml = '') {
+                    const hasSertifikat = !!sertifikatHtml;
                     return `
                         <div class="border-t border-gray-700 pt-4 mt-6">
                             <h3 class="font-semibold text-lg mb-3">Dokumen Terunggah</h3>
-                            <div class="grid gap-6 md:grid-cols-3">
+                            <div class="grid gap-6 ${hasSertifikat ? 'md:grid-cols-4' : 'md:grid-cols-3'}">
                                 ${renderDocumentCard('Foto', fotoHtml)}
                                 ${renderDocumentCard('KTP', ktpHtml)}
                                 ${renderDocumentCard('Ijazah', ijazahHtml)}
+                                ${hasSertifikat ? renderDocumentCard('Sertifikat Keahlian', sertifikatHtml) : ''}
                             </div>
                         </div>
                     `;
                 }
 
-                // Hanya untuk KTP & Ijazah (tanpa foto)
-                function renderKtpIjazahSection(ktpHtml, ijazahHtml) {
+                // Hanya untuk KTP & Ijazah (tanpa foto) + opsional Sertifikat Keahlian
+                function renderKtpIjazahSection(ktpHtml, ijazahHtml, sertifikatHtml = '') {
+                    const hasSertifikat = !!sertifikatHtml;
                     return `
                         <div class="border-t border-gray-700 pt-4 mt-6">
                             <h3 class="font-semibold text-lg mb-3">Dokumen</h3>
-                            <div class="grid gap-6 md:grid-cols-2">
+                            <div class="grid gap-6 ${hasSertifikat ? 'md:grid-cols-3' : 'md:grid-cols-2'}">
                                 ${renderDocumentCard('KTP', ktpHtml)}
                                 ${renderDocumentCard('Ijazah', ijazahHtml)}
+                                ${hasSertifikat ? renderDocumentCard('Sertifikat Keahlian', sertifikatHtml) : ''}
                             </div>
                         </div>
                     `;
@@ -646,13 +651,14 @@
                         const app = data.application || {};
 
                         const foto = app.foto_closeup
-                            ? `<img src="/storage/${app.foto_closeup}" class="w-40 h-48 object-cover rounded-lg border border-gray-600 shadow-md">`
-                            : `<div class="w-40 h-48 flex items-center justify-center border border-gray-700 rounded-lg text-gray-500 text-xs">Tidak ada foto</div>`;
+                            ? renderThumbnail(app.foto_closeup, 'Foto', 'w-56 h-64')
+                            : `<div class="w-56 h-64 flex items-center justify-center border border-gray-700 rounded-lg text-gray-500 text-xs bg-slate-900">Tidak ada foto</div>`;
 
                         const ktp = app.ktp_file ? renderThumbnail(app.ktp_file, 'KTP') : '<p class="text-xs text-gray-500">Tidak ada</p>';
                         const ijazah = app.ijazah_file ? renderThumbnail(app.ijazah_file, 'Ijazah') : '<p class="text-xs text-gray-500">Tidak ada</p>';
+                        const sertifikat = app.sertifikat_keahlian ? renderThumbnail(app.sertifikat_keahlian, 'Sertifikat Keahlian') : '';
 
-                        // Siapkan blok snapshot sesuai jenis pengajuan
+                        // Siapkan blok snapshot sesuai jenis pengajuan (untuk perbaikan/perpanjangan)
                         const snapshotBlocks = [];
                         const hasBefore = !!app.snapshot_before;
                         const hasAfter  = !!app.snapshot_after;
@@ -681,9 +687,32 @@
                             documents: [],
                         });
 
+                        const infoHeader = `
+                            <div class="mb-4 rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-xs sm:text-sm text-gray-200">
+                                <div class="flex flex-wrap gap-4">
+                                    <div>
+                                        <div class="text-[10px] uppercase tracking-wide text-gray-400">Status Pengajuan</div>
+                                        <div class="font-semibold mt-0.5">${app.status ?? '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] uppercase tracking-wide text-gray-400">Tipe</div>
+                                        <div class="mt-0.5">${app.type ?? '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] uppercase tracking-wide text-gray-400">Nomor AK/1</div>
+                                        <div class="mt-0.5">${app.nomor_ak1 ?? '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] uppercase tracking-wide text-gray-400">Tanggal Pengajuan</div>
+                                        <div class="mt-0.5">${app.tanggal ?? '-'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
                         if (body) {
                             if (isBaru) {
-                                // Susunan khusus untuk pengajuan Baru
+                                // Layout pengajuan baru: foto di kiri, data diri di kanan, lalu riwayat & dokumen (KTP + Ijazah) di bawah
                                 const row = (label, value) => `
                                     <div class="flex text-xs sm:text-sm text-gray-300">
                                         <span class="w-40 text-gray-400">${label}</span>
@@ -692,15 +721,17 @@
 
                                 const dataDiriGrid = `
                                     <div class="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+                                        ${row('Nama Lengkap', profile.nama_lengkap)}
                                         ${row('NIK', profile.nik)}
                                         ${row('Tempat Lahir', profile.tempat_lahir)}
-                                        ${row('Nama Lengkap', profile.nama_lengkap)}
                                         ${row('Tanggal Lahir', profile.tanggal_lahir)}
                                         ${row('Jenis Kelamin', profile.jenis_kelamin)}
                                         ${row('Agama', profile.agama)}
-                                        <div class="sm:col-span-2">${row('Status', profile.status_perkawinan)}</div>
+                                        ${row('Kecamatan', profile.kecamatan ?? profile.domisili_kecamatan)}
+                                        ${row('No. HP', profile.no_telepon ?? '-')}
+                                        <div class="sm:col-span-2">${row('Email', profile.email_cache ?? '-')}</div>
                                         <div class="sm:col-span-2">${row('Status Disabilitas', profile.status_disabilitas)}</div>
-                                        <div class="sm:col-span-2">${row('Alamat Lengkap', profile.alamat_lengkap)}</div>
+                                        <div class="sm:col-span-2">${row('Alamat', profile.alamat_lengkap)}</div>
                                     </div>`;
 
                                 const eduList = (data.educations && data.educations.length)
@@ -713,71 +744,51 @@
 
                                 body.innerHTML = `
                                     <div class="space-y-6">
-                                        <div class="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6 items-start">
-                                            ${foto}
-                                            <div class="rounded-xl border border-gray-700 bg-gray-900/50 p-4">
-                                                <h4 class="text-sm font-semibold text-gray-100 mb-3">Profil Saat Ini</h4>
+                                        ${infoHeader}
+                                        <div class="grid md:grid-cols-[240px,1fr] gap-6">
+                                            <div>
+                                                <div class="text-sm text-gray-400 mb-2">Foto Close-Up</div>
+                                                ${foto}
+                                            </div>
+                                            <div>
+                                                <h3 class="text-lg font-semibold mb-3 text-gray-100">Data Diri</h3>
                                                 ${dataDiriGrid}
                                             </div>
                                         </div>
 
                                         <div>
-                                            <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Riwayat Pendidikan</p>
+                                            <h3 class="text-lg font-semibold mb-2 text-gray-100">Riwayat Pendidikan</h3>
                                             ${eduList}
                                         </div>
 
                                         <div>
-                                            <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Riwayat Pelatihan</p>
+                                            <h3 class="text-lg font-semibold mb-2 text-gray-100">Riwayat Pelatihan</h3>
                                             ${trainingList}
                                         </div>
 
-                                        ${renderKtpIjazahSection(ktp, ijazah)}
+                                        ${renderKtpIjazahSection(ktp, ijazah, sertifikat)}
                                     </div>
                                 `;
                             } else {
-                                // Non-baru
-                                if (isPerbaikan) {
-                                    // Tampilan khusus Perbaikan: tanpa "Profil Saat Ini",
-                                    // dua kolom: Sebelum vs Setelah, dan dokumen hanya KTP & Ijazah.
-                                    const beforeBlock = app.snapshot_before ? renderSnapshotBlock('Data Sebelum Perbaikan', app.snapshot_before, false) : '';
-                                    const afterBlock  = app.snapshot_after  ? renderSnapshotBlock('Data Setelah Perbaikan', app.snapshot_after, false)   : '';
-
-                                    body.innerHTML = `
-                                        <div class="space-y-6">
-                                            <div class="flex items-start gap-6 flex-col md:flex-row">
-                                                ${foto}
-                                                <div class="flex-1 space-y-1">
-                                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-100">${profile.nama_lengkap ?? '-'}</h3>
-                                                    <div class="text-sm text-gray-400">${profile.nik ?? '-'}</div>
-                                                    <div class="text-xs text-gray-500 uppercase tracking-wide">Status: ${app.status ?? '-'}</div>
-                                                </div>
-                                            </div>
-
+                                // Perbaikan / Perpanjangan: hanya perbandingan data + dokumen
+                                const snapshotHtml = snapshotBlocks.length
+                                    ? `<div class="space-y-4">
+                                            <h3 class="font-semibold text-lg text-gray-100">Perbandingan Data</h3>
                                             <div class="grid gap-4 md:grid-cols-2">
-                                                ${beforeBlock}
-                                                ${afterBlock}
+                                                ${snapshotBlocks.join('')}
                                             </div>
+                                       </div>`
+                                    : '<p class="text-sm text-gray-400">Tidak ada data perbandingan.</p>';
 
-                                            ${renderKtpIjazahSection(ktp, ijazah)}
-                                        </div>
-                                    `;
-                                } else {
-                                    // Default/non-baru menampilkan snapshot sesuai aturan sebelumnya
-                                    body.innerHTML = `
-                                        <div class="space-y-6">
-                                            <div class="flex items-start gap-6 flex-col md:flex-row">
-                                                ${foto}
-                                                <div class="flex-1 space-y-1">
-                                                    <h3 class="text-xl md:text-2xl font-semibold text-gray-100">${profile.nama_lengkap ?? '-'}</h3>
-                                                    <div class="text-sm text-gray-400">${profile.nik ?? '-'}</div>
-                                                    <div class="text-xs text-gray-500 uppercase tracking-wide">Status: ${app.status ?? '-'} · Tipe: ${app.type ?? '-'}</div>
-                                                </div>
-                                            </div>
-                                            ${[profileBlock, ...snapshotBlocks].join('')}
-                                            ${renderDocumentsSection(foto, ktp, ijazah)}
-                                        </div>
-                                    `;
-                                }
+                                const documentsHtml = renderDocumentsSection(foto, ktp, ijazah, sertifikat);
+
+                                body.innerHTML = `
+                                    <div class="space-y-6">
+                                        ${infoHeader}
+                                        ${snapshotHtml}
+                                        ${documentsHtml}
+                                    </div>
+                                `;
                             }
                         }
                     } catch (error) {

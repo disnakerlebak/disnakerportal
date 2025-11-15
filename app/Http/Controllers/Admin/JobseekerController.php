@@ -79,13 +79,21 @@ class JobseekerController extends Controller
                             ->first();
 
         $fotoPath = null;
+        $ktpPath = null;
+        $ijazahPath = null;
         if ($latestApp) {
             $fotoDoc = $latestApp->documents()->where('type', 'foto_closeup')->latest()->first();
             $fotoPath = $fotoDoc?->file_path;
+
+            $ktpDoc = $latestApp->documents()->where('type', 'ktp_file')->latest()->first();
+            $ktpPath = $ktpDoc?->file_path;
+
+            $ijazahDoc = $latestApp->documents()->where('type', 'ijazah_file')->latest()->first();
+            $ijazahPath = $ijazahDoc?->file_path;
         }
 
         return view('admin.pencaker.partials.detail', compact(
-            'user','profile','educations','trainings','works','preference','latestApp','fotoPath'
+            'user','profile','educations','trainings','works','preference','latestApp','fotoPath','ktpPath','ijazahPath'
         ));
     }
 

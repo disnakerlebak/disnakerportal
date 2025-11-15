@@ -36,6 +36,7 @@
     </div>
   </div>
 
+<!-- ===== Riwayat Pendidikan ===== -->
   <div>
     <h3 class="text-lg font-semibold mb-2">Riwayat Pendidikan</h3>
     <div class="overflow-x-auto">
@@ -149,4 +150,51 @@
       <div class="text-gray-400">Belum ada data</div>
     @endif
   </div>
+
+  @if(isset($ktpPath) || isset($ijazahPath))
+    <div>
+      <h3 class="text-lg font-semibold mb-2">Dokumen Identitas</h3>
+      <div class="grid gap-4 md:grid-cols-2 text-sm">
+        <div>
+          <div class="text-gray-400 mb-1">KTP</div>
+          @php
+            $ktpUrl = isset($ktpPath) && $ktpPath ? asset('storage/'.$ktpPath) : null;
+            $ktpExt = $ktpUrl ? strtolower(pathinfo($ktpUrl, PATHINFO_EXTENSION)) : null;
+          @endphp
+          @if($ktpUrl)
+            @if(in_array($ktpExt, ['jpg','jpeg','png']))
+              <img src="{{ $ktpUrl }}" alt="KTP" class="max-h-40 rounded border border-gray-700 object-contain bg-gray-900" />
+            @else
+              <a href="{{ $ktpUrl }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 border border-slate-700 text-indigo-300 text-xs">
+                <span class="inline-block h-2 w-2 rounded-full bg-red-400"></span>
+                Lihat Dokumen
+              </a>
+            @endif
+          @else
+            <div class="text-gray-500 italic">Belum ada dokumen KTP</div>
+          @endif
+        </div>
+
+        <div>
+          <div class="text-gray-400 mb-1">Ijazah</div>
+          @php
+            $ijazahUrl = isset($ijazahPath) && $ijazahPath ? asset('storage/'.$ijazahPath) : null;
+            $ijazahExt = $ijazahUrl ? strtolower(pathinfo($ijazahUrl, PATHINFO_EXTENSION)) : null;
+          @endphp
+          @if($ijazahUrl)
+            @if(in_array($ijazahExt, ['jpg','jpeg','png']))
+              <img src="{{ $ijazahUrl }}" alt="Ijazah" class="max-h-40 rounded border border-gray-700 object-contain bg-gray-900" />
+            @else
+              <a href="{{ $ijazahUrl }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-slate-800 border border-slate-700 text-indigo-300 text-xs">
+                <span class="inline-block h-2 w-2 rounded-full bg-emerald-400"></span>
+                Lihat Dokumen
+              </a>
+            @endif
+          @else
+            <div class="text-gray-500 italic">Belum ada dokumen Ijazah</div>
+          @endif
+        </div>
+      </div>
+    </div>
+  @endif
 </div>

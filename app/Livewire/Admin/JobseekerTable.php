@@ -49,7 +49,10 @@ class JobseekerTable extends Component
             ->with([
                 'jobseekerProfile' => fn($q) => $q->withCount(['trainings', 'workExperiences']),
                 'cardApplications' => fn($q) => $q->where('status', 'Disetujui')->where('is_active', true)->latest()->limit(1),
-            ]);
+            ])
+            ->withMax(['cardApplications as last_ak1_created_at' => function ($q) {
+                $q->where('status', 'Disetujui')->where('is_active', true);
+            }], 'created_at');
 
         if (filled($this->q)) {
             $keyword = trim($this->q);
@@ -68,7 +71,7 @@ class JobseekerTable extends Component
             $query->whereHas('jobseekerProfile.workExperiences');
         }
 
-        $users = $query->latest()->paginate($this->perPage);
+        $users = $query->orderByDesc('last_ak1_created_at')->paginate($this->perPage);
 
         return view('livewire.admin.jobseeker-table', [
             'users' => $users,
