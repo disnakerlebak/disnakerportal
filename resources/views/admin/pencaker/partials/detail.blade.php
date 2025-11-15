@@ -138,11 +138,31 @@
   <div>
     <h3 class="text-lg font-semibold mb-2">Minat Bekerja</h3>
     @if($preference)
-      <div class="text-sm">
-        <div><span class="text-gray-400">Lokasi</span>: {{ is_array($preference->minat_lokasi) ? implode(', ', $preference->minat_lokasi) : ($preference->minat_lokasi ?? '-') }}</div>
-        <div><span class="text-gray-400">Bidang</span>: {{ is_array($preference->minat_bidang) ? implode(', ', $preference->minat_bidang) : ($preference->minat_bidang ?? '-') }}</div>
-        <div><span class="text-gray-400">Gaji Harapan</span>: {{ $preference->gaji_harapan ?? '-' }}</div>
-        <div><span class="text-gray-400">Deskripsi Diri</span>: {{ $preference->deskripsi_diri ?? '-' }}</div>
+      @php
+        $minatLokasi = is_array($preference->minat_lokasi)
+            ? implode(', ', $preference->minat_lokasi)
+            : ($preference->minat_lokasi ?? '-');
+        $minatBidang = is_array($preference->minat_bidang)
+            ? implode(', ', $preference->minat_bidang)
+            : ($preference->minat_bidang ?? '-');
+      @endphp
+      <div class="text-sm space-y-2">
+        <div class="flex">
+          <span class="text-gray-400 w-40 inline-block">Lokasi</span>
+          <span class="flex-1">: {{ $minatLokasi ?: '-' }}</span>
+        </div>
+        <div class="flex">
+          <span class="text-gray-400 w-40 inline-block">Bidang</span>
+          <span class="flex-1">: {{ $minatBidang ?: '-' }}</span>
+        </div>
+        <div class="flex">
+          <span class="text-gray-400 w-40 inline-block">Gaji Harapan</span>
+          <span class="flex-1">: {{ $preference->gaji_harapan ?? '-' }}</span>
+        </div>
+        <div class="flex">
+          <span class="text-gray-400 w-40 inline-block">Deskripsi Diri</span>
+          <span class="flex-1">: {{ $preference->deskripsi_diri ?? '-' }}</span>
+        </div>
       </div>
     @else
       <div class="text-gray-400">Belum ada data</div>

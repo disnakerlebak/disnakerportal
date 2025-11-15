@@ -464,15 +464,31 @@
                 <div class="bg-slate-950/40 rounded-xl p-6 shadow-inner">
                     <h3 class="text-lg font-semibold mb-4">Data Minat Kerja</h3>
                     @if ($preference)
-                        <div class="space-y-3">
-                            <p><strong>Minat Lokasi:</strong>
-                                {{ implode(', ', $preference->minat_lokasi ?? []) ?: '-' }}</p>
-                            <p><strong>Bidang Usaha:</strong>
-                                {{ implode(', ', $preference->minat_bidang ?? []) ?: '-' }}</p>
-                            <p><strong>Gaji Harapan:</strong>
-                                {{ $preference->gaji_harapan ?: '-' }}</p>
-                            <p><strong>Deskripsi Diri:</strong>
-                                {{ $preference->deskripsi_diri ?: '-' }}</p>
+                        @php
+                            $minatLokasi = is_array($preference->minat_lokasi)
+                                ? implode(', ', $preference->minat_lokasi)
+                                : ($preference->minat_lokasi ?? '-');
+                            $minatBidang = is_array($preference->minat_bidang)
+                                ? implode(', ', $preference->minat_bidang)
+                                : ($preference->minat_bidang ?? '-');
+                        @endphp
+                        <div class="grid gap-y-2 text-sm">
+                            <div class="flex">
+                                <span class="w-40 text-slate-400">Minat Lokasi</span>
+                                <span class="flex-1 text-slate-100">: {{ $minatLokasi ?: '-' }}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-40 text-slate-400">Bidang Usaha</span>
+                                <span class="flex-1 text-slate-100">: {{ $minatBidang ?: '-' }}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-40 text-slate-400">Gaji Harapan</span>
+                                <span class="flex-1 text-slate-100">: {{ $preference->gaji_harapan ?: '-' }}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-40 text-slate-400">Deskripsi Diri</span>
+                                <span class="flex-1 text-slate-100">: {{ $preference->deskripsi_diri ?: '-' }}</span>
+                            </div>
                         </div>
                     @else
                         <p class="text-slate-400 italic">Belum ada data minat kerja yang diisi.</p>
