@@ -70,7 +70,7 @@
         @endphp
 
         <!-- Dashboard -->
-        <a href="#"
+        <a href="{{ route('company.dashboard') }}"
            class="{{ $linkBase }} {{ request()->routeIs('company.dashboard') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
             <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -80,32 +80,15 @@
             <span class="tooltip-text" x-show="sidebarCollapsed">Dashboard</span>
         </a>
 
-        <!-- Section: Profil Perusahaan -->
-        <div x-cloak x-show="!sidebarCollapsed"
-             class="mt-3 mb-1 text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
-            Profil Perusahaan
-        </div>
-
-        <!-- Lihat Profil -->
-        <a href="#"
-           class="{{ $linkBase }} text-slate-300 tooltip">
+        <!-- Profil Perusahaan -->
+        <a href="{{ route('company.profile.show') }}"
+           class="{{ $linkBase }} {{ request()->routeIs('company.profile.*') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip mt-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118A7.5 7.5 0 0112 15a7.5 7.5 0 017.5 5.118"/>
             </svg>
-            <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Lihat Profil</span>
-            <span class="tooltip-text" x-show="sidebarCollapsed">Lihat Profil</span>
-        </a>
-
-        <!-- Lengkapi Profil -->
-        <a href="#"
-           class="{{ $linkBase }} text-slate-300 tooltip">
-            <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Lengkapi Profil</span>
-            <span class="tooltip-text" x-show="sidebarCollapsed">Lengkapi Profil</span>
+            <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Profil Perusahaan</span>
+            <span class="tooltip-text" x-show="sidebarCollapsed">Profil Perusahaan</span>
         </a>
 
         <!-- Section: Lowongan Kerja -->
@@ -115,8 +98,8 @@
         </div>
 
         <!-- Daftar Lowongan -->
-        <a href="#"
-           class="{{ $linkBase }} text-slate-300 tooltip">
+        <a href="{{ route('company.jobs.index') }}"
+           class="{{ $linkBase }} {{ request()->routeIs('company.jobs.index') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
             <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M4 6h16M4 10h16M4 14h10M4 18h6"/>
@@ -126,8 +109,8 @@
         </a>
 
         <!-- Tambah Lowongan -->
-        <a href="#"
-           class="{{ $linkBase }} text-slate-300 tooltip">
+        <a href="{{ route('company.jobs.create') }}"
+           class="{{ $linkBase }} {{ request()->routeIs('company.jobs.create') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
             <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 4v16m8-8H4"/>
@@ -143,8 +126,8 @@
         </div>
 
         <!-- Semua Pelamar -->
-        <a href="#"
-           class="{{ $linkBase }} text-slate-300 tooltip">
+        <a href="{{ route('company.applicants.index') }}"
+           class="{{ $linkBase }} {{ request()->routeIs('company.applicants.index') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
             <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M17 20h5v-1.5C22 16.57 19.314 15 16 15c-.597 0-1.176.053-1.732.152M9 20H2v-1.5C2 16.57 4.686 15 8 15c.597 0 1.176.053 1.732.152M16 11a4 4 0 10-8 0 4 4 0 008 0z"/>
@@ -165,8 +148,8 @@
         </a>
 
         <!-- Riwayat Proses Pelamar -->
-        <a href="#"
-           class="{{ $linkBase }} text-slate-300 tooltip">
+        <a href="{{ route('company.applicants.history') }}"
+           class="{{ $linkBase }} {{ request()->routeIs('company.applicants.history') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
             <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>

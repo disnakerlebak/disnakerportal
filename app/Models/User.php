@@ -71,25 +71,31 @@ class User extends Authenticatable
         return $query->where('status', 'active');
     }
     
-// Relasi profil pencaker
+    // Relasi profil pencaker
     public function jobseekerProfile()
-{
-    return $this->hasOne(JobseekerProfile::class, 'user_id', 'id');
-}
-// app/Models/User.php
-public function jobPreference()
-{
-    return $this->hasOne(JobPreference::class);
-}
+    {
+        return $this->hasOne(JobseekerProfile::class, 'user_id', 'id');
+    }
 
-public function cardApplications()
-{
-    return $this->hasMany(CardApplication::class);
-}
-public function latestCardApplication()
-{
-    return $this->hasOne(CardApplication::class)->latestOfMany();
-}
+    public function jobPreference()
+    {
+        return $this->hasOne(JobPreference::class);
+    }
 
+    public function cardApplications()
+    {
+        return $this->hasMany(CardApplication::class);
+    }
+
+    public function latestCardApplication()
+    {
+        return $this->hasOne(CardApplication::class)->latestOfMany();
+    }
+
+    // Relasi profil perusahaan
+    public function companyProfile()
+    {
+        return $this->hasOne(CompanyProfile::class, 'user_id', 'id');
+    }
 
 }

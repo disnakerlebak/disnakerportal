@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\JobseekerProfile;
+use App\Models\CompanyProfile;
 use App\Models\ActivityLog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -84,13 +85,23 @@ class RegisteredUserController extends Controller
             'description' => 'Registrasi sebagai ' . $validated['role'],
         ]);
 
-        // Auto-create profile for pencaker only
+        // Auto-create profile for pencaker
         if ($user->role === 'pencaker') {
             JobseekerProfile::create([
                 'user_id'       => $user->id,
                 'nama_lengkap'  => $validated['name'],
                 'nik'           => $validated['nik'],
                 'email_cache'   => $validated['email'],
+            ]);
+        }
+
+        // Auto-create profile for perusahaan
+        if ($user->role === 'perusahaan') {
+            CompanyProfile::create([
+                'user_id'         => $user->id,
+                'nama_perusahaan' => $validated['company_name'] ?? $userName,
+                'alamat_lengkap'  => '-',
+                'email'           => $validated['email'],
             ]);
         }
 

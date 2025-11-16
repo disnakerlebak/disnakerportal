@@ -19,6 +19,10 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CardVerificationController;
 use App\Http\Controllers\Admin\JobseekerController;
 use App\Http\Controllers\Admin\AdminManagementController;
+use App\Http\Controllers\Company\CompanyDashboardController;
+use App\Http\Controllers\Company\CompanyProfileController;
+use App\Http\Controllers\Company\JobPostingController;
+use App\Http\Controllers\Company\ApplicantController;
 use App\Http\Controllers\Admin\PencakerHistoryController;
 
 /*
@@ -96,7 +100,21 @@ Route::middleware(['auth', 'role:perusahaan'])
     ->prefix('perusahaan')
     ->as('company.')
     ->group(function () {
-        Route::get('/dashboard', fn () => view('company.dashboard'))->name('dashboard');
+        Route::get('/dashboard', [CompanyDashboardController::class, 'index'])->name('dashboard');
+
+        // Profil perusahaan
+        Route::get('/profile', [CompanyProfileController::class, 'show'])->name('profile.show');
+        Route::get('/profile/edit', [CompanyProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [CompanyProfileController::class, 'update'])->name('profile.update');
+        Route::post('/profile/logo', [CompanyProfileController::class, 'updateLogo'])->name('profile.logo');
+
+        // Lowongan kerja
+        Route::get('/jobs', [JobPostingController::class, 'index'])->name('jobs.index');
+        Route::get('/jobs/create', [JobPostingController::class, 'create'])->name('jobs.create');
+
+        // Pelamar
+        Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
+        Route::get('/applicants/history', [ApplicantController::class, 'history'])->name('applicants.history');
     });
 
 /* ===================== PENCAKER ===================== */

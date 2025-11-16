@@ -12,7 +12,7 @@
                     Ringkasan aktivitas lowongan dan pelamar di DisnakerPortal.
                 </p>
             </div>
-            <a href="#"
+            <a href="{{ route('company.jobs.create') }}"
                class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -130,7 +130,7 @@
                         Setelah Anda membuat lowongan dan mulai menerima pelamar, ringkasan aktivitas akan muncul di sini.
                     </p>
                 </div>
-                <a href="#"
+                <a href="{{ route('company.jobs.index') }}"
                    class="inline-flex items-center gap-1 text-xs font-medium text-indigo-400 hover:text-indigo-300">
                     Lihat semua lowongan
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
