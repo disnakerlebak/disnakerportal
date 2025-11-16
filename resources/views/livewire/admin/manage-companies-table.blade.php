@@ -40,6 +40,7 @@
                     <th class="p-3 text-left">Jenis / Bidang Usaha</th>
                     <th class="p-3 text-left">Domisili Perusahaan</th>
                     <th class="p-3 text-left">Status Verifikasi</th>
+                    <th class="p-3 text-left">Status User</th>
                     <th class="p-3 text-left">Aksi</th>
                 </tr>
                 </thead>
@@ -88,40 +89,74 @@
                                 </span>
                             </div>
                         </td>
-                        <td class="p-3 align-top text-center">
+                        <td class="p-3 align-top">
+                            @php
+                                $userStatusLabel = $isActive ? 'Aktif' : 'Tidak Aktif';
+                                $userStatusClass = $isActive
+                                    ? 'bg-emerald-600/90 text-emerald-50'
+                                    : 'bg-slate-600/90 text-slate-100';
+                            @endphp
+                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $userStatusClass }}">
+                                {{ $userStatusLabel }}
+                            </span>
+                        </td>
+                        <td class="p-3 text-center">
                             <div class="flex items-center justify-center">
-                                <div class="relative inline-block text-left" x-data="{ open:false }">
-                                    <button @click="open = !open"
+                                <div class="relative"
+                                     x-data="{
+                                        open:false,
+                                        dropUp:false,
+                                        style:'',
+                                        width:256,
+                                        init() { window.addEventListener('close-dropdowns', () => { this.open=false; }); },
+                                        toggle(e) {
+                                            this.open = !this.open;
+                                            if (this.open) {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const spaceBelow = window.innerHeight - rect.bottom;
+                                                this.dropUp = spaceBelow < 260;
+                                                let left = rect.right - this.width;
+                                                left = Math.max(8, Math.min(left, window.innerWidth - this.width - 8));
+                                                let top = this.dropUp ? rect.top - 8 : rect.bottom + 8;
+                                                this.style = `left:${left}px;top:${top}px`;
+                                            }
+                                        },
+                                        close() { this.open = false; }
+                                     }"
+                                     x-init="init()">
+                                    <button @click="toggle($event)"
                                             type="button"
                                             class="rounded-md border border-slate-700 bg-slate-800 p-2 text-white text-sm transition duration-200 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                             stroke="currentColor" stroke-width="2">
                                             <circle cx="12" cy="5" r="1"/>
                                             <circle cx="12" cy="12" r="1"/>
                                             <circle cx="12" cy="19" r="1"/>
                                         </svg>
                                     </button>
 
-                                    <div x-show="open"
-                                         @click.away="open = false"
-                                         @keydown.escape.window="open = false"
-                                         x-transition:enter="transition ease-out duration-150"
-                                         x-transition:enter-start="opacity-0 transform scale-95"
-                                         x-transition:enter-end="opacity-100 transform scale-100"
-                                         x-transition:leave="transition ease-in duration-100"
-                                         x-transition:leave-start="opacity-100 transform scale-100"
-                                         x-transition:leave-end="opacity-0 transform scale-95"
-                                         class="absolute right-0 mt-2 z-40 w-64 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800">
+                                    <template x-teleport="body">
+                                        <div x-show="open" @click.away="close()" @keydown.escape.window="close()"
+                                             x-transition:enter="transition ease-out duration-150"
+                                             x-transition:enter-start="opacity-0 transform scale-95"
+                                             x-transition:enter-end="opacity-100 transform scale-100"
+                                             x-transition:leave="transition ease-in duration-100"
+                                             x-transition:leave-start="opacity-100 transform scale-100"
+                                             x-transition:leave-end="opacity-0 transform scale-95"
+                                             :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
+                                             class="fixed z-[9999] w-64 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
+                                             :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
                                             <button type="button"
                                                     class="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-blue-700/20 flex items-center gap-2 transition"
                                                     @click="
-                                                        open = false;
-                                                        window.dispatchEvent(new CustomEvent('company-detail', {
-                                                            detail: {
-                                                                url: '{{ route('admin.company.show', $c) }}',
-                                                                name: '{{ $c->nama_perusahaan }}',
-                                                                email: '{{ $user->email }}'
-                                                            }
-                                                        }));
+                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                                                      window.dispatchEvent(new CustomEvent('company-detail', {
+                                                        detail: {
+                                                          url: '{{ route('admin.company.show', $c) }}',
+                                                          name: '{{ $c->nama_perusahaan }}',
+                                                          email: '{{ $user->email }}'
+                                                        }
+                                                      }));
                                                     ">
                                                 <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">
                                                     <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z\"/>
@@ -133,7 +168,10 @@
                                             @if(!$verified)
                                                 <button type="button"
                                                         class="w-full text-left px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-700/20 flex items-center gap-2 transition"
-                                                        onclick="openCompanyApproveModal(this); open = false;"
+                                                        @click="
+                                                            window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                                                            openCompanyApproveModal($event.currentTarget);
+                                                        "
                                                         data-company-id="{{ $c->id }}"
                                                         data-company-name="{{ $c->nama_perusahaan }}">
                                                     <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\">
@@ -144,7 +182,10 @@
                                             @else
                                                 <button type="button"
                                                         class="w-full text-left px-4 py-2 text-sm text-amber-300 hover:bg-amber-700/20 flex items-center gap-2 transition"
-                                                        onclick="openCompanyUnapproveModal(this); open = false;"
+                                                        @click="
+                                                            window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                                                            openCompanyUnapproveModal($event.currentTarget);
+                                                        "
                                                         data-company-id="{{ $c->id }}"
                                                         data-company-name="{{ $c->nama_perusahaan }}">
                                                     <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\">
@@ -156,7 +197,10 @@
 
                                             <button type="button"
                                                     class="w-full text-left px-4 py-2 text-sm {{ $isActive ? 'text-amber-300 hover:bg-amber-700/20' : 'text-emerald-300 hover:bg-emerald-700/20' }} flex items-center gap-2 transition"
-                                                    onclick="openCompanyUserStatusModal(this); open = false;"
+                                                    @click="
+                                                        window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                                                        openCompanyUserStatusModal($event.currentTarget);
+                                                    "
                                                     data-user-id="{{ $user->id }}"
                                                     data-company-name="{{ $c->nama_perusahaan }}"
                                                     data-user-email="{{ $user->email }}"
@@ -169,7 +213,10 @@
 
                                             <button type="button"
                                                     class="w-full text-left px-4 py-2 text-sm text-rose-300 hover:bg-rose-700/20 flex items-center gap-2 transition"
-                                                    onclick="openCompanyDeleteModal(this); open = false;"
+                                                    @click="
+                                                        window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                                                        openCompanyDeleteModal($event.currentTarget);
+                                                    "
                                                     data-user-id="{{ $user->id }}"
                                                     data-company-name="{{ $c->nama_perusahaan }}"
                                                     data-user-email="{{ $user->email }}">
@@ -180,6 +227,7 @@
                                                 Hapus User
                                             </button>
                                         </div>
+                                    </template>
                                 </div>
                             </div>
                         </td>
@@ -310,12 +358,13 @@
     @once
         @push('scripts')
             <script>
-                window.dropdownMenu = window.dropdownMenu || function () {
+                // Helper dropdown persis seperti di manage-jobseekers (override tanpa guard)
+                window.dropdownMenu = function () {
                     return {
                         open: false,
                         dropUp: false,
                         style: '',
-                        width: 256,
+                        width: 256, // w-64
                         init() {
                             window.addEventListener('close-dropdowns', () => { this.open = false; });
                         },

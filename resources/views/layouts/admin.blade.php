@@ -346,6 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js" integrity="sha512-6ZFAHMRqkpS2NMVzYGzYMKA+Hitzzh3u/SYh1GcU0XAiHQmmKAiozoxg2Oe8ZpMazciDJNy8FCWyKPS5YW6A9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 </body>
 </html>

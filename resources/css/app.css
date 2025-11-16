@@ -10,6 +10,7 @@ body {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "flowbite";
 @import "./forms.css";
 
 /* Global scrollbar styling (tipis, menyatu dengan latar) */

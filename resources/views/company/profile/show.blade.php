@@ -12,7 +12,8 @@
                 </p>
             </div>
             <button type="button"
-                    data-modal-open="modalCompanyProfile"
+                    data-modal-target="modalCompanyProfile"
+                    data-modal-toggle="modalCompanyProfile"
                     class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950">
                 Kelola Profil
             </button>
@@ -128,15 +129,11 @@
     </div>
 
     {{-- Modal: Kelola Profil Perusahaan --}}
-    <x-modal-form
-        id="modalCompanyProfile"
-        title="Lengkapi Profil Perusahaan"
-        :action="route('company.profile.update')"
-        method="PUT"
-        submitLabel="Simpan Profil"
-        cancelLabel="Batal"
-    >
-        <div class="space-y-4">
+    <x-modal id="modalCompanyProfile" size="lg" title="Lengkapi Profil Perusahaan">
+        <form id="formCompanyProfile" method="POST" action="{{ route('company.profile.update') }}" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            @method('PUT')
+
             <div class="grid gap-4 md:grid-cols-2">
                 <x-input-text
                     label="Nama Perusahaan"
@@ -152,14 +149,16 @@
                 />
             </div>
 
-            <div class="grid gap-4 md:grid-cols-3">
-                <x-input-text
-                    label="Alamat Lengkap"
+            <div class="space-y-2">
+                <label class="block text-sm text-gray-500 dark:text-gray-300">
+                    Alamat Lengkap
+                </label>
+                <textarea
                     name="alamat_lengkap"
-                    :value="$company->alamat_lengkap ?? ''"
+                    rows="3"
+                    class="w-full rounded-lg border-gray-700 bg-gray-900 text-gray-100 focus:ring-2 focus:ring-indigo-500"
                     required
-                    class="md:col-span-3"
-                />
+                >{{ old('alamat_lengkap', $company->alamat_lengkap ?? '') }}</textarea>
             </div>
 
             <div class="grid gap-4 md:grid-cols-3">
@@ -253,6 +252,17 @@
                     placeholder="Ceritakan secara singkat tentang perusahaan, budaya kerja, dan produk/layanan utama."
                 >{{ old('deskripsi', $company->deskripsi ?? '') }}</textarea>
             </div>
-        </div>
-    </x-modal-form>
+        </form>
+
+        <x-slot name="footer">
+            <button type="button" data-modal-hide="modalCompanyProfile"
+                    class="px-4 py-2 border rounded-lg text-gray-300 bg-gray-700 hover:bg-gray-600">
+                Batal
+            </button>
+            <button type="submit" form="formCompanyProfile"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white">
+                Simpan Profil
+            </button>
+        </x-slot>
+    </x-modal>
 @endsection
