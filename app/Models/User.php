@@ -18,6 +18,7 @@ class User extends Authenticatable
     public const ROLE_ADMIN_LOKER = 'admin_loker';
     public const ROLE_ADMIN_STATISTIK = 'admin_statistik';
     public const ROLE_PENCAKER = 'pencaker';
+    public const ROLE_PERUSAHAAN = 'perusahaan';
 
     public const ROLES = [
         self::ROLE_SUPERADMIN,
@@ -25,6 +26,7 @@ class User extends Authenticatable
         self::ROLE_ADMIN_LOKER,
         self::ROLE_ADMIN_STATISTIK,
         self::ROLE_PENCAKER,
+        self::ROLE_PERUSAHAAN,
     ];
 
     /**

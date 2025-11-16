@@ -9,16 +9,15 @@ use App\Models\ActivityLog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Show registration page.
      */
     public function create(): View
     {
@@ -26,58 +25,81 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Handle registration request.
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            // Nama lengkap (pencaker) atau nama perusahaan
+            'name' => [
+                // Wajib hanya jika mendaftar sebagai pencaker
+                Rule::requiredIf(fn () => $request->role === 'pencaker'),
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'company_name' => [
+                // Wajib hanya jika mendaftar sebagai perusahaan
+                Rule::requiredIf(fn () => $request->role === 'perusahaan'),
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'string', Rule::in(['pencaker','perusahaan','admin'])],
-            // NIK wajib jika mendaftar sebagai pencaker, unik pada tabel jobseeker_profiles
+            
+            // Role hanya pencaker atau perusahaan
+            'role' => [
+                'required',
+                Rule::in(['pencaker', 'perusahaan'])
+            ],
+
+            // NIK hanya wajib jika role = pencaker
             'nik' => [
-                Rule::requiredIf(fn () => $request->input('role') === 'pencaker'),
+                Rule::requiredIf(fn () => $request->role === 'pencaker'),
                 'nullable',
                 'digits:16',
                 Rule::unique('jobseeker_profiles', 'nik'),
             ],
         ]);
 
+        // Tentukan nama yang akan disimpan ke tabel users
+        $userName = $validated['name'] ?? $validated['company_name'] ?? null;
+
+        // Create user
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+            'name'     => $userName,
+            'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
+            'role'     => $validated['role'],
+            'status'   => 'active', // default sesuai struktur tabel
         ]);
 
-        // Log aktivitas pendaftaran
+        // Activity log
         ActivityLog::create([
-            'user_id' => $user->id,
-            'action' => 'created',
-            'model_type' => User::class,
-            'model_id' => $user->id,
-            'description' => 'Mendaftar akun pertama kali sebagai ' . $validated['role'],
+            'user_id'     => $user->id,
+            'action'      => 'created',
+            'model_type'  => User::class,
+            'model_id'    => $user->id,
+            'description' => 'Registrasi sebagai ' . $validated['role'],
         ]);
 
-        // Otomatis buat profil pencaker untuk role pencaker
+        // Auto-create profile for pencaker only
         if ($user->role === 'pencaker') {
-            $profile = JobseekerProfile::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'nama_lengkap' => $validated['name'],
-                    'nik' => $validated['nik'] ?? null,
-                    'email_cache' => $validated['email'],
-                ]
-            );
+            JobseekerProfile::create([
+                'user_id'       => $user->id,
+                'nama_lengkap'  => $validated['name'],
+                'nik'           => $validated['nik'],
+                'email_cache'   => $validated['email'],
+            ]);
         }
 
+        // Fire event
         event(new Registered($user));
 
-        // Jangan auto-login. Arahkan ke halaman login dengan notifikasi sukses.
-        return redirect()->route('login')->with('status', 'Registrasi berhasil. Silakan masuk menggunakan email dan kata sandi.');
+        // Redirect ke login, jangan auto login.
+        return redirect()
+            ->route('login')
+            ->with('status', 'Registrasi berhasil. Silakan masuk menggunakan email dan kata sandi Anda.');
     }
-
 }

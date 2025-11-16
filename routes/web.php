@@ -43,7 +43,7 @@ Route::get('/dashboard', function () {
     return match ($user->role) {
         'superadmin' => redirect()->route('admin.manage.index'),
         'admin_ak1'  => redirect()->route('admin.dashboard'),
-        'perusahaan' => redirect()->route('perusahaan.dashboard'),
+        'perusahaan' => redirect()->route('company.dashboard'),
         'pencaker'   => redirect()->route('pencaker.dashboard'),
         default      => redirect()->route('login'),
     };
@@ -94,9 +94,9 @@ Route::middleware(['auth', 'role:admin,admin_ak1,superadmin'])
 /* ===================== PERUSAHAAN ===================== */
 Route::middleware(['auth', 'role:perusahaan'])
     ->prefix('perusahaan')
-    ->as('perusahaan.')
+    ->as('company.')
     ->group(function () {
-        Route::get('/dashboard', fn () => view('perusahaan.dashboard'))->name('dashboard');
+        Route::get('/dashboard', fn () => view('company.dashboard'))->name('dashboard');
     });
 
 /* ===================== PENCAKER ===================== */
