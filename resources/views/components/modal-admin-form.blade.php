@@ -48,8 +48,7 @@
     label="Role"
     :options="[
         'superadmin' => 'Super Admin',
-        'admin_ak1' => 'Admin AK1',
-        'perusahaan' => 'Perusahaan'
+        'admin_ak1' => 'Admin AK1'
     ]"
     :selected="old('role', $admin->role ?? 'admin_ak1')"
     required

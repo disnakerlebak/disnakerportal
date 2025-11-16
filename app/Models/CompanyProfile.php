@@ -29,6 +29,12 @@ class CompanyProfile extends Model
         'jumlah_karyawan',
         'nib',
         'npwp',
+        'verification_status',
+        'verified_at',
+    ];
+
+    protected $casts = [
+        'verified_at' => 'datetime',
     ];
 
     public function user()

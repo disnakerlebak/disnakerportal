@@ -175,6 +175,75 @@ Route::middleware(['auth', 'role:superadmin'])
         Route::post('/update/{id}', [AdminManagementController::class, 'update'])->name('update');
         Route::post('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('toggle');
         Route::delete('/{id}', [AdminManagementController::class, 'destroy'])->name('destroy');
+    });
+
+/* ===================== SUPERADMIN - COMPANY MANAGEMENT ===================== */
+Route::middleware(['auth', 'role:superadmin'])
+    ->prefix('admin/company')
+    ->name('admin.company.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CompanyManagementController::class, 'index'])->name('index');
+        Route::get('/{company}', [\App\Http\Controllers\Admin\CompanyManagementController::class, 'show'])->name('show');
+    });
+
+/* ===================== PENCAKER ===================== */
+Route::middleware(['auth', 'role:pencaker'])
+    ->prefix('pencaker')
+    ->as('pencaker.')
+    ->group(function () {
+        Route::get('/dashboard', fn () => view('pencaker.dashboard'))->name('dashboard');
+
+        // Data Diri
+        Route::get('/profile',  [PencakerProfileController::class, 'edit'])->name('profile');
+        Route::post('/profile', [PencakerProfileController::class, 'store'])->name('profile.store');
+        Route::put('/profile',  [PencakerProfileController::class, 'update'])->name('profile.update');
+
+        // Pendidikan / Pelatihan / Riwayat Kerja
+        Route::resource('education', EducationController::class);
+        Route::resource('training',  TrainingController::class)->only(['index','store','update','destroy']);
+        Route::resource('work',      WorkController::class)->only(['index','store','update','destroy']);
+
+        // Minat Kerja
+        Route::get('/preferences', [JobPreferenceController::class, 'index'])->name('preferences.index');
+        Route::post('/preferences', [JobPreferenceController::class, 'store'])->name('preferences.store');
+
+        // Pengajuan Kartu Pencaker (AK1)
+        Route::get('/card-application',  [CardApplicationController::class, 'index'])->name('card.index');
+        Route::post('/card-application', [CardApplicationController::class, 'store'])->name('card.store');
+        Route::get('/card-application/repair',  [CardApplicationController::class, 'repairForm'])->name('card.repair');
+        Route::post('/card-application/repair', [CardApplicationController::class, 'submitRepair'])->name('card.repair.submit');
+        Route::get('/card-application/renewal',  [CardApplicationController::class, 'renewalForm'])->name('card.renewal');
+        Route::post('/card-application/renewal', [CardApplicationController::class, 'submitRenewal'])->name('card.renewal.submit');
+        // Unduh/Cetak Kartu AK1 (hanya milik sendiri dan jika disetujui)
+        Route::get('/card-application/{application}/cetak', [CardApplicationController::class, 'cetakPdf'])
+            ->name('card.cetak');
+    });
+
+/* ===================== PROFILE BREEZE (tetap ada) ===================== */
+Route::middleware('auth')->group(function () {
+    Route::get('/profile',   [BreezeProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [BreezeProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile',[BreezeProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+/* ===================== UTIL (opsional untuk cek file avatar) ===================== */
+Route::get('/test-pdf', function () {
+    $pdf = Pdf::loadHTML('<h1>Halo Dunia!</h1><p>PDF ini berhasil dibuat 🎉</p>');
+    return $pdf->stream('contoh.pdf');
+});
+
+require __DIR__ . '/auth.php';
+
+/* ===================== SUPERADMIN - ADMIN MANAGEMENT ===================== */
+Route::middleware(['auth', 'role:superadmin'])
+    ->prefix('admin/manage')
+    ->name('admin.manage.')
+    ->group(function () {
+        Route::get('/', [AdminManagementController::class, 'index'])->name('index');
+        Route::post('/store', [AdminManagementController::class, 'store'])->name('store');
+        Route::post('/update/{id}', [AdminManagementController::class, 'update'])->name('update');
+        Route::post('/toggle/{id}', [AdminManagementController::class, 'toggleStatus'])->name('toggle');
+        Route::delete('/{id}', [AdminManagementController::class, 'destroy'])->name('destroy');
         // ===============================
         // Kelola Pencaker ( NEW FEATURE )
         // ===============================

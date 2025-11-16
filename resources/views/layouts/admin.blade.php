@@ -163,19 +163,17 @@
       <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Kelola Pencaker</span>
       <span class="tooltip-text" x-show="sidebarCollapsed">Kelola Pencaker</span>
     </a>
-@endif
-
-
-    <!-- Verifikasi Perusahaan -->
-    <a href="#"
-       class="{{ $linkBase }} text-slate-400 opacity-60 cursor-not-allowed tooltip">
+    <!-- Kelola Perusahaan (Superadmin only) -->
+    <a href="{{ route('admin.company.index') }}"
+       class="{{ $linkBase }} {{ request()->routeIs('admin.company.*') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
       <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.5M6.75 7.364V3h-3v18m3-13.636 10.5-3.819"/>
       </svg>
-      <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Verifikasi Perusahaan</span>
-      <span class="tooltip-text" x-show="sidebarCollapsed">Verifikasi Perusahaan</span>
+      <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Kelola Perusahaan</span>
+      <span class="tooltip-text" x-show="sidebarCollapsed">Kelola Perusahaan</span>
     </a>
+@endif
 
     <!-- Section: INFO -->
     <div x-cloak x-show="!sidebarCollapsed"

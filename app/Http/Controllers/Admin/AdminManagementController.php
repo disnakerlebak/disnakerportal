@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Hash;
 class AdminManagementController extends Controller
 {
     /**
-     * Menampilkan daftar semua admin (Superadmin, Admin AK1, dan Perusahaan)
+     * Menampilkan daftar semua admin internal (Superadmin & Admin AK1)
      */
     public function index()
     {
-        $admins = User::whereIn('role', ['admin_ak1', 'perusahaan'])
+        $admins = User::whereIn('role', ['superadmin', 'admin_ak1'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -30,7 +30,7 @@ class AdminManagementController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role'     => ['required', 'in:superadmin,admin_ak1,perusahaan'],
+            'role'     => ['required', 'in:superadmin,admin_ak1'],
         ]);
 
         User::create([
@@ -57,7 +57,7 @@ class AdminManagementController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email,' . $admin->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role'     => ['required', 'in:superadmin,admin_ak1,perusahaan'],
+            'role'     => ['required', 'in:superadmin,admin_ak1'],
         ]);
 
         // update data admin
