@@ -77,4 +77,81 @@ class JobseekerTable extends Component
             'users' => $users,
         ]);
     }
+
+    // === ACTION: Nonaktifkan user ===
+    public function deactivateUser(int $userId): void
+    {
+        $user = User::where('role', 'pencaker')->findOrFail($userId);
+        $user->status = 'inactive';
+        $user->save();
+
+        session()->flash('success', 'Pencaker berhasil dinonaktifkan.');
+        $this->resetPage();
+    }
+
+    // === ACTION: Aktifkan kembali user ===
+    public function activateUser(int $userId): void
+    {
+        $user = User::where('role', 'pencaker')->findOrFail($userId);
+        $user->status = 'active';
+        $user->save();
+
+        session()->flash('success', 'Pencaker berhasil diaktifkan kembali.');
+        $this->resetPage();
+    }
+
+    // === ACTION: Reset profil pencaker (hapus data profil & riwayat) ===
+    public function resetProfile(int $userId): void
+    {
+        $user = User::where('role', 'pencaker')->findOrFail($userId);
+
+        if ($user->jobseekerProfile) {
+            $user->jobseekerProfile()->delete();
+        }
+        if (method_exists($user, 'jobEducations')) {
+            $user->jobEducations()->delete();
+        }
+        if (method_exists($user, 'jobTrainings')) {
+            $user->jobTrainings()->delete();
+        }
+        if (method_exists($user, 'jobExperiences')) {
+            $user->jobExperiences()->delete();
+        }
+        if (method_exists($user, 'jobPreferences')) {
+            $user->jobPreferences()->delete();
+        }
+
+        session()->flash('success', 'Profil pencaker berhasil direset.');
+        $this->resetPage();
+    }
+
+    // === ACTION: Hapus pencaker + seluruh relasi (TERMASUK AK1) ===
+    public function deleteUser(int $userId): void
+    {
+        $user = User::where('role', 'pencaker')->findOrFail($userId);
+
+        if ($user->jobseekerProfile) {
+            $user->jobseekerProfile()->delete();
+        }
+        if (method_exists($user, 'jobEducations')) {
+            $user->jobEducations()->delete();
+        }
+        if (method_exists($user, 'jobTrainings')) {
+            $user->jobTrainings()->delete();
+        }
+        if (method_exists($user, 'jobExperiences')) {
+            $user->jobExperiences()->delete();
+        }
+        if (method_exists($user, 'jobPreferences')) {
+            $user->jobPreferences()->delete();
+        }
+        if (method_exists($user, 'cardApplications')) {
+            $user->cardApplications()->delete();
+        }
+
+        $user->delete();
+
+        session()->flash('success', 'Pencaker beserta seluruh datanya berhasil dihapus.');
+        $this->resetPage();
+    }
 }

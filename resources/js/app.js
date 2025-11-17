@@ -79,4 +79,35 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("resize", closeAll);
 })();
 
+// Matikan modal engine bawaan Flowbite agar tidak override komponen modal kustom
+document.addEventListener("DOMContentLoaded", () => {
+    if (window.Modal) {
+        window.Modal = class {
+            constructor() {}
+            show() {}
+            hide() {}
+        };
+    }
+
+    if (window.Flowbite?.Modal) {
+        window.Flowbite.Modal = class {
+            constructor() {}
+            show() {}
+            hide() {}
+        };
+    }
+
+    // Disable auto init modal dari Flowbite
+    const disableAutoInit = () => {
+        const modalToggles = document.querySelectorAll("[data-modal-target], [data-modal-toggle], [data-modal-hide]");
+        modalToggles.forEach(el => {
+            el.removeAttribute("data-modal-target");
+            el.removeAttribute("data-modal-toggle");
+            el.removeAttribute("data-modal-hide");
+        });
+    };
+
+    disableAutoInit();
+});
+
 Livewire.start();

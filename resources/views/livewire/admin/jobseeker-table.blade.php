@@ -73,69 +73,71 @@
                         <td class="p-3 whitespace-nowrap text-xs">{{ $app?->nomor_ak1 ?? '-' }}</td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center">
-                                <div class="relative" x-data="dropdownMenu()" x-init="init()">
-                                    <button @click="toggle($event)"
-                                            type="button"
-                                            class="rounded-md border border-slate-700 bg-slate-800 p-2 text-white text-sm transition duration-200 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="5" r="1"/>
-                                            <circle cx="12" cy="12" r="1"/>
-                                            <circle cx="12" cy="19" r="1"/>
-                                        </svg>
-                                    </button>
-                                    <template x-teleport="body">
-                                        <div x-show="open" @click.away="close()" @keydown.escape.window="close()"
-                                             x-transition:enter="transition ease-out duration-150"
-                                             x-transition:enter-start="opacity-0 transform scale-95"
-                                             x-transition:enter-end="opacity-100 transform scale-100"
-                                             x-transition:leave="transition ease-in duration-100"
-                                             x-transition:leave-start="opacity-100 transform scale-100"
-                                             x-transition:leave-end="opacity-0 transform scale-95"
-                                            :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
-                                             class="fixed z-[70] w-56 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
-                                             :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-blue-700/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                      window.dispatchEvent(new CustomEvent('pencaker-detail', { detail: { url: '{{ route('admin.pencaker.detail', $u->id) }}', ak1: '{{ $app?->nomor_ak1 ?? '' }}' } }));
-                                                    ">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                </svg>
-                                                Detail
-                                            </button>
+                                <x-dropdown :id="'approved-jobseeker-actions-'.$u->id">
+                                    <x-dropdown-item
+                                        class="text-blue-300 hover:text-blue-100"
+                                        onclick="window.dispatchEvent(new CustomEvent('pencaker-detail', { detail: { url: '{{ route('admin.pencaker.detail', $u->id) }}', ak1: '{{ $app?->nomor_ak1 ?? '' }}' } }));">
+                                        Lihat Detail
+                                    </x-dropdown-item>
 
-                                            @if($app)
-                                                <a href="{{ route('admin.ak1.cetak', $app->id) }}"
-                                                   target="_blank"
-                                                   class="w-full text-left px-4 py-2 text-sm text-indigo-300 hover:bg-indigo-700/20 flex items-center gap-2 transition">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-3-3m3 3l3-3M6 20h12" />
-                                                    </svg>
-                                                    Unduh AK1
-                                                </a>
-                                            @endif
+                                    @if($app)
+                                        <li>
+                                            <a href="{{ route('admin.ak1.cetak', $app->id) }}"
+                                               target="_blank"
+                                               class="flex w-full items-center gap-2 px-4 py-2 rounded-md text-indigo-300 hover:text-indigo-100 hover:bg-slate-700 transition">
+                                                Unduh AK1
+                                            </a>
+                                        </li>
+                                    @endif
 
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-purple-300 hover:bg-purple-700/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                      window.openUserAk1History(
-                                                        '{{ route('admin.ak1.userLogs', $u->id) }}',
-                                                        '{{ $p->nama_lengkap ?? $u->name ?? 'Pencaker' }}',
-                                                        '{{ $u->email }}'
-                                                      );
-                                                    ">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                Riwayat AK1
-                                            </button>
-                                        </div>
-                                    </template>
-                                </div>
+                                    <x-dropdown-item
+                                        class="text-purple-300 hover:text-purple-100"
+                                        onclick="window.openUserAk1History('{{ route('admin.ak1.userLogs', $u->id) }}','{{ $p->nama_lengkap ?? $u->name ?? 'Pencaker' }}','{{ $u->email }}');">
+                                        Riwayat AK1
+                                    </x-dropdown-item>
+
+                                    @if(($u->status ?? 'active') === 'active')
+                                        <x-dropdown-item
+                                            class="text-amber-300 hover:text-amber-100"
+                                            onclick="openDeactivateModalApproved(this)"
+                                            modal="confirm-deactivate-approved"
+                                            data-user-id="{{ $u->id }}"
+                                            data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                            data-user-email="{{ $u->email }}">
+                                            Nonaktifkan Akun
+                                        </x-dropdown-item>
+                                    @else
+                                        <x-dropdown-item
+                                            class="text-emerald-300 hover:text-emerald-100"
+                                            onclick="openActivateModalApproved(this)"
+                                            modal="confirm-deactivate-approved"
+                                            data-user-id="{{ $u->id }}"
+                                            data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                            data-user-email="{{ $u->email }}">
+                                            Aktifkan Akun
+                                        </x-dropdown-item>
+                                    @endif
+
+                                    <x-dropdown-item
+                                        class="text-sky-300 hover:text-sky-100"
+                                        onclick="openResetModalApproved(this)"
+                                        modal="confirm-reset-approved"
+                                        data-user-id="{{ $u->id }}"
+                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                        data-user-email="{{ $u->email }}">
+                                        Reset Profil
+                                    </x-dropdown-item>
+
+                                    <x-dropdown-item
+                                        class="text-rose-300 hover:text-rose-100"
+                                        onclick="openDeleteModalApproved(this)"
+                                        modal="confirm-delete-approved"
+                                        data-user-id="{{ $u->id }}"
+                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                        data-user-email="{{ $u->email }}">
+                                        Hapus Pencaker
+                                    </x-dropdown-item>
+                                </x-dropdown>
                             </div>
                         </td>
                     </tr>
@@ -172,6 +174,30 @@
         </div>
     </div>
 
+    {{-- Modal Konfirmasi (custom, non-Flowbite) --}}
+    <div id="confirm-modal-approved" class="hidden fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-lg">
+            <div class="rounded-xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/70">
+                    <div>
+                        <h3 id="confirmTitle" class="text-lg font-semibold">Konfirmasi</h3>
+                        <p id="confirmSubtitle" class="text-sm text-slate-300 mt-1"></p>
+                    </div>
+                    <button type="button" class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeConfirmModalApproved()">
+                        ✕
+                    </button>
+                </div>
+                <div class="px-4 py-4 space-y-3">
+                    <p id="confirmBody" class="text-sm text-slate-200 leading-relaxed">Apakah Anda yakin?</p>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm" onclick="closeConfirmModalApproved()">Batal</button>
+                        <button type="button" id="confirmActionBtn" class="px-4 py-2 rounded-lg text-white text-sm font-semibold"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <x-modal name="log-ak1-user" :show="false" maxWidth="3xl" animation="zoom">
         <div class="flex items-start justify-between border-b border-slate-800 px-6 py-4">
             <div>
@@ -186,29 +212,129 @@
     @once
         @push('scripts')
             <script>
-                window.dropdownMenu = function () {
-                    return {
-                        open: false,
-                        dropUp: false,
-                        style: '',
-                        width: 224,
-                        init() { window.addEventListener('close-dropdowns', () => { this.open = false; }); },
-                        toggle(e) {
-                            this.open = !this.open;
-                            if (this.open) {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const spaceBelow = window.innerHeight - rect.bottom;
-                                this.dropUp = spaceBelow < 240;
-                                let left = rect.right - this.width;
-                                left = Math.max(8, Math.min(left, window.innerWidth - this.width - 8));
-                                let top = this.dropUp ? rect.top - 8 : rect.bottom + 8;
-                                this.style = `left:${left}px;top:${top}px`;
-                            }
-                        },
-                        close() { this.open = false; }
-                    }
-                }
+                // -------- Modal handlers (pencaker disetujui) --------
+                const confirmModal = document.getElementById('confirm-modal-approved');
+                const confirmTitle = document.getElementById('confirmTitle');
+                const confirmSubtitle = document.getElementById('confirmSubtitle');
+                const confirmBody = document.getElementById('confirmBody');
+                const confirmBtn = document.getElementById('confirmActionBtn');
+                let approvedCurrentUserId = null;
 
+                window.openDeactivateModalApproved = function (button) {
+                    approvedCurrentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+                    const subtitle = document.getElementById('deactivateModalSubtitle');
+                    const title = document.getElementById('deactivateModalTitle');
+                    const body = document.getElementById('deactivateModalBody');
+                    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+
+                    if (confirmTitle) confirmTitle.textContent = 'Nonaktifkan Akun Pencaker';
+                    if (confirmBody) confirmBody.textContent = 'Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.';
+                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+
+                    if (confirmBtn) {
+                        confirmBtn.textContent = 'Nonaktifkan';
+                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-amber-600 hover:bg-amber-700 transition';
+                        confirmBtn.onclick = function() {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).deactivateUser(approvedCurrentUserId);
+                            }
+                            closeConfirmModalApproved();
+                        };
+                    }
+
+                    openConfirmModalApproved();
+                };
+
+                window.openActivateModalApproved = function (button) {
+                    approvedCurrentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+                    const subtitle = document.getElementById('deactivateModalSubtitle');
+                    const title = document.getElementById('deactivateModalTitle');
+                    const body = document.getElementById('deactivateModalBody');
+                    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+
+                    if (confirmTitle) confirmTitle.textContent = 'Aktifkan Akun Pencaker';
+                    if (confirmBody) confirmBody.textContent = 'Aktifkan kembali akun pencaker ini? Mereka akan dapat login dan mengakses layanan kembali.';
+                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+                    if (confirmBtn) {
+                        confirmBtn.textContent = 'Aktifkan';
+                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 transition';
+                        confirmBtn.onclick = function () {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).activateUser(approvedCurrentUserId);
+                            }
+                            closeConfirmModalApproved();
+                        };
+                    }
+
+                    openConfirmModalApproved();
+                };
+
+                window.openResetModalApproved = function (button) {
+                    approvedCurrentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+
+                    if (confirmTitle) confirmTitle.textContent = 'Reset Profil Pencaker';
+                    if (confirmBody) confirmBody.textContent = 'Reset seluruh profil & riwayat (pendidikan, pelatihan, pengalaman) pencaker ini? AK1 tetap dipertahankan.';
+                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+
+                    if (confirmBtn) {
+                        confirmBtn.textContent = 'Reset Profil';
+                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-sky-600 hover:bg-sky-700 transition';
+                        confirmBtn.onclick = function() {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).resetProfile(approvedCurrentUserId);
+                            }
+                            closeConfirmModalApproved();
+                        };
+                    }
+
+                    openConfirmModalApproved();
+                };
+
+                window.openDeleteModalApproved = function (button) {
+                    approvedCurrentUserId = button.getAttribute('data-user-id');
+                    const name = button.getAttribute('data-user-name') || '';
+                    const email = button.getAttribute('data-user-email') || '';
+
+                    if (confirmTitle) confirmTitle.textContent = 'Hapus Pencaker';
+                    if (confirmBody) confirmBody.innerHTML = "Hapus pencaker ini <span class='font-semibold text-rose-300'>BESERTA seluruh data dan riwayat AK1</span>? Tindakan ini tidak dapat dibatalkan.";
+                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+
+                    if (confirmBtn) {
+                        confirmBtn.textContent = 'Hapus Pencaker';
+                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-rose-600 hover:bg-rose-700 transition';
+                        confirmBtn.onclick = function() {
+                            const wireComponent = document.querySelector('[wire\\:id]');
+                            if (wireComponent && window.Livewire) {
+                                const wireId = wireComponent.getAttribute('wire:id');
+                                window.Livewire.find(wireId).deleteUser(approvedCurrentUserId);
+                            }
+                            closeConfirmModalApproved();
+                        };
+                    }
+
+                    openConfirmModalApproved();
+                };
+
+                window.openConfirmModalApproved = function () {
+                    if (confirmModal) confirmModal.classList.remove('hidden');
+                };
+                window.closeConfirmModalApproved = function () {
+                    if (confirmModal) confirmModal.classList.add('hidden');
+                };
+
+                // -------- Riwayat AK1 helpers --------
                 const statusLabels = {
                     'Menunggu Verifikasi': 'Menunggu Verifikasi',
                     'Menunggu Revisi Verifikasi': 'Menunggu Revisi Verifikasi',
