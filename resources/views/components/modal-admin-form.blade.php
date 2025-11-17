@@ -21,8 +21,9 @@
           name="role"
           label="Role"
           :options="[
-              'superadmin' => 'Super Admin',
-              'admin_ak1' => 'Admin AK1'
+              'admin_ak1' => 'Admin AK1',
+              'admin_laporan' => 'Admin Laporan',
+              'superadmin' => 'Super Admin'
           ]"
           :selected="old('role', $admin->role ?? 'admin_ak1')"
           required

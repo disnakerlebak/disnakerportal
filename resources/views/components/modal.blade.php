@@ -36,7 +36,7 @@
                 {{ $slot }}
             </div>
             @if (isset($footer))
-                <div class="modal-panel-footer px-4 py-3 flex items-center justify-end gap-2">
+                <div class="modal-panel-footer px-4 py-3 flex items-center justify-end gap-2 rounded-b-2xl">
                     {{ $footer }}
                 </div>
             @endif
