@@ -212,107 +212,55 @@
                                 {{-- Aksi --}}
                                 <td class="relative p-3 align-top text-center">
                                     <div class="flex items-center justify-center">
-                                        <div class="relative" x-data="dropdownMenu()" x-id="['action-menu']">
-                                            <button @click="toggle($event)"
-                                                    type="button"
-                                                    class="rounded-md border border-slate-700 bg-slate-800 p-2 text-white text-sm transition duration-200 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                     stroke="currentColor" stroke-width="2">
-                                                    <circle cx="12" cy="5" r="1"/>
-                                                    <circle cx="12" cy="12" r="1"/>
-                                                    <circle cx="12" cy="19" r="1"/>
-                                                </svg>
-                                            </button>
+                                        <x-dropdown :id="'ak1-actions-'.$app->id">
+                                            <x-dropdown-item class="text-blue-300 hover:text-blue-100"
+                                                             onclick="showDetail({{ $app->id }})">
+                                                Detail
+                                            </x-dropdown-item>
 
-                                            <template x-teleport="body">
-                                                <div x-show="open" @click.away="close()" @keydown.escape.window="close()"
-                                                     x-transition:enter="transition ease-out duration-150"
-                                                     x-transition:enter-start="opacity-0 transform scale-95"
-                                                     x-transition:enter-end="opacity-100 transform scale-100"
-                                                     x-transition:leave="transition ease-in duration-100"
-                                                     x-transition:leave-start="opacity-100 transform scale-100"
-                                                     x-transition:leave-end="opacity-0 transform scale-95"
-                                                     :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
-                                                     class="fixed z-[70] w-56 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
-                                                     :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
+                                            @if(in_array($app->status, ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi']))
+                                                <x-dropdown-item class="text-green-300 hover:text-green-100"
+                                                                 onclick="openApproveModal(this)"
+                                                                 data-approve-url="{{ route('admin.ak1.approve', $app) }}"
+                                                                 data-app-name="{{ $app->user->name }}"
+                                                                 data-app-email="{{ $app->user->email }}">
+                                                    Setujui
+                                                </x-dropdown-item>
 
-                                                {{-- 👁️ Detail --}}
-                                                <button onclick="showDetail({{ $app->id }})"
-                                                        class="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-blue-700/20 flex items-center gap-2 transition">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                    </svg>
-                                                    Detail
-                                                </button>
+                                                <x-dropdown-item class="text-red-300 hover:text-red-100"
+                                                                 onclick="openRejectModal({{ $app->id }})">
+                                                    Tolak/Minta Revisi
+                                                </x-dropdown-item>
+                                            @endif
 
-                                                @if(in_array($app->status, ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi']))
-                                                    <button
-                                                        type="button"
-                                                        onclick="openApproveModal(this)"
-                                                        data-approve-url="{{ route('admin.ak1.approve', $app) }}"
-                                                        data-app-name="{{ $app->user->name }}"
-                                                        data-app-email="{{ $app->user->email }}"
-                                                        class="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-700/20 flex items-center gap-2 transition">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                        Setujui
-                                                    </button>
+                                            @if ($app->status === 'Disetujui' && $app->is_active)
+                                                <x-dropdown-item class="text-orange-300 hover:text-orange-100"
+                                                                 onclick="openUnapproveModal(this)"
+                                                                 data-unapprove-url="{{ route('admin.ak1.unapprove', $app) }}"
+                                                                 data-app-name="{{ $app->user->name }}"
+                                                                 data-app-email="{{ $app->user->email }}">
+                                                    Batalkan Persetujuan
+                                                </x-dropdown-item>
+                                            @endif
 
-                                                    <button onclick="openRejectModal({{ $app->id }})"
-                                                            class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-700/20 flex items-center gap-2 transition">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                        Tolak/Minta Revisi
-                                                    </button>
-                                                @endif
-
-                                                @if ($app->status === 'Disetujui' && $app->is_active)
-                                                    <button
-                                                        type="button"
-                                                        onclick="openUnapproveModal(this)"
-                                                        data-unapprove-url="{{ route('admin.ak1.unapprove', $app) }}"
-                                                        data-app-name="{{ $app->user->name }}"
-                                                        data-app-email="{{ $app->user->email }}"
-                                                        class="w-full text-left px-4 py-2 text-sm text-orange-300 hover:bg-orange-700/20 flex items-center gap-2 transition">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16M9 3l-6 9 6 9" />
-                                                        </svg>
-                                                        Batalkan Persetujuan
-                                                    </button>
-                                                @endif
-
-                                                @if ($app->status === 'Disetujui' && $app->nomor_ak1 && $app->is_active)
+                                            @if ($app->status === 'Disetujui' && $app->nomor_ak1 && $app->is_active)
+                                                <li>
                                                     <a href="{{ route('admin.ak1.cetak', $app->id) }}" target="_blank"
-                                                       class="block px-4 py-2 text-sm text-indigo-400 hover:bg-indigo-700/20 flex items-center gap-2 transition">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                                  d="M12 4v16m8-8H4" />
-                                                        </svg>
+                                                       class="flex w-full items-center gap-2 px-4 py-2 rounded-md text-indigo-300 hover:text-indigo-100 hover:bg-slate-700 transition">
                                                         Unduh Kartu
                                                     </a>
-                                                @endif
+                                                </li>
+                                            @endif
 
-                                                <button
-                                                    type="button"
-                                                    onclick="openLogModal(this)"
-                                                    class="w-full text-left px-4 py-2 text-sm text-cyan-400 hover:bg-cyan-700/20 flex items-center gap-2 transition"
-                                                    data-app-name="{{ $app->user->name }}"
-                                                    data-app-email="{{ $app->user->email }}"
-                                                    data-current-status="{{ $app->status }}"
-                                                    data-logs='@json($logPayload)'>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    Riwayat
-                                                </button>
-                                                </div>
-                                            </template>
-                                        </div>
+                                            <x-dropdown-item class="text-cyan-300 hover:text-cyan-100"
+                                                             onclick="openLogModal(this)"
+                                                             data-app-name="{{ $app->user->name }}"
+                                                             data-app-email="{{ $app->user->email }}"
+                                                             data-current-status="{{ $app->status }}"
+                                                             data-logs='@json($logPayload)'>
+                                                Riwayat
+                                            </x-dropdown-item>
+                                        </x-dropdown>
                                     </div>
                                 </td>
                             </tr>

@@ -63,5 +63,13 @@
                 modal.classList.add('hidden');
             }
         });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (!modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                }
+            }
+        });
     })();
 </script>

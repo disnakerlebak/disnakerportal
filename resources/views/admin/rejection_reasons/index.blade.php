@@ -78,11 +78,7 @@
     </div>
 
     {{-- ===== Modal Tambah (x-modal) ===== --}}
-    <x-modal name="rr-add" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
-        <div class="modal-panel-header px-6 py-4 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-100">Tambah Alasan Penolakan</h3>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-add'}))" class="modal-close">✕</button>
-        </div>
+    <x-modal name="rr-add" :show="false" maxWidth="md" animation="slide-up" title="Tambah Alasan Penolakan">
         <form method="POST" action="{{ route('admin.rejection-reasons.store') }}" class="px-6 py-5 space-y-4">
             @csrf
             <div>
@@ -94,18 +90,14 @@
                 <textarea name="description" rows="3" class="w-full rounded-lg bg-gray-800 border border-gray-700 text-gray-100 px-3 py-2 focus:ring-2 focus:ring-indigo-500"></textarea>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-add'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" data-close-modal="rr-add" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
                 <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition text-sm font-semibold text-white">Simpan</button>
             </div>
         </form>
     </x-modal>
 
     {{-- ===== Modal Edit (x-modal) ===== --}}
-    <x-modal name="rr-edit" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
-        <div class="modal-panel-header px-6 py-4 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-100">Edit Alasan Penolakan</h3>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-edit'}))" class="modal-close">✕</button>
-        </div>
+    <x-modal name="rr-edit" :show="false" maxWidth="md" animation="slide-up" title="Edit Alasan Penolakan">
         <form method="POST" :action="edit.action" class="px-6 py-5 space-y-4">
             @csrf
             @method('PUT')
@@ -118,22 +110,18 @@
                 <textarea name="description" rows="3" x-model="edit.description" class="w-full rounded-lg bg-gray-800 border border-gray-700 text-gray-100 px-3 py-2 focus:ring-2 focus:ring-indigo-500"></textarea>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-edit'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" data-close-modal="rr-edit" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
                 <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition text-sm font-semibold text-white">Perbarui</button>
             </div>
         </form>
     </x-modal>
 
     {{-- ===== Konfirmasi Hapus (x-modal) ===== --}}
-    <x-modal name="rr-delete" :show="false" maxWidth="sm" animation="zoom" :hideHeader="true">
-        <div class="modal-panel-header px-6 py-4 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-100">Hapus Alasan?</h3>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-delete'}))" class="modal-close">✕</button>
-        </div>
+    <x-modal name="rr-delete" :show="false" maxWidth="sm" animation="zoom" title="Hapus Alasan?">
         <div class="px-6 py-5">
             <p class="text-sm text-gray-300">Data ini akan dihapus secara permanen.</p>
             <div class="flex justify-end gap-2 pt-4">
-                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-delete'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" data-close-modal="rr-delete" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
                 <form :action="'{{ url('admin/rejection-reasons') }}/' + selectedId" method="POST">
                     @csrf
                     @method('DELETE')
