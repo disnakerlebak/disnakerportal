@@ -47,7 +47,7 @@ class ManageJobseekersTable extends Component
         $query = User::query()
             ->where('role', 'pencaker')
             ->with([
-                'jobseekerProfile',
+                'jobseekerProfile' => fn($q) => $q->withCount('educations'),
                 'latestCardApplication',
             ]);
 
@@ -66,14 +66,21 @@ class ManageJobseekersTable extends Component
         // Filter status profil
         if ($this->profileStatus === 'complete') {
             $query->whereHas('jobseekerProfile', function ($q) {
-                // patokan sederhananya: punya NIK berarti lengkap
-                $q->whereNotNull('nik')->where('nik', '!=', '');
+                $q->whereNotNull('nama_lengkap')->where('nama_lengkap', '!=', '')
+                  ->whereNotNull('nik')->where('nik', '!=', '')
+                  ->whereNotNull('tanggal_lahir')
+                  ->whereHas('educations');
             });
         } elseif ($this->profileStatus === 'incomplete') {
             $query->where(function ($q) {
                 $q->doesntHave('jobseekerProfile')
                   ->orWhereHas('jobseekerProfile', function ($qq) {
-                      $qq->whereNull('nik')->orWhere('nik', '=', '');
+                      $qq->where(function ($qqq) {
+                          $qqq->whereNull('nama_lengkap')->orWhere('nama_lengkap', '=', '');
+                      })->orWhere(function ($qqq) {
+                          $qqq->whereNull('nik')->orWhere('nik', '=', '');
+                      })->orWhereNull('tanggal_lahir')
+                        ->orWhereDoesntHave('educations');
                   });
             });
         }

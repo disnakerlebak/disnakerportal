@@ -73,11 +73,13 @@
                         $isActive = ($u->status ?? 'active') === 'active';
                         $userStatusLabel = $isActive ? 'Aktif' : 'Tidak Aktif';
                         $userStatusClass = $isActive
-                            ? 'bg-emerald-600/90 text-emerald-50'
-                            : 'bg-slate-600/90 text-slate-100';
+                            ? 'bg-green-700/30 text-green-200 border border-green-600/40'
+                            : 'bg-red-700/30 text-red-200 border border-red-600/40';
 
                         // Status profil
-                        $profilLengkap = $p && $p->nik;
+                        $hasBiodata   = $p && $p->nama_lengkap && $p->nik && $p->tanggal_lahir;
+                        $hasEducation = ($p->educations_count ?? 0) > 0;
+                        $profilLengkap = $hasBiodata && $hasEducation;
                         $profilLabel   = $profilLengkap ? 'Lengkap' : 'Belum Lengkap';
                         $profilClass   = $profilLengkap
                             ? 'bg-emerald-600/90 text-emerald-50'
@@ -306,14 +308,10 @@
 
     {{-- Modal Konfirmasi Nonaktifkan / Aktifkan Akun --}}
     <x-modal id="confirm-deactivate" size="md" title="Nonaktifkan Akun Pencaker">
-        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-            <div>
-                <h3 id="deactivateModalTitle" class="text-lg font-semibold">Nonaktifkan Akun Pencaker</h3>
-                <p class="text-sm text-gray-400 mt-1" id="deactivateModalSubtitle"></p>
-            </div>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-deactivate'}))" class="text-slate-300 hover:text-white">✕</button>
-        </div>
         <div class="px-6 py-5 space-y-4">
+            <div>
+                <p class="text-sm text-gray-400" id="deactivateModalSubtitle"></p>
+            </div>
             <p id="deactivateModalBody" class="text-sm text-gray-300 leading-relaxed">
                 Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.
             </p>
@@ -326,14 +324,10 @@
 
     {{-- Modal Konfirmasi Reset Profil --}}
     <x-modal id="confirm-reset" size="md" title="Reset Profil Pencaker">
-        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-            <div>
-                <h3 class="text-lg font-semibold">Reset Profil Pencaker</h3>
-                <p class="text-sm text-gray-400 mt-1" id="resetModalSubtitle"></p>
-            </div>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-reset'}))" class="text-slate-300 hover:text-white">✕</button>
-        </div>
         <div class="px-6 py-5 space-y-4">
+            <div>
+                <p class="text-sm text-gray-400" id="resetModalSubtitle"></p>
+            </div>
             <p class="text-sm text-gray-300 leading-relaxed">
                 Reset seluruh profil & riwayat (pendidikan, pelatihan, pengalaman) pencaker ini? AK1 tetap dipertahankan.
             </p>
@@ -346,14 +340,10 @@
 
     {{-- Modal Konfirmasi Hapus Pencaker --}}
     <x-modal id="confirm-delete" size="md" title="Hapus Pencaker">
-        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-            <div>
-                <h3 class="text-lg font-semibold">Hapus Pencaker</h3>
-                <p class="text-sm text-gray-400 mt-1" id="deleteModalSubtitle"></p>
-            </div>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-delete'}))" class="text-slate-300 hover:text-white">✕</button>
-        </div>
         <div class="px-6 py-5 space-y-4">
+            <div>
+                <p class="text-sm text-gray-400" id="deleteModalSubtitle"></p>
+            </div>
             <p class="text-sm text-gray-300 leading-relaxed">
                 Hapus pencaker ini <span class="font-semibold text-rose-300">BESERTA seluruh data dan riwayat AK1</span>? Tindakan ini tidak dapat dibatalkan.
             </p>
