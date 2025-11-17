@@ -82,12 +82,21 @@ class ManageJobseekersTable extends Component
         if ($this->ak1Status) {
             $status = $this->ak1Status;
 
-            $query->where(function ($q) use ($status) {
+            // Map status filter ke nilai yang disimpan di DB
+            $statusMap = [
+                'pending'  => 'Menunggu Verifikasi',
+                'approved' => 'Disetujui',
+                'rejected' => 'Ditolak',
+                'expired'  => 'Kadaluarsa',
+            ];
+            $dbStatus = $statusMap[$status] ?? $status;
+
+            $query->where(function ($q) use ($status, $dbStatus) {
                 if ($status === 'never') {
                     $q->doesntHave('cardApplications');
                 } else {
-                    $q->whereHas('cardApplications', function ($qq) use ($status) {
-                        $qq->where('status', $status);
+                    $q->whereHas('cardApplications', function ($qq) use ($dbStatus) {
+                        $qq->where('status', $dbStatus);
                     });
                 }
             });
