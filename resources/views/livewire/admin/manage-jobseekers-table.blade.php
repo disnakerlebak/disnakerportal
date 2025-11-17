@@ -1,7 +1,14 @@
 <div class="max-w-6xl mx-auto h-full min-h-0 flex flex-col gap-4">
+    @php
+        // Nilai default untuk placeholder; akan di-overwrite oleh Alpine (entangle)
+        $selectedCount = count($selected ?? []);
+        $toggleToActivate = ($allSelectedInactive ?? false) && $selectedCount > 0;
+        $toggleLabel = $toggleToActivate ? 'Aktif' : 'Non Aktif';
+    @endphp
+
     {{-- Filter bar --}}
     <form wire:submit.prevent="applyFilters"
-          class="flex flex-wrap items-center gap-3"
+          class="relative z-30 flex flex-wrap items-center gap-3"
           @keydown.enter.prevent="$wire.applyFilters()">
 
         <input type="text"
@@ -36,25 +43,99 @@
                 class="px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-sm">
             Reset
         </button>
+
+        {{-- Tombol aksi massal (nonaktif/aktif & hapus + modal konfirmasi) --}}
+        <div class="ml-auto relative" x-data="{
+            open:false,
+            selected: @entangle('selected'),
+            allInactive: @entangle('allSelectedInactive'),
+            get count(){ return (this.selected || []).length; },
+            get toggleToActivate(){ return this.count > 0 && this.allInactive; },
+            toggleLabel(){ return 'Non Aktif / Aktif'; },
+            openConfirm(action){
+                if(this.count === 0){
+                    return window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
+                        detail:{
+                            title:'Tidak ada user dipilih',
+                            message:'Pilih minimal satu user.',
+                            action:null,
+                        }
+                    }));
+                }
+                const verb = this.toggleToActivate ? 'mengaktifkan' : 'menonaktifkan';
+                let title = '';
+                let message = '';
+                if(action === 'toggle'){
+                    const actionToSend = this.toggleToActivate ? 'activate' : 'deactivate';
+                    title = this.toggleToActivate ? 'Aktifkan Akun' : 'Nonaktifkan Akun';
+                    message = `Apakah Anda yakin ${verb} ${this.count} user ini?`;
+                    window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
+                        detail: { title, message, action: actionToSend }
+                    }));
+                } else if(action === 'delete'){
+                    title = 'Hapus Akun';
+                    message = `Apakah Anda yakin menghapus ${this.count} user ini?`;
+                    window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
+                        detail: { title, message, action: 'delete' }
+                    }));
+                }
+                this.open = false;
+            }
+        }" @click.stop>
+            <button type="button"
+                    @click="open = !open"
+                    class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 text-sm font-semibold text-slate-100 hover:bg-slate-700">
+                Actions
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div x-show="open"
+                 @click.outside="open=false"
+                 x-transition
+                 class="absolute right-0 mt-2 w-44 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-amber-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('toggle')"
+                        :disabled="count === 0">
+                    <span class="inline-block w-2 h-2 rounded-full" :class="toggleToActivate ? 'bg-emerald-400' : 'bg-amber-400'"></span>
+                    <span x-text="toggleLabel()"></span>
+                </button>
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-rose-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('delete')"
+                        :disabled="count === 0">
+                    <svg class="w-4 h-4 text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a1 1 0 00-1-1h-4a1 1 0 00-1 1v2m-3 0h12" />
+                    </svg>
+                    Hapus
+                </button>
+            </div>
+        </div>
     </form>
 
     {{-- Tabel utama --}}
-    <div class="relative flex-1 min-h-0 flex flex-col rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-visible">
+    <div class="relative z-10 flex-1 min-h-0 flex flex-col rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-hidden">
         {{-- overlay loading --}}
         <div wire:loading.flex class="absolute inset-0 z-10 items-center justify-center bg-slate-950/30 backdrop-blur-sm">
             <div class="flex items-center gap-3 px-4 py-2 rounded-lg bg-slate-900/70 border border-slate-700 shadow text-indigo-200">
                 <svg class="animate-spin h-5 w-5 text-indigo-400" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                 </svg>
                 <span class="text-sm">Memuat data…</span>
             </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto overflow-y-auto relative z-0">
             <table class="min-w-full text-sm text-slate-200">
-                <thead class="bg-slate-800 text-slate-200">
+                <thead class="bg-slate-800 text-slate-200 sticky top-0 z-30 shadow-lg">
                 <tr>
+                    <th class="p-3 w-10">
+                        <input type="checkbox"
+                               wire:model="selectAll"
+                               class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500">
+                    </th>
                     <th class="p-3 text-left">Nama Lengkap</th>
                     <th class="p-3 text-left">NIK</th>
                     <th class="p-3 text-left">Status Pengguna</th>
@@ -69,9 +150,9 @@
                         $p   = $u->jobseekerProfile;
                         $app = $u->latestCardApplication;
 
-                        // Status pengguna (aktif/nonaktif)
+                        // Status pengguna (badge seperti halaman admin)
                         $isActive = ($u->status ?? 'active') === 'active';
-                        $userStatusLabel = $isActive ? 'Aktif' : 'Tidak Aktif';
+                        $userStatusLabel = $isActive ? 'Active' : 'Inactive';
                         $userStatusClass = $isActive
                             ? 'bg-green-700/30 text-green-200 border border-green-600/40'
                             : 'bg-red-700/30 text-red-200 border border-red-600/40';
@@ -85,35 +166,40 @@
                             ? 'bg-emerald-600/90 text-emerald-50'
                             : 'bg-amber-500/90 text-slate-950';
 
-                        // Status AK1
-                        if (!$app) {
-                            $ak1Label = 'Belum Pernah Mengajukan';
-                            $ak1Class = 'bg-slate-700/80 text-slate-100';
-                        } else {
+                        // Status AK1 (dot + label sederhana)
+                        $ak1Label = 'Belum Pernah Mengajukan';
+                        $ak1Dot = 'bg-slate-500';
+                        if ($app) {
                             switch ($app->status) {
-                                case 'pending':
+                                case 'Menunggu Verifikasi':
                                     $ak1Label = 'Menunggu Verifikasi';
-                                    $ak1Class = 'bg-indigo-600/90 text-indigo-50';
+                                    $ak1Dot = 'bg-amber-400';
                                     break;
-                                case 'approved':
+                                case 'Disetujui':
                                     $ak1Label = 'Disetujui';
-                                    $ak1Class = 'bg-emerald-600/90 text-emerald-50';
+                                    $ak1Dot = 'bg-emerald-500';
                                     break;
-                                case 'rejected':
+                                case 'Ditolak':
                                     $ak1Label = 'Ditolak';
-                                    $ak1Class = 'bg-rose-600/90 text-rose-50';
+                                    $ak1Dot = 'bg-rose-500';
                                     break;
-                                case 'expired':
+                                case 'Kadaluarsa':
                                     $ak1Label = 'Kadaluarsa';
-                                    $ak1Class = 'bg-amber-600/90 text-amber-50';
+                                    $ak1Dot = 'bg-slate-500';
                                     break;
                                 default:
                                     $ak1Label = strtoupper($app->status);
-                                    $ak1Class = 'bg-slate-700/80 text-slate-100';
+                                    $ak1Dot = 'bg-slate-500';
                             }
                         }
                     @endphp
                     <tr class="hover:bg-slate-800/50 transition">
+                        <td class="p-3 w-10">
+                            <input type="checkbox"
+                                   value="{{ $u->id }}"
+                                   wire:model="selected"
+                                   class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500">
+                        </td>
                         <td class="p-3">
                             <div class="font-medium">{{ $p->nama_lengkap ?? $u->name ?? '-' }}</div>
                             <div class="text-[11px] text-slate-400">{{ $u->email }}</div>
@@ -130,9 +216,10 @@
                             </span>
                         </td>
                         <td class="p-3">
-                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $ak1Class }}">
-                                {{ $ak1Label }}
-                            </span>
+                            <div class="inline-flex items-center gap-2 text-sm font-semibold">
+                                <span class="inline-block w-3 h-3 rounded-full {{ $ak1Dot }}"></span>
+                                <span>{{ $ak1Label }}</span>
+                            </div>
                             @if($app?->nomor_ak1)
                                 <div class="text-[11px] text-slate-400 mt-0.5">
                                     No: {{ $app->nomor_ak1 }}
@@ -224,6 +311,56 @@
         </div>
     </div>
 
+    {{-- Modal konfirmasi aksi massal (diletakkan di luar dropdown agar overlay tidak terblokir) --}}
+    <div x-data="{
+        confirmOpen:false,
+        confirmTitle:'',
+        confirmMessage:'',
+        confirmAction:null,
+        proceed(){
+            if(this.confirmAction === 'delete'){
+                $wire.bulkDelete();
+            } else if(this.confirmAction === 'activate'){
+                $wire.bulkActivate();
+            } else if(this.confirmAction === 'deactivate'){
+                $wire.bulkDeactivate();
+            }
+            this.confirmOpen = false;
+        }
+    }"
+    @open-bulk-confirm.window="
+        confirmOpen = true;
+        confirmTitle = $event.detail.title;
+        confirmMessage = $event.detail.message;
+        confirmAction = $event.detail.action;
+    ">
+        <div x-cloak
+             x-show="confirmOpen"
+             x-transition.opacity
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div class="bg-slate-900 rounded-xl border border-slate-700 shadow-xl w-full max-w-md p-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-100" x-text="confirmTitle"></h3>
+                        <p class="text-sm text-slate-300 mt-1" x-text="confirmMessage"></p>
+                    </div>
+                    <button class="text-slate-400 hover:text-white" @click="confirmOpen=false">✕</button>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button"
+                            class="px-4 py-2 rounded-lg bg-slate-700 text-slate-200 hover:bg-slate-600"
+                            @click="confirmOpen=false">
+                        Batal
+                    </button>
+                    <button type="button"
+                            class="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700"
+                            @click="proceed()">
+                        Ya, lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     {{-- Modal detail pencaker (re-use pola yang lama) --}}
     <div x-data="{ open:false, html:'', loading:false, ak1:'' }"
          @pencaker-detail.window="

@@ -14,6 +14,11 @@ class ManageJobseekersTable extends Component
     public string $q = '';
     public ?string $profileStatus = null; // complete / incomplete / null
     public ?string $ak1Status = null;     // never / pending / approved / rejected / expired / null
+    public array $selected = [];          // id user yang dipilih untuk aksi massal
+    public bool $selectAll = false;       // toggle pilih semua di halaman aktif
+    public bool $allSelectedInactive = false; // true jika semua pilihan berstatus inactive
+
+    protected array $currentPageIds = []; // cache id user di halaman aktif (untuk select all)
 
     protected $paginationTheme = 'tailwind';
 
@@ -28,6 +33,8 @@ class ManageJobseekersTable extends Component
     public function updatingQ()            { $this->resetPage(); }
     public function updatingProfileStatus(){ $this->resetPage(); }
     public function updatingAk1Status()    { $this->resetPage(); }
+    public function updatingSelected()     { $this->selectAll = false; } // batal pilih semua jika ada perubahan manual
+    public function updatedSelected()      { $this->refreshSelectedFlags(); }
 
     public function applyFilters()
     {
@@ -39,6 +46,14 @@ class ManageJobseekersTable extends Component
     {
         $this->reset(['q', 'profileStatus', 'ak1Status']);
         $this->resetPage();
+    }
+
+    // Toggle pilih semua pada halaman berjalan
+    public function updatedSelectAll($value): void
+    {
+        $ids = $this->currentPageIds ?: [];
+        $this->selected = $value ? $ids : [];
+        $this->refreshSelectedFlags();
     }
 
     // === Query builder utama ===
@@ -114,7 +129,11 @@ class ManageJobseekersTable extends Component
 
     public function getRowsProperty()
     {
-        return $this->rowsQuery->paginate(10);
+        $rows = $this->rowsQuery->paginate(10);
+        $this->currentPageIds = $rows->pluck('id')->all(); // simpan id halaman aktif untuk select all
+        $this->refreshSelectedFlags();
+
+        return $rows;
     }
 
     // === ACTION: Nonaktifkan user ===
@@ -196,6 +215,107 @@ class ManageJobseekersTable extends Component
 
         session()->flash('success', 'Pencaker beserta seluruh datanya berhasil dihapus.');
         $this->resetPage();
+    }
+
+    // === ACTION: Nonaktifkan banyak akun sekaligus ===
+    public function bulkDeactivate(): void
+    {
+        $ids = array_map('intval', $this->selected);
+        if (empty($ids)) {
+            session()->flash('error', 'Pilih minimal satu pencaker.');
+            return;
+        }
+
+        User::where('role', 'pencaker')
+            ->whereIn('id', $ids)
+            ->update(['status' => 'inactive']);
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->allSelectedInactive = false;
+        session()->flash('success', 'Akun pencaker terpilih berhasil dinonaktifkan.');
+        $this->resetPage();
+    }
+
+    // === ACTION: Aktifkan banyak akun sekaligus ===
+    public function bulkActivate(): void
+    {
+        $ids = array_map('intval', $this->selected);
+        if (empty($ids)) {
+            session()->flash('error', 'Pilih minimal satu pencaker.');
+            return;
+        }
+
+        User::where('role', 'pencaker')
+            ->whereIn('id', $ids)
+            ->update(['status' => 'active']);
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->allSelectedInactive = false;
+        session()->flash('success', 'Akun pencaker terpilih berhasil diaktifkan.');
+        $this->resetPage();
+    }
+
+    // === ACTION: Hapus banyak akun sekaligus (beserta relasi) ===
+    public function bulkDelete(): void
+    {
+        $ids = array_map('intval', $this->selected);
+        if (empty($ids)) {
+            session()->flash('error', 'Pilih minimal satu pencaker.');
+            return;
+        }
+
+        $users = User::where('role', 'pencaker')->whereIn('id', $ids)->get();
+        foreach ($users as $user) {
+            if ($user->jobseekerProfile) {
+                $user->jobseekerProfile()->delete();
+            }
+            if (method_exists($user, 'jobEducations')) {
+                $user->jobEducations()->delete();
+            }
+            if (method_exists($user, 'jobTrainings')) {
+                $user->jobTrainings()->delete();
+            }
+            if (method_exists($user, 'jobExperiences')) {
+                $user->jobExperiences()->delete();
+            }
+            if (method_exists($user, 'jobPreferences')) {
+                $user->jobPreferences()->delete();
+            }
+            if (method_exists($user, 'cardApplications')) {
+                $user->cardApplications()->delete();
+            }
+
+            $user->delete();
+        }
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->allSelectedInactive = false;
+        session()->flash('success', 'Pencaker terpilih beserta datanya berhasil dihapus.');
+        $this->resetPage();
+    }
+
+    // Hitung ulang status pilihan (apakah semua inactive)
+    protected function refreshSelectedFlags(): void
+    {
+        $ids = array_map('intval', $this->selected);
+        if (empty($ids)) {
+            $this->allSelectedInactive = false;
+            return;
+        }
+
+        // Normalisasi status ke lower-case untuk perbandingan yang konsisten
+        $statuses = User::where('role', 'pencaker')
+            ->whereIn('id', $ids)
+            ->pluck('status')
+            ->map(fn ($s) => strtolower($s ?? 'active'))
+            ->all();
+
+        // True jika semua pilihan berstatus inactive (tidak ada yang active)
+        $this->allSelectedInactive = !empty($statuses)
+            && collect($statuses)->every(fn ($s) => $s === 'inactive');
     }
 
     public function render()
