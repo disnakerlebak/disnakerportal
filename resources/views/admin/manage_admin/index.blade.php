@@ -7,7 +7,8 @@
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-semibold text-gray-100">Kelola Admin Disnaker Portal</h1>
       <button
-        @click="$dispatch('open-modal-create-admin')"
+        data-modal-target="create-admin"
+        data-modal-toggle="create-admin"
         class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
       >+ Tambah Admin</button>
     </div>
@@ -83,33 +84,3 @@
     />
   </div>
 @endsection
-
-@once
-    @push('scripts')
-        <script>
-            // Dropdown util (dipakai juga di halaman lain) — posisi fixed, teleport ke body
-            window.dropdownMenu = window.dropdownMenu || function () {
-                return {
-                    open: false,
-                    dropUp: false,
-                    style: '',
-                    width: 224,
-                    init() { window.addEventListener('close-dropdowns', () => { this.open = false; }); },
-                    toggle(e) {
-                        this.open = !this.open;
-                        if (this.open) {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const spaceBelow = window.innerHeight - rect.bottom;
-                            this.dropUp = spaceBelow < 240;
-                            let left = rect.right - this.width;
-                            left = Math.max(8, Math.min(left, window.innerWidth - this.width - 8));
-                            let top = this.dropUp ? rect.top - 8 : rect.bottom + 8;
-                            this.style = `left:${left}px;top:${top}px`;
-                        }
-                    },
-                    close() { this.open = false; }
-                }
-            }
-        </script>
-    @endpush
-@endonce

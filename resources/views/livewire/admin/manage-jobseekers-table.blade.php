@@ -39,7 +39,7 @@
     </form>
 
     {{-- Tabel utama --}}
-    <div class="relative flex-1 min-h-0 flex flex-col rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-hidden">
+    <div class="relative flex-1 min-h-0 flex flex-col rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-visible">
         {{-- overlay loading --}}
         <div wire:loading.flex class="absolute inset-0 z-10 items-center justify-center bg-slate-950/30 backdrop-blur-sm">
             <div class="flex items-center gap-3 px-4 py-2 rounded-lg bg-slate-900/70 border border-slate-700 shadow text-indigo-200">
@@ -139,127 +139,70 @@
                         </td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center">
-                                <div class="relative" x-data="dropdownMenu()" x-init="init()">
-                                    <button @click="toggle($event)"
-                                            type="button"
-                                            class="rounded-md border border-slate-700 bg-slate-800 p-2 text-white text-sm transition duration-200 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="5" r="1"/>
-                                            <circle cx="12" cy="12" r="1"/>
-                                            <circle cx="12" cy="19" r="1"/>
-                                        </svg>
-                                    </button>
+                                <x-dropdown :id="'jobseeker-actions-'.$u->id">
+                                    <x-dropdown-item data-trigger="dropdown-modal"
+                                                     class="text-blue-300 hover:text-blue-100"
+                                                     onclick="
+                                                        window.dispatchEvent(new CustomEvent('pencaker-detail', {
+                                                          detail: {
+                                                            url: '{{ route('admin.pencaker.detail', $u->id) }}',
+                                                            ak1: '{{ $app?->nomor_ak1 ?? '' }}'
+                                                          }
+                                                        }));
+                                                     ">
+                                        Detail
+                                    </x-dropdown-item>
 
-                                    <template x-teleport="body">
-                                        <div x-show="open" @click.away="close()" @keydown.escape.window="close()"
-                                             x-transition:enter="transition ease-out duration-150"
-                                             x-transition:enter-start="opacity-0 transform scale-95"
-                                             x-transition:enter-end="opacity-100 transform scale-100"
-                                             x-transition:leave="transition ease-in duration-100"
-                                             x-transition:leave-start="opacity-100 transform scale-100"
-                                             x-transition:leave-end="opacity-0 transform scale-95"
-                                             :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
-                                             class="fixed z-[70] w-64 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
-                                             :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
-                                            {{-- Detail --}}
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-blue-700/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                      window.dispatchEvent(new CustomEvent('pencaker-detail', {
-                                                        detail: {
-                                                          url: '{{ route('admin.pencaker.detail', $u->id) }}',
-                                                          ak1: '{{ $app?->nomor_ak1 ?? '' }}'
-                                                        }
-                                                      }));
-                                                    ">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                </svg>
-                                                Detail
-                                            </button>
+                                    <x-dropdown-item data-trigger="dropdown-modal"
+                                                     class="text-purple-300 hover:text-purple-100"
+                                                     onclick="
+                                                        window.dispatchEvent(
+                                                            new CustomEvent('open-history-modal', {
+                                                                detail: { url: '{{ route('admin.manage.history', $u->id) }}' }
+                                                            })
+                                                        );
+                                                     ">
+                                        Riwayat
+                                    </x-dropdown-item>
 
-                                            {{-- Riwayat --}}
-                                            <button type="button"
-                                                class="w-full text-left px-4 py-2 text-sm text-purple-300 hover:bg-purple-600/20 flex items-center gap-2 transition"
-                                                @click="
-                                                    console.log('CLICKED riwayat');
-                                                    console.log('URL:', '{{ route('admin.manage.history', $u->id) }}');
-                                                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                    window.dispatchEvent(
-                                                        new CustomEvent('open-history-modal', {
-                                                            detail: {
-                                                                url: '{{ route('admin.manage.history', $u->id) }}'
-                                                            }
-                                                        })
-                                                    );
-                                                ">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                Riwayat
-                                            </button>
+                                    @if($isActive)
+                                        <x-dropdown-item data-trigger="dropdown-modal"
+                                                         class="text-amber-300 hover:text-amber-100"
+                                                         onclick="openDeactivateModal(this)"
+                                                         data-user-id="{{ $u->id }}"
+                                                         data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                                         data-user-email="{{ $u->email }}">
+                                            Nonaktifkan Akun
+                                        </x-dropdown-item>
+                                    @else
+                                        <x-dropdown-item data-trigger="dropdown-modal"
+                                                         class="text-emerald-300 hover:text-emerald-100"
+                                                         onclick="openActivateModal(this)"
+                                                         data-user-id="{{ $u->id }}"
+                                                         data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                                         data-user-email="{{ $u->email }}">
+                                            Aktifkan Akun
+                                        </x-dropdown-item>
+                                    @endif
 
+                                    <x-dropdown-item data-trigger="dropdown-modal"
+                                                     class="text-sky-300 hover:text-sky-100"
+                                                     onclick="openResetModal(this)"
+                                                     data-user-id="{{ $u->id }}"
+                                                     data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                                     data-user-email="{{ $u->email }}">
+                                        Reset Profil
+                                    </x-dropdown-item>
 
-
-                                            {{-- Nonaktifkan / Aktifkan --}}
-                                            @if($isActive)
-                                                <button type="button"
-                                                        class="w-full text-left px-4 py-2 text-sm text-amber-300 hover:bg-amber-600/20 flex items-center gap-2 transition"
-                                                        onclick="openDeactivateModal(this)"
-                                                        data-user-id="{{ $u->id }}"
-                                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                                        data-user-email="{{ $u->email }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6" />
-                                                    </svg>
-                                                    Nonaktifkan Akun
-                                                </button>
-                                            @else
-                                                <button type="button"
-                                                        class="w-full text-left px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-600/20 flex items-center gap-2 transition"
-                                                        onclick="openActivateModal(this)"
-                                                        data-user-id="{{ $u->id }}"
-                                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                                        data-user-email="{{ $u->email }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6" />
-                                                    </svg>
-                                                    Aktifkan Akun
-                                                </button>
-                                            @endif
-
-                                            {{-- Reset profil --}}
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-sky-300 hover:bg-sky-600/20 flex items-center gap-2 transition"
-                                                    onclick="openResetModal(this)"
-                                                    data-user-id="{{ $u->id }}"
-                                                    data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                                    data-user-email="{{ $u->email }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
-                                                </svg>
-                                                Reset Profil
-                                            </button>
-
-                                            {{-- Hapus akun --}}
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-rose-300 hover:bg-rose-700/20 flex items-center gap-2 transition"
-                                                    onclick="openDeleteModal(this)"
-                                                    data-user-id="{{ $u->id }}"
-                                                    data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                                    data-user-email="{{ $u->email }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                          d="M6 7h12M9 7V4h6v3m-7 4v7m4-7v7m4-7v7M5 7l1 13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-13"/>
-                                                </svg>
-                                                Hapus Pencaker
-                                            </button>
-                                        </div>
-                                    </template>
-                                </div>
+                                    <x-dropdown-item data-trigger="dropdown-modal"
+                                                     class="text-rose-300 hover:text-rose-100"
+                                                     onclick="openDeleteModal(this)"
+                                                     data-user-id="{{ $u->id }}"
+                                                     data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
+                                                     data-user-email="{{ $u->email }}">
+                                        Hapus Pencaker
+                                    </x-dropdown-item>
+                                </x-dropdown>
                             </div>
                         </td>
                     </tr>
@@ -362,7 +305,7 @@
     </div>
 
     {{-- Modal Konfirmasi Nonaktifkan / Aktifkan Akun --}}
-    <x-modal name="confirm-deactivate" :show="false" maxWidth="md" animation="slide-up">
+    <x-modal id="confirm-deactivate" size="md" title="Nonaktifkan Akun Pencaker">
         <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
             <div>
                 <h3 id="deactivateModalTitle" class="text-lg font-semibold">Nonaktifkan Akun Pencaker</h3>
@@ -382,7 +325,7 @@
     </x-modal>
 
     {{-- Modal Konfirmasi Reset Profil --}}
-    <x-modal name="confirm-reset" :show="false" maxWidth="md" animation="slide-up">
+    <x-modal id="confirm-reset" size="md" title="Reset Profil Pencaker">
         <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
             <div>
                 <h3 class="text-lg font-semibold">Reset Profil Pencaker</h3>
@@ -402,7 +345,7 @@
     </x-modal>
 
     {{-- Modal Konfirmasi Hapus Pencaker --}}
-    <x-modal name="confirm-delete" :show="false" maxWidth="md" animation="slide-up">
+    <x-modal id="confirm-delete" size="md" title="Hapus Pencaker">
         <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
             <div>
                 <h3 class="text-lg font-semibold">Hapus Pencaker</h3>

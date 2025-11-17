@@ -1,35 +1,24 @@
-@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white dark:bg-gray-700'])
+@props(['id'])
 
-@php
-$alignmentClasses = match ($align) {
-    'left' => 'ltr:origin-top-left rtl:origin-top-right start-0',
-    'top' => 'origin-top',
-    default => 'ltr:origin-top-right rtl:origin-top-left end-0',
-};
+<div class="relative">
+    <!-- Trigger -->
+    <button
+        type="button"
+        data-dropdown-trigger
+        data-dropdown-id="{{ $id }}"
+        class="flex items-center justify-center w-9 h-9 rounded-lg 
+               bg-slate-800/60 hover:bg-slate-700 text-gray-300 
+               focus:ring-2 focus:ring-indigo-500 transition">
+        <svg class="w-5 h-5" fill="currentColor"><circle cx="10" cy="4" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="10" cy="16" r="2"/></svg>
+    </button>
 
-$width = match ($width) {
-    '48' => 'w-48',
-    default => $width,
-};
-@endphp
-
-<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
-    <div @click="open = ! open">
-        {{ $trigger }}
-    </div>
-
-    <div x-show="open"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-50 mt-2 {{ $width }} rounded-md shadow-lg {{ $alignmentClasses }}"
-            style="display: none;"
-            @click="open = false">
-        <div class="rounded-md ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
-            {{ $content }}
-        </div>
+    <!-- Dropdown menu (teleported via JS positioning) -->
+    <div id="{{ $id }}"
+         class="dropdown-menu hidden fixed z-[9999] w-52 rounded-xl shadow-xl 
+                border border-slate-700 bg-slate-800"
+         style="top:0;left:0;">
+        <ul class="py-2 text-sm text-gray-200">
+            {{ $slot }}
+        </ul>
     </div>
 </div>
