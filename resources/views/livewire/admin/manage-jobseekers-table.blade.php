@@ -48,10 +48,7 @@
         <div class="ml-auto relative" x-data="{
             open:false,
             selected: @entangle('selected'),
-            allInactive: @entangle('allSelectedInactive'),
             get count(){ return (this.selected || []).length; },
-            get toggleToActivate(){ return this.count > 0 && this.allInactive; },
-            toggleLabel(){ return 'Non Aktif / Aktif'; },
             openConfirm(action){
                 if(this.count === 0){
                     return window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
@@ -62,15 +59,21 @@
                         }
                     }));
                 }
-                const verb = this.toggleToActivate ? 'mengaktifkan' : 'menonaktifkan';
                 let title = '';
                 let message = '';
                 if(action === 'toggle'){
-                    const actionToSend = this.toggleToActivate ? 'activate' : 'deactivate';
-                    title = this.toggleToActivate ? 'Aktifkan Akun' : 'Nonaktifkan Akun';
-                    message = `Apakah Anda yakin ${verb} ${this.count} user ini?`;
+                    return;
+                } else if(action === 'activate'){
+                    title = 'Aktifkan Akun';
+                    message = `Apakah Anda yakin mengaktifkan ${this.count} user ini?`;
                     window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
-                        detail: { title, message, action: actionToSend }
+                        detail: { title, message, action: 'activate' }
+                    }));
+                } else if(action === 'deactivate'){
+                    title = 'Nonaktifkan Akun';
+                    message = `Apakah Anda yakin menonaktifkan ${this.count} user ini?`;
+                    window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
+                        detail: { title, message, action: 'deactivate' }
                     }));
                 } else if(action === 'delete'){
                     title = 'Hapus Akun';
@@ -95,11 +98,18 @@
                  x-transition
                  class="absolute right-0 mt-2 w-44 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
                 <button type="button"
-                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-amber-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        @click="openConfirm('toggle')"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('activate')"
                         :disabled="count === 0">
-                    <span class="inline-block w-2 h-2 rounded-full" :class="toggleToActivate ? 'bg-emerald-400' : 'bg-amber-400'"></span>
-                    <span x-text="toggleLabel()"></span>
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>Aktifkan Akun</span>
+                </button>
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-amber-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('deactivate')"
+                        :disabled="count === 0">
+                    <span class="inline-block w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span>Nonaktif Akun</span>
                 </button>
                 <button type="button"
                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-rose-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
