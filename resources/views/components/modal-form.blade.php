@@ -9,19 +9,17 @@
 
 {{-- ================= MODAL OVERLAY ================= --}}
 <div id="{{ $id }}"
-     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+     class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
 
     {{-- ================= MODAL WRAPPER ================= --}}
-    <div class="w-full max-w-xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-700/30
-                flex flex-col overflow-hidden min-h-0"
+    <div class="modal-panel w-full max-w-xl flex flex-col overflow-hidden min-h-0"
          style="max-height:90vh">
 
         {{-- ================= HEADER ================= --}}
-        <div class="p-4 border-b border-gray-600/20 flex justify-between items-center
-                    bg-white dark:bg-gray-800">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ $title }}</h3>
+        <div class="modal-panel-header p-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-100">{{ $title }}</h3>
             <button type="button"
-                    class="text-gray-400 hover:text-gray-200 text-2xl font-bold"
+                    class="modal-close text-2xl font-bold"
                     data-modal-close="{{ $id }}">×</button>
         </div>
 
@@ -41,15 +39,14 @@
             {{ $slot }}
 
             {{-- ================= FOOTER BUTTONS ================= --}}
-            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-600/30">
+            <div class="modal-panel-footer flex justify-end gap-3 mt-6 pt-4">
                 <button type="button"
-                        class="px-4 py-2 rounded-lg border border-gray-400 text-gray-700 dark:text-gray-200
-                               hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                        class="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-100 hover:bg-gray-700 transition"
                         data-modal-close="{{ $id }}">
                     {{ $cancelLabel }}
                 </button>
                 <button type="submit"
-                        class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">
+                        class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900/60">
                     {{ $submitLabel }}
                 </button>
             </div>

@@ -36,3 +36,35 @@ body {
 *:hover::-webkit-scrollbar-thumb {
     background-color: rgba(148, 163, 184, 0.65); /* lebih jelas saat dihover/scroll */
 }
+
+@layer components {
+    .modal-backdrop {
+        @apply bg-black/70 backdrop-blur-sm;
+    }
+
+    .modal-panel {
+        @apply rounded-2xl border border-gray-700 bg-gray-900 text-gray-100 shadow-2xl;
+    }
+
+    .modal-panel-header {
+        @apply bg-gray-800 border-b border-gray-700;
+    }
+
+    .modal-panel-footer {
+        @apply bg-gray-800 border-t border-gray-700;
+    }
+
+    .modal-close {
+        @apply w-9 h-9 inline-flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-700 hover:text-white transition;
+    }
+}
+
+@layer base {
+    .modal-panel :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+        @apply rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-400 px-3 py-2 focus:ring-blue-500 focus:border-blue-500;
+    }
+
+    .modal-panel :is(input[type='checkbox'], input[type='radio']) {
+        @apply rounded border-gray-700 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-2;
+    }
+}

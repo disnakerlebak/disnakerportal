@@ -96,47 +96,6 @@
                                         Riwayat AK1
                                     </x-dropdown-item>
 
-                                    @if(($u->status ?? 'active') === 'active')
-                                        <x-dropdown-item
-                                            class="text-amber-300 hover:text-amber-100"
-                                            onclick="openDeactivateModalApproved(this)"
-                                            modal="confirm-deactivate-approved"
-                                            data-user-id="{{ $u->id }}"
-                                            data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                            data-user-email="{{ $u->email }}">
-                                            Nonaktifkan Akun
-                                        </x-dropdown-item>
-                                    @else
-                                        <x-dropdown-item
-                                            class="text-emerald-300 hover:text-emerald-100"
-                                            onclick="openActivateModalApproved(this)"
-                                            modal="confirm-deactivate-approved"
-                                            data-user-id="{{ $u->id }}"
-                                            data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                            data-user-email="{{ $u->email }}">
-                                            Aktifkan Akun
-                                        </x-dropdown-item>
-                                    @endif
-
-                                    <x-dropdown-item
-                                        class="text-sky-300 hover:text-sky-100"
-                                        onclick="openResetModalApproved(this)"
-                                        modal="confirm-reset-approved"
-                                        data-user-id="{{ $u->id }}"
-                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                        data-user-email="{{ $u->email }}">
-                                        Reset Profil
-                                    </x-dropdown-item>
-
-                                    <x-dropdown-item
-                                        class="text-rose-300 hover:text-rose-100"
-                                        onclick="openDeleteModalApproved(this)"
-                                        modal="confirm-delete-approved"
-                                        data-user-id="{{ $u->id }}"
-                                        data-user-name="{{ $p->nama_lengkap ?? $u->name ?? '-' }}"
-                                        data-user-email="{{ $u->email }}">
-                                        Hapus Pencaker
-                                    </x-dropdown-item>
                                 </x-dropdown>
                             </div>
                         </td>
@@ -159,15 +118,15 @@
 
     <div x-data="{ open:false, html:'', loading:false, ak1:'' }"
          @pencaker-detail.window="open=true; loading=true; html=''; ak1=($event.detail.ak1||''); fetch($event.detail.url, {headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.text()).then(t=>{ html=t; }).catch(()=>{ html='<div class=\'p-6 text-red-300\'>Gagal memuat detail.</div>'; }).finally(()=>{ loading=false; })">
-        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
              @keydown.escape.window="open=false">
-            <div @click.outside="open=false" class="bg-slate-900 w-full max-w-5xl rounded-2xl shadow-lg overflow-hidden border border-slate-800">
-                <div class="flex items-center justify-between px-6 py-3 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-                    <h3 class="text-lg font-semibold text-slate-100">Detail Pencaker <span x-show="ak1" class="ml-2 text-sm font-normal text-slate-300">— AK/1: <span x-text="ak1"></span></span></h3>
-                    <button class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700" @click="open=false">Tutup</button>
+            <div @click.outside="open=false" class="modal-panel w-full max-w-5xl shadow-lg overflow-hidden">
+                <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+                    <h3 class="text-lg font-semibold text-gray-100">Detail Pencaker <span x-show="ak1" class="ml-2 text-sm font-normal text-gray-300">— AK/1: <span x-text="ak1"></span></span></h3>
+                    <button class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700" @click="open=false">Tutup</button>
                 </div>
                 <div class="max-h-[85vh] overflow-y-auto">
-                    <template x-if="loading"><div class="p-6 text-slate-300">Memuat...</div></template>
+                    <template x-if="loading"><div class="p-6 text-gray-300">Memuat...</div></template>
                     <div class="p-6" x-html="html"></div>
                 </div>
             </div>
@@ -175,22 +134,22 @@
     </div>
 
     {{-- Modal Konfirmasi (custom, non-Flowbite) --}}
-    <div id="confirm-modal-approved" class="hidden fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="confirm-modal-approved" class="hidden fixed inset-0 z-[99999] modal-backdrop flex items-center justify-center p-4">
         <div class="w-full max-w-lg">
-            <div class="rounded-xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/70">
+            <div class="modal-panel">
+                <div class="modal-panel-header flex items-center justify-between px-4 py-3">
                     <div>
                         <h3 id="confirmTitle" class="text-lg font-semibold">Konfirmasi</h3>
-                        <p id="confirmSubtitle" class="text-sm text-slate-300 mt-1"></p>
+                        <p id="confirmSubtitle" class="text-sm text-gray-300 mt-1"></p>
                     </div>
-                    <button type="button" class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition" onclick="closeConfirmModalApproved()">
+                    <button type="button" class="modal-close" onclick="closeConfirmModalApproved()">
                         ✕
                     </button>
                 </div>
                 <div class="px-4 py-4 space-y-3">
-                    <p id="confirmBody" class="text-sm text-slate-200 leading-relaxed">Apakah Anda yakin?</p>
+                    <p id="confirmBody" class="text-sm text-gray-200 leading-relaxed">Apakah Anda yakin?</p>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm" onclick="closeConfirmModalApproved()">Batal</button>
+                        <button type="button" class="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 transition text-sm" onclick="closeConfirmModalApproved()">Batal</button>
                         <button type="button" id="confirmActionBtn" class="px-4 py-2 rounded-lg text-white text-sm font-semibold"></button>
                     </div>
                 </div>
@@ -198,16 +157,18 @@
         </div>
     </div>
 
-    <x-modal name="log-ak1-user" :show="false" maxWidth="3xl" animation="zoom">
-        <div class="flex items-start justify-between border-b border-slate-800 px-6 py-4">
-            <div>
-                <h3 class="text-lg font-semibold" id="userAk1LogTitle">Riwayat AK1 Pencaker</h3>
-                <p class="text-sm text-gray-400 mt-1" id="userAk1LogSubtitle"></p>
+    <div id="log-ak1-user-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4" onclick="if(event.target===this) closeUserAk1Log()">
+        <div class="modal-panel w-full max-w-4xl shadow-xl overflow-hidden">
+            <div class="modal-panel-header flex items-start justify-between px-6 py-4 sticky top-0 z-10">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-100" id="userAk1LogTitle">Riwayat AK1 Pencaker</h3>
+                    <p class="text-sm text-gray-400 mt-1" id="userAk1LogSubtitle"></p>
+                </div>
+                <button type="button" onclick="closeUserAk1Log()" class="modal-close">✕</button>
             </div>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'log-ak1-user'}))" class="text-slate-300 hover:text-white">✕</button>
+            <div id="userAk1LogBody" class="px-6 py-5 max-h-[75vh] overflow-y-auto space-y-4"></div>
         </div>
-        <div id="userAk1LogBody" class="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4"></div>
-    </x-modal>
+    </div>
 
     @once
         @push('scripts')
@@ -375,8 +336,14 @@
 
                 const formatStatus = (status) => statusLabels[status] || status || '-';
 
+                window.closeUserAk1Log = function () {
+                    const overlay = document.getElementById('log-ak1-user-overlay');
+                    if (overlay) overlay.classList.add('hidden');
+                };
+
                 window.openUserAk1History = async function (url, name, email) {
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-ak1-user' }));
+                    const overlay = document.getElementById('log-ak1-user-overlay');
+                    if (overlay) overlay.classList.remove('hidden');
                     const title = document.getElementById('userAk1LogTitle');
                     const subtitle = document.getElementById('userAk1LogSubtitle');
                     const body = document.getElementById('userAk1LogBody');
@@ -454,6 +421,12 @@
                         if (body) body.innerHTML = `<p class="text-sm text-red-400">Gagal memuat riwayat. ${error.message}</p>`;
                     }
                 };
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeUserAk1Log();
+                    }
+                });
             </script>
         @endpush
     @endonce

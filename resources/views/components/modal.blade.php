@@ -4,6 +4,7 @@
     'title' => null,
     'size' => 'md',
     'maxWidth' => null,
+    'hideHeader' => false,
 ])
 
 @php
@@ -20,20 +21,22 @@
     $modalSize = $sizes[$sizeKey] ?? $sizes['md'];
 @endphp
 
-<div id="{{ $resolvedId }}" class="hidden fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div id="{{ $resolvedId }}" class="hidden fixed inset-0 z-[99999] modal-backdrop flex items-center justify-center p-4">
     <div class="w-full {{ $modalSize }} max-h-full">
-        <div class="relative rounded-xl border border-slate-800 bg-slate-950/95 text-slate-100 shadow-2xl">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/70">
-                <h3 class="text-lg font-semibold">{{ $title }}</h3>
-                <button type="button" data-close-modal="{{ $resolvedId }}" class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                    ✕
-                </button>
-            </div>
+        <div class="relative modal-panel">
+            @unless($hideHeader)
+                <div class="modal-panel-header flex items-center justify-between px-4 py-3 rounded-t-2xl">
+                    <h3 class="text-lg font-semibold">{{ $title }}</h3>
+                    <button type="button" data-close-modal="{{ $resolvedId }}" class="modal-close">
+                        ✕
+                    </button>
+                </div>
+            @endunless
             <div class="px-4 py-4">
                 {{ $slot }}
             </div>
             @if (isset($footer))
-                <div class="px-4 py-3 border-t border-slate-800 bg-slate-900/70 flex items-center justify-end gap-2">
+                <div class="modal-panel-footer px-4 py-3 flex items-center justify-end gap-2">
                     {{ $footer }}
                 </div>
             @endif

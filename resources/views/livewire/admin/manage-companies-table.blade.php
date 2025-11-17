@@ -258,19 +258,19 @@
                 .catch(() => { html = '<div class=\'p-6 text-red-300\'>Gagal memuat detail perusahaan.</div>'; })
                 .finally(() => { loading = false; });
          ">
-        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
              @keydown.escape.window="open = false">
             <div @click.outside="open = false"
-                 class="bg-slate-900 w-full max-w-5xl rounded-2xl shadow-lg overflow-hidden border border-slate-800">
-                <div class="flex items-center justify-between px-6 py-3 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-                    <h3 class="text-lg font-semibold text-slate-100">
+                 class="modal-panel w-full max-w-5xl shadow-lg overflow-hidden">
+                <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+                    <h3 class="text-lg font-semibold text-gray-100">
                         Detail Perusahaan
                     </h3>
-                    <button class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700" @click="open = false">Tutup</button>
+                    <button class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700" @click="open = false">Tutup</button>
                 </div>
                 <div class="max-h-[80vh] overflow-y-auto">
                     <template x-if="loading">
-                        <div class="p-6 text-slate-300">Memuat...</div>
+                        <div class="p-6 text-gray-300">Memuat...</div>
                     </template>
                     <div class="p-6" x-html="html"></div>
                 </div>
@@ -279,15 +279,15 @@
     </div>
 
     {{-- Modal konfirmasi verifikasi --}}
-    <x-modal name="confirm-company-verify" :show="false" maxWidth="md" animation="slide-up">
-        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+    <x-modal name="confirm-company-verify" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
+        <div class="modal-panel-header flex items-center justify-between px-6 py-4">
             <div>
-                <h3 class="text-lg font-semibold text-slate-100" id="companyVerifyTitle">Konfirmasi</h3>
+                <h3 class="text-lg font-semibold text-gray-100" id="companyVerifyTitle">Konfirmasi</h3>
                 <p class="text-sm text-gray-400 mt-1" id="companyVerifySubtitle"></p>
             </div>
             <button type="button"
                     onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-verify'}))"
-                    class="text-slate-300 hover:text-white">✕</button>
+                    class="modal-close">✕</button>
         </div>
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed" id="companyVerifyBody"></p>
@@ -304,15 +304,15 @@
     </x-modal>
 
     {{-- Modal konfirmasi status akun --}}
-    <x-modal name="confirm-company-user-status" :show="false" maxWidth="md" animation="slide-up">
-        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+    <x-modal name="confirm-company-user-status" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
+        <div class="modal-panel-header flex items-center justify-between px-6 py-4">
             <div>
-                <h3 class="text-lg font-semibold text-slate-100" id="companyUserStatusTitle">Konfirmasi</h3>
+                <h3 class="text-lg font-semibold text-gray-100" id="companyUserStatusTitle">Konfirmasi</h3>
                 <p class="text-sm text-gray-400 mt-1" id="companyUserStatusSubtitle"></p>
             </div>
             <button type="button"
                     onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-user-status'}))"
-                    class="text-slate-300 hover:text-white">✕</button>
+                    class="modal-close">✕</button>
         </div>
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed" id="companyUserStatusBody"></p>
@@ -329,15 +329,15 @@
     </x-modal>
 
     {{-- Modal konfirmasi hapus --}}
-    <x-modal name="confirm-company-delete" :show="false" maxWidth="md" animation="slide-up">
-        <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+    <x-modal name="confirm-company-delete" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
+        <div class="modal-panel-header flex items-center justify-between px-6 py-4">
             <div>
-                <h3 class="text-lg font-semibold text-slate-100">Hapus Akun Perusahaan</h3>
+                <h3 class="text-lg font-semibold text-gray-100">Hapus Akun Perusahaan</h3>
                 <p class="text-sm text-gray-400 mt-1" id="companyDeleteSubtitle"></p>
             </div>
             <button type="button"
                     onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-delete'}))"
-                    class="text-slate-300 hover:text-white">✕</button>
+                    class="modal-close">✕</button>
         </div>
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">

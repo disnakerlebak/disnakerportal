@@ -78,10 +78,10 @@
     </div>
 
     {{-- ===== Modal Tambah (x-modal) ===== --}}
-    <x-modal name="rr-add" :show="false" maxWidth="md" animation="slide-up">
-        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Tambah Alasan Penolakan</h3>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-add'}))" class="text-slate-300 hover:text-white">✕</button>
+    <x-modal name="rr-add" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
+        <div class="modal-panel-header px-6 py-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-100">Tambah Alasan Penolakan</h3>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-add'}))" class="modal-close">✕</button>
         </div>
         <form method="POST" action="{{ route('admin.rejection-reasons.store') }}" class="px-6 py-5 space-y-4">
             @csrf
@@ -101,10 +101,10 @@
     </x-modal>
 
     {{-- ===== Modal Edit (x-modal) ===== --}}
-    <x-modal name="rr-edit" :show="false" maxWidth="md" animation="slide-up">
-        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Edit Alasan Penolakan</h3>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-edit'}))" class="text-slate-300 hover:text-white">✕</button>
+    <x-modal name="rr-edit" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
+        <div class="modal-panel-header px-6 py-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-100">Edit Alasan Penolakan</h3>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-edit'}))" class="modal-close">✕</button>
         </div>
         <form method="POST" :action="edit.action" class="px-6 py-5 space-y-4">
             @csrf
@@ -125,10 +125,10 @@
     </x-modal>
 
     {{-- ===== Konfirmasi Hapus (x-modal) ===== --}}
-    <x-modal name="rr-delete" :show="false" maxWidth="sm" animation="zoom">
-        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Hapus Alasan?</h3>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-delete'}))" class="text-slate-300 hover:text-white">✕</button>
+    <x-modal name="rr-delete" :show="false" maxWidth="sm" animation="zoom" :hideHeader="true">
+        <div class="modal-panel-header px-6 py-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-100">Hapus Alasan?</h3>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'rr-delete'}))" class="modal-close">✕</button>
         </div>
         <div class="px-6 py-5">
             <p class="text-sm text-gray-300">Data ini akan dihapus secara permanen.</p>

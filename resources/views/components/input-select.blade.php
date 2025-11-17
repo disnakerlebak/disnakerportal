@@ -18,8 +18,7 @@
         @if($required) required @endif
         {{ $attributes->merge([
             'class' =>
-                'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 ' .
-                'dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500'
+                'mt-1 block w-full rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500'
         ]) }}
     >
         @foreach ($options as $value => $label)

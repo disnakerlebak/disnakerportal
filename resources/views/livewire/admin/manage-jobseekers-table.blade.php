@@ -347,18 +347,18 @@
         <div x-cloak
              x-show="confirmOpen"
              x-transition.opacity
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-            <div class="bg-slate-900 rounded-xl border border-slate-700 shadow-xl w-full max-w-md p-5">
+             class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="modal-panel w-full max-w-md p-5">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <h3 class="text-lg font-semibold text-slate-100" x-text="confirmTitle"></h3>
-                        <p class="text-sm text-slate-300 mt-1" x-text="confirmMessage"></p>
+                        <h3 class="text-lg font-semibold text-gray-100" x-text="confirmTitle"></h3>
+                        <p class="text-sm text-gray-300 mt-1" x-text="confirmMessage"></p>
                     </div>
-                    <button class="text-slate-400 hover:text-white" @click="confirmOpen=false">✕</button>
+                    <button class="modal-close" @click="confirmOpen=false">✕</button>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">
                     <button type="button"
-                            class="px-4 py-2 rounded-lg bg-slate-700 text-slate-200 hover:bg-slate-600"
+                            class="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-100 hover:bg-gray-700"
                             @click="confirmOpen=false">
                         Batal
                     </button>
@@ -381,20 +381,20 @@
                 .catch(()=>{ html='<div class=\'p-6 text-red-300\'>Gagal memuat detail.</div>'; })
                 .finally(()=>{ loading=false; });
          ">
-        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
              @keydown.escape.window="open=false">
-            <div @click.outside="open=false" class="bg-slate-900 w-full max-w-5xl rounded-2xl shadow-lg overflow-hidden border border-slate-800">
-                <div class="flex items-center justify-between px-6 py-3 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-                    <h3 class="text-lg font-semibold text-slate-100">
+            <div @click.outside="open=false" class="modal-panel w-full max-w-5xl shadow-lg overflow-hidden">
+                <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+                    <h3 class="text-lg font-semibold text-gray-100">
                         Detail Pencaker
-                        <span x-show="ak1" class="ml-2 text-sm font-normal text-slate-300">
+                        <span x-show="ak1" class="ml-2 text-sm font-normal text-gray-300">
                             — AK/1: <span x-text="ak1"></span>
                         </span>
                     </h3>
-                    <button class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700" @click="open=false">Tutup</button>
+                    <button class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700" @click="open=false">Tutup</button>
                 </div>
                 <div class="max-h-[85vh] overflow-y-auto">
-                    <template x-if="loading"><div class="p-6 text-slate-300">Memuat...</div></template>
+                    <template x-if="loading"><div class="p-6 text-gray-300">Memuat...</div></template>
                     <div class="p-6" x-html="html"></div>
                 </div>
             </div>
@@ -422,17 +422,17 @@
         <div 
             x-show="showHistory"
             x-transition.opacity.duration.200ms
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
             @keydown.escape.window="showHistory = false"
         >
             <div @click.outside="showHistory = false"
                  x-transition.scale.origin-top.duration.200ms
-                 class="bg-slate-900 w-full max-w-5xl rounded-2xl shadow-xl border border-slate-700 overflow-hidden max-h-[85vh] flex flex-col"
+                 class="modal-panel w-full max-w-5xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
             >
                 {{-- Header --}}
-                <div class="px-6 py-3 border-b border-slate-700 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-slate-100">Riwayat Pencaker</h3>
-                    <button class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded" @click="showHistory = false">
+                <div class="modal-panel-header px-6 py-3 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-100">Riwayat Pencaker</h3>
+                    <button class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700" @click="showHistory = false">
                         Tutup
                     </button>
                 </div>
@@ -442,7 +442,7 @@
 
                     {{-- Loading --}}
                     <template x-if="loading">
-                        <div class="text-slate-300">Memuat riwayat...</div>
+                        <div class="text-gray-300">Memuat riwayat...</div>
                     </template>
 
                     {{-- Content --}}
@@ -455,7 +455,7 @@
 
     {{-- Modal Konfirmasi Nonaktifkan / Aktifkan Akun --}}
     <x-modal id="confirm-deactivate" size="md" title="Nonaktifkan Akun Pencaker">
-        <div class="px-6 py-5 space-y-4">
+        <div class="px-6 py-5 space-y-4 rounded-2xl">
             <div>
                 <p class="text-sm text-gray-400" id="deactivateModalSubtitle"></p>
             </div>

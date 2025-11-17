@@ -14,8 +14,7 @@
         id="{{ $name }}"
         @if($required) required @endif
         {{ $attributes->merge([
-            'class' => 'mt-1 w-full text-sm text-gray-300 border border-gray-700 rounded-lg p-2
-            bg-gray-900 focus:ring-2 focus:ring-indigo-500'
+            'class' => 'mt-1 w-full text-sm text-gray-100 border border-gray-700 rounded-lg p-2 bg-gray-800 focus:ring-2 focus:ring-blue-500'
         ]) }}
     >
 </div>
