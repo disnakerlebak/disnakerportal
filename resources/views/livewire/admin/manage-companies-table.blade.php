@@ -1,4 +1,8 @@
 <div class="max-w-7xl mx-auto flex flex-col gap-4">
+    <!-- <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-slate-100">Kelola Perusahaan</h1>
+        <p class="text-sm text-slate-300">Daftar perusahaan yang terdaftar di Disnaker Portal.</p>
+    </div> -->
     {{-- Filter bar --}}
     <div class="flex flex-wrap items-center gap-3">
         <input type="text"
@@ -178,7 +182,7 @@
                             <div class="flex items-center justify-center">
                                 <x-dropdown :id="'company-actions-'.$c->id">
                                     <x-dropdown-item class="text-blue-300 hover:text-blue-100"
-                                                     onclick="openCompanyDetail('{{ route('admin.company.show', $c) }}')">
+                                                     onclick="openCompanyDetail('{{ route('admin.company.show', $c) }}', '{{ $c->nama_perusahaan }}', '{{ $user->email }}')">
                                         Detail
                                     </x-dropdown-item>
                                     @if(!$verified)
@@ -191,17 +195,42 @@
                                         <x-dropdown-item class="text-rose-300 hover:text-rose-100"
                                                          data-company-id="{{ $c->id }}"
                                                          data-company-name="{{ $c->nama_perusahaan }}"
+                                                         data-user-id="{{ $user->id }}"
                                                          onclick="openCompanyRejectModal(this)">
                                             Tolak
                                         </x-dropdown-item>
                                     @else
+                                        <x-dropdown-item class="text-amber-300 hover:text-amber-100"
+                                                         data-company-id="{{ $c->id }}"
+                                                         data-company-name="{{ $c->nama_perusahaan }}"
+                                                         onclick="openCompanyUnapproveModal(this)">
+                                            Batalkan Verifikasi
+                                        </x-dropdown-item>
+                                    @endif
+                                    @if($isActive)
                                         <x-dropdown-item class="text-orange-300 hover:text-orange-100"
                                                          data-company-id="{{ $c->id }}"
                                                          data-company-name="{{ $c->nama_perusahaan }}"
-                                                         onclick="openCompanyUserStatus('{{ $c->id }}', '{{ $c->nama_perusahaan }}', '{{ $isActive ? 'inactive' : 'active' }}')">
-                                            {{ $isActive ? 'Nonaktifkan User' : 'Aktifkan User' }}
+                                                         data-user-id="{{ $user->id }}"
+                                                         data-next-status="inactive"
+                                                         onclick="openCompanyUserStatus(this)">
+                                            Nonaktifkan User
+                                        </x-dropdown-item>
+                                    @else
+                                        <x-dropdown-item class="text-emerald-300 hover:text-emerald-100"
+                                                         data-company-id="{{ $c->id }}"
+                                                         data-company-name="{{ $c->nama_perusahaan }}"
+                                                         data-user-id="{{ $user->id }}"
+                                                         data-next-status="active"
+                                                         onclick="openCompanyUserStatus(this)">
+                                            Aktifkan User
                                         </x-dropdown-item>
                                     @endif
+                                    <x-dropdown-item class="text-rose-300 hover:text-rose-100"
+                                                     data-user-id="{{ $user->id }}"
+                                                     onclick="openCompanyDeleteModal(this)">
+                                        Hapus Akun
+                                    </x-dropdown-item>
                                     <x-dropdown-item class="text-cyan-300 hover:text-cyan-100"
                                                      onclick="openCompanyLog({{ $c->id }})">
                                         Riwayat
@@ -350,47 +379,256 @@
         <div class="px-6 py-5 space-y-4">
             <h3 class="text-lg font-semibold text-gray-100" id="companyApproveTitle">Setujui Perusahaan</h3>
             <p class="text-sm text-gray-300" id="companyApproveSubtitle"></p>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-approve'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+            <button type="button" id="companyApproveBtn" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
+        </div>
+    </div>
+    </x-modal>
+
+    {{-- Modal reject verifikasi --}}
+    <x-modal name="modal-company-reject" :show="false" maxWidth="md" animation="slide-up">
+        <div class="px-6 py-5 space-y-4">
+            <h3 class="text-lg font-semibold text-gray-100" id="companyRejectTitle">Tolak Verifikasi</h3>
+            <p class="text-sm text-gray-300" id="companyRejectSubtitle"></p>
+            <p class="text-sm text-gray-300 leading-relaxed">Tolak verifikasi perusahaan ini? Status akan dikembalikan ke pending.</p>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-approve'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                <form method="POST" id="companyApproveForm">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
-                </form>
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-reject'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" id="companyRejectBtn" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 transition text-sm font-semibold text-white">Tolak</button>
             </div>
         </div>
     </x-modal>
 
-    {{-- Modal reject --}}
-    <x-modal name="modal-company-reject" :show="false" maxWidth="md" animation="slide-up">
+    {{-- Modal batalkan verifikasi --}}
+    <x-modal name="modal-company-unapprove" :show="false" maxWidth="md" animation="slide-up">
         <div class="px-6 py-5 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-100" id="companyRejectTitle">Tolak Perusahaan</h3>
-            <p class="text-sm text-gray-300" id="companyRejectSubtitle"></p>
-            <form method="POST" id="companyRejectForm" class="space-y-3">
-                @csrf
-                <label class="block text-sm text-gray-300">Alasan Penolakan</label>
-                <textarea name="reason" rows="3" class="w-full rounded-lg bg-slate-800 border border-slate-700 text-gray-100"></textarea>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-reject'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 transition text-sm font-semibold text-white">Tolak</button>
-                </div>
-            </form>
+            <h3 class="text-lg font-semibold text-gray-100" id="companyUnapproveTitle">Batalkan Verifikasi</h3>
+            <p class="text-sm text-gray-300" id="companyUnapproveSubtitle"></p>
+            <p class="text-sm text-gray-300 leading-relaxed">Batalkan persetujuan verifikasi perusahaan ini? Status akan dikembalikan ke pending.</p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-unapprove'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" id="companyUnapproveBtn" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Batalkan</button>
+            </div>
         </div>
     </x-modal>
 
-    {{-- Modal unapprove --}}
-    <x-modal name="modal-company-unapprove" :show="false" maxWidth="md" animation="slide-up">
-        <div class="px-6 py-5 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-100" id="companyUnapproveTitle">Batalkan Persetujuan</h3>
-            <p class="text-sm text-gray-300" id="companyUnapproveSubtitle"></p>
-            <form method="POST" id="companyUnapproveForm" class="space-y-3">
-                @csrf
-                <label class="block text-sm text-gray-300">Catatan (opsional)</label>
-                <textarea name="notes" rows="3" class="w-full rounded-lg bg-slate-800 border border-slate-700 text-gray-100"></textarea>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-unapprove'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Batalkan</button>
-                </div>
-            </form>
-        </div>
-    </x-modal>
+@push('scripts')
+<script>
+(() => {
+    let currentCompanyId = null;
+    let currentUserId = null;
+
+    const getWire = () => {
+        const comp = document.querySelector('[wire\\:id]');
+        return comp ? window.Livewire.find(comp.getAttribute('wire:id')) : null;
+    };
+
+    window.openCompanyDetail = function (url, name = '', email = '') {
+        window.dispatchEvent(new CustomEvent('company-detail', { detail: { url, name, email } }));
+    };
+
+    window.openCompanyApproveModal = function (el) {
+        currentCompanyId = el.getAttribute('data-company-id');
+        const name = el.getAttribute('data-company-name') || 'Perusahaan';
+        const subtitle = document.getElementById('companyApproveSubtitle');
+        if (subtitle) subtitle.textContent = name;
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modal-company-approve' }));
+    };
+
+    window.openCompanyRejectModal = function (el) {
+        currentCompanyId = el.getAttribute('data-company-id');
+        const name = el.getAttribute('data-company-name') || 'Perusahaan';
+        const subtitle = document.getElementById('companyRejectSubtitle');
+        if (subtitle) subtitle.textContent = name;
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modal-company-reject' }));
+    };
+
+    window.openCompanyUnapproveModal = function (el) {
+        currentCompanyId = el.getAttribute('data-company-id');
+        const name = el.getAttribute('data-company-name') || 'Perusahaan';
+        const subtitle = document.getElementById('companyUnapproveSubtitle');
+        if (subtitle) subtitle.textContent = name;
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modal-company-unapprove' }));
+    };
+
+    window.openCompanyUserStatus = function (el) {
+        currentUserId = el.getAttribute('data-user-id');
+        const name = el.getAttribute('data-company-name') || 'Perusahaan';
+        const nextStatus = el.getAttribute('data-next-status') || 'inactive';
+        const subtitle = document.getElementById('companyUserStatusSubtitle');
+        const body = document.getElementById('companyUserStatusBody');
+        if (subtitle) subtitle.textContent = name;
+        if (body) body.textContent = nextStatus === 'inactive'
+            ? 'Nonaktifkan user perusahaan ini? Mereka tidak dapat login sampai diaktifkan kembali.'
+            : 'Aktifkan user perusahaan ini?';
+        const btn = document.getElementById('confirmCompanyUserStatusBtn');
+        if (btn) {
+            btn.onclick = function () {
+                const lw = getWire();
+                if (lw && currentUserId) lw.toggleUserStatus(parseInt(currentUserId));
+                window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-user-status' }));
+            };
+        }
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-user-status' }));
+    };
+
+    window.openCompanyDeleteModal = function (el) {
+        currentUserId = el.getAttribute('data-user-id');
+        const subtitle = document.getElementById('companyDeleteSubtitle');
+        if (subtitle) subtitle.textContent = 'Hapus akun perusahaan ini?';
+        const btn = document.getElementById('confirmCompanyDeleteBtn');
+        if (btn) {
+            btn.onclick = function () {
+                const lw = getWire();
+                if (lw && currentUserId) lw.deleteUser(parseInt(currentUserId));
+                window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-delete' }));
+            };
+        }
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
+    };
+
+    window.openCompanyLog = function (id) {
+        const title = document.getElementById('companyLogTitle');
+        const subtitle = document.getElementById('companyLogSubtitle');
+        const body = document.getElementById('companyLogBody');
+        if (title) title.textContent = 'Riwayat Perusahaan';
+        if (subtitle) subtitle.textContent = `ID: ${id}`;
+        if (body) body.innerHTML = '<p class="text-sm text-slate-300">Riwayat belum tersedia.</p>';
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-company' }));
+    };
+
+    const approveBtn = document.getElementById('companyApproveBtn');
+    if (approveBtn) {
+        approveBtn.onclick = function () {
+            const lw = getWire();
+            if (lw && currentCompanyId) {
+                lw.approve(parseInt(currentCompanyId));
+            }
+            window.dispatchEvent(new CustomEvent('close-modal', { detail: 'modal-company-approve' }));
+        };
+    }
+    const rejectBtn = document.getElementById('companyRejectBtn');
+    if (rejectBtn) {
+        rejectBtn.onclick = function () {
+            const lw = getWire();
+            if (lw && currentCompanyId) {
+                lw.unapprove(parseInt(currentCompanyId));
+            }
+            window.dispatchEvent(new CustomEvent('close-modal', { detail: 'modal-company-reject' }));
+        };
+    }
+    const unapproveBtn = document.getElementById('companyUnapproveBtn');
+    if (unapproveBtn) {
+        unapproveBtn.onclick = function () {
+            const lw = getWire();
+            if (lw && currentCompanyId) {
+                lw.unapprove(parseInt(currentCompanyId));
+            }
+            window.dispatchEvent(new CustomEvent('close-modal', { detail: 'modal-company-unapprove' }));
+        };
+    }
+})();
+</script>
+@endpush
+</div>
+
+@push('scripts')
+<script>
+(() => {
+    let currentCompanyId = null;
+    let currentUserId = null;
+
+    const getWire = () => {
+        const comp = document.querySelector('[wire\\:id]');
+        return comp ? window.Livewire.find(comp.getAttribute('wire:id')) : null;
+    };
+
+    window.openCompanyDetail = function (url, name = '', email = '') {
+        window.dispatchEvent(new CustomEvent('company-detail', { detail: { url, name, email } }));
+    };
+
+    window.openCompanyApproveModal = function (el) {
+        currentCompanyId = el.getAttribute('data-company-id');
+        const name = el.getAttribute('data-company-name') || 'Perusahaan';
+        const subtitle = document.getElementById('companyApproveSubtitle');
+        if (subtitle) subtitle.textContent = name;
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modal-company-approve' }));
+    };
+
+    window.openCompanyRejectModal = function (el) {
+        currentCompanyId = el.getAttribute('data-company-id');
+        currentUserId = el.getAttribute('data-user-id');
+        const name = el.getAttribute('data-company-name') || 'Perusahaan';
+        const subtitle = document.getElementById('companyDeleteSubtitle');
+        if (subtitle) subtitle.textContent = name;
+        const deleteBtn = document.getElementById('confirmCompanyDeleteBtn');
+        if (deleteBtn) {
+            deleteBtn.onclick = () => {
+                const lw = getWire();
+                if (lw && currentUserId) lw.deleteUser(parseInt(currentUserId));
+                window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-delete' }));
+            };
+        }
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
+    };
+
+            window.openCompanyUserStatus = function (el) {
+                currentUserId = el.getAttribute('data-user-id');
+                const name = el.getAttribute('data-company-name') || 'Perusahaan';
+                const nextStatus = el.getAttribute('data-next-status') || 'inactive';
+                const subtitle = document.getElementById('companyUserStatusSubtitle');
+                const body = document.getElementById('companyUserStatusBody');
+                if (subtitle) subtitle.textContent = name;
+                if (body) body.textContent = nextStatus === 'inactive'
+                    ? 'Nonaktifkan user perusahaan ini? Mereka tidak dapat login sampai diaktifkan kembali.'
+                    : 'Aktifkan user perusahaan ini?';
+                const btn = document.getElementById('confirmCompanyUserStatusBtn');
+                if (btn) {
+                    btn.onclick = function () {
+                        const lw = getWire();
+                        if (lw && currentUserId) lw.toggleUserStatus(parseInt(currentUserId));
+                        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-user-status' }));
+                    };
+                }
+                window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-user-status' }));
+            };
+
+            window.openCompanyDeleteModal = function (el) {
+                currentUserId = el.getAttribute('data-user-id');
+                const subtitle = document.getElementById('companyDeleteSubtitle');
+                if (subtitle) subtitle.textContent = 'Hapus akun perusahaan ini?';
+                const btn = document.getElementById('confirmCompanyDeleteBtn');
+                if (btn) {
+                    btn.onclick = function () {
+                        const lw = getWire();
+                        if (lw && currentUserId) lw.deleteUser(parseInt(currentUserId));
+                        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-delete' }));
+                    };
+                }
+                window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
+            };
+
+    window.openCompanyLog = function (id) {
+        const title = document.getElementById('companyLogTitle');
+        const subtitle = document.getElementById('companyLogSubtitle');
+        const body = document.getElementById('companyLogBody');
+        if (title) title.textContent = 'Riwayat Perusahaan';
+        if (subtitle) subtitle.textContent = `ID: ${id}`;
+        if (body) body.innerHTML = '<p class="text-sm text-slate-300">Riwayat belum tersedia.</p>';
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-company' }));
+    };
+
+    const approveBtn = document.getElementById('companyApproveBtn');
+    if (approveBtn) {
+        approveBtn.onclick = function () {
+            const lw = getWire();
+            if (lw && currentCompanyId) {
+                lw.approve(parseInt(currentCompanyId));
+            }
+            window.dispatchEvent(new CustomEvent('close-modal', { detail: 'modal-company-approve' }));
+        };
+    }
+})();
+</script>
+@endpush
 </div>
