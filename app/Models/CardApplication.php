@@ -33,6 +33,7 @@ class CardApplication extends Model
         'snapshot_before' => 'array',
         'snapshot_after' => 'array',
         'is_active' => 'boolean',
+        'archived_at' => 'datetime',
     ];
 
     /* =========================================================

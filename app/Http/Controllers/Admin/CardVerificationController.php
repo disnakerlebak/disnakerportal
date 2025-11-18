@@ -24,6 +24,11 @@ class CardVerificationController extends Controller
     {
         return view('admin.ak1.index');
     }
+
+    public function archive()
+    {
+        return view('admin.ak1.archive');
+    }
     public function show(CardApplication $application)
     {
         $application->load(['user','logs.actor']);

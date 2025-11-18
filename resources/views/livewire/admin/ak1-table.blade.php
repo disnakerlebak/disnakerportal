@@ -1,9 +1,4 @@
-<div class="max-w-6xl mx-auto h-full min-h-0 flex flex-col px-6 py-8 gap-6 box-border">
-    <!-- <div class="flex justify-between items-center">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200">
-            Verifikasi Pengajuan AK1
-        </h2>
-    </div> -->
+<div class="max-w-6xl mx-auto h-full min-h-0 flex flex-col gap-4">
 
     {{-- ===== Filter (submit or Enter applies) ===== --}}
     <form wire:submit.prevent="applyFilters" @keydown.enter.prevent="$wire.applyFilters()" class="flex flex-wrap items-center gap-3">
@@ -29,6 +24,91 @@
         @if ($this->hasActiveFilters)
             <button type="button" wire:click="clearFilters" class="rounded-lg border border-slate-700 px-3 py-2 text-slate-200 hover:bg-slate-800">Reset</button>
         @endif
+
+        {{-- Spacer agar arsip + actions rata kanan --}}
+        <div class="flex-1"></div>
+
+        {{-- Tombol arsip --}}
+        @if(!$archivedOnly)
+            <a href="{{ route('admin.ak1.archive') }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 text-sm font-semibold text-slate-100 hover:bg-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M5 7v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                Arsip
+            </a>
+        @else
+            <a href="{{ route('admin.ak1.index') }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 text-sm font-semibold text-slate-100 hover:bg-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 10-2 2 2 2m6-4 2 2-2 2m-7 4h7a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2Z" />
+                </svg>
+                Kembali
+            </a>
+        @endif
+
+        {{-- Bulk actions --}}
+        <div class="relative" x-data="{
+            open:false,
+            selected: @entangle('selected'),
+            get count(){ return (this.selected || []).length; },
+            openConfirm(action){
+                if(this.count < 2){
+                    document.getElementById('bulkErrorMessage').textContent = 'Pilih minimal 2 pengajuan untuk aksi massal.';
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'bulk-error' }));
+                    return;
+                }
+                let modalId = 'bulk-confirm-approve';
+                if (action === 'unapprove') modalId = 'bulk-confirm-unapprove';
+                if (action === 'archive') modalId = 'bulk-confirm-archive';
+                if (action === 'restore') modalId = 'bulk-confirm-restore';
+                const counter = document.getElementById(`${modalId}-count`);
+                if (counter) counter.textContent = this.count;
+                window.dispatchEvent(new CustomEvent('open-modal', { detail: modalId }));
+                this.open = false;
+            }
+        }" @click.stop>
+            <button type="button"
+                    @click="open = !open"
+                    class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 text-sm font-semibold text-slate-100 hover:bg-slate-700">
+                Actions
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div x-show="open"
+                 @click.outside="open=false"
+                 x-transition
+                 class="absolute right-0 mt-2 w-52 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('approve')">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>Setujui Terpilih</span>
+                </button>
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-orange-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('unapprove')">
+                    <span class="inline-block w-2 h-2 rounded-full bg-orange-400"></span>
+                    <span>Batalkan Persetujuan</span>
+                </button>
+                @if(!$archivedOnly)
+                    <button type="button"
+                            class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-blue-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            @click="openConfirm('archive')">
+                        <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
+                        <span>Arsipkan</span>
+                    </button>
+                @else
+                    <button type="button"
+                            class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            @click="openConfirm('restore')">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span>Kembalikan dari Arsip</span>
+                    </button>
+                @endif
+            </div>
+        </div>
     </form>
 
     {{-- ===== Tab Jenis Pengajuan ===== --}}
@@ -66,6 +146,7 @@
                     <table class="min-w-full w-full text-sm text-slate-200">
                         <thead class="bg-slate-800 text-slate-200 uppercase text-xs whitespace-nowrap sticky top-0 z-20 border-b border-slate-700 shadow-md shadow-slate-900/30">
                         <tr>
+                            <th class="p-3 text-center"><input type="checkbox" wire:model="selectAll" class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500"></th>
                             <th class="p-3 text-center whitespace-nowrap">Pemohon</th>
                             <th class="p-3 text-center whitespace-nowrap">Status Disabilitas</th>
                             <th class="p-3 text-center whitespace-nowrap">Tipe Pengajuan</th>
@@ -120,6 +201,12 @@
                             @endphp
 
                             <tr class="transition hover:bg-gray-800/60" wire:key="ak1-row-{{ $app->id }}">
+                                <td class="p-3 text-center align-top">
+                                    <input type="checkbox"
+                                           wire:model="selected"
+                                           value="{{ $app->id }}"
+                                           class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500">
+                                </td>
                                 {{-- Pemohon --}}
                                 <td class="p-3 align-top">
                                     <div class="font-semibold text-white text-sm">{{ $app->user->name }}</div>
@@ -253,6 +340,18 @@
                                                 </li>
                                             @endif
 
+                                            @if(!$archivedOnly && !$app->is_active)
+                                                <x-dropdown-item class="text-blue-300 hover:text-blue-100"
+                                                                 onclick="openArchiveModal({{ $app->id }}, '{{ addslashes($app->user->name) }}')">
+                                                    Arsipkan
+                                                </x-dropdown-item>
+                                            @elseif($archivedOnly)
+                                                <x-dropdown-item class="text-emerald-300 hover:text-emerald-100"
+                                                                 wire:click="openRestoreFromDropdown({{ $app->id }})">
+                                                    Kembalikan
+                                                </x-dropdown-item>
+                                            @endif
+
                                             <x-dropdown-item class="text-cyan-300 hover:text-cyan-100"
                                                              onclick="openLogModal(this)"
                                                              data-app-name="{{ $app->user->name }}"
@@ -343,6 +442,98 @@
             <div id="logModalBody" class="px-6 py-5 max-h-[75vh] overflow-y-auto space-y-4"></div>
         </div>
     </div>
+
+    {{-- ===== Modal Bulk Actions ===== --}}
+    <x-modal id="bulk-error" size="md" title="Aksi Tidak Dapat Dilanjutkan">
+        <div class="px-6 py-5 space-y-4">
+            <p id="bulkErrorMessage" class="text-sm text-gray-300 leading-relaxed">{{ $bulkErrorMessage }}</p>
+            <div class="flex justify-end">
+                <button type="button" data-close-modal="bulk-error" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Tutup</button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal id="bulk-confirm-approve" size="md" title="Setujui Pengajuan Terpilih">
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">Setujui <span id="bulk-confirm-approve-count" class="font-semibold text-white">0</span> pengajuan AK1? Hanya pengajuan dengan status Menunggu Verifikasi/Revisi yang akan diproses.</p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="bulk-confirm-approve" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="bulkApprove" data-close-modal="bulk-confirm-approve" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal id="bulk-confirm-unapprove" size="md" title="Batalkan Persetujuan">
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">Batalkan persetujuan untuk <span id="bulk-confirm-unapprove-count" class="font-semibold text-white">0</span> pengajuan AK1? Hanya pengajuan berstatus Disetujui yang akan diproses.</p>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="bulk-confirm-unapprove" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+            <button type="button" wire:click="bulkUnapprove" data-close-modal="bulk-confirm-unapprove" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Batalkan</button>
+        </div>
+    </div>
+    </x-modal>
+
+    <x-modal id="bulk-confirm-archive" size="md" title="Arsipkan Pengajuan">
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">Arsipkan <span id="bulk-confirm-archive-count" class="font-semibold text-white">0</span> pengajuan AK1 non-aktif? Data tetap tersimpan di arsip.</p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="bulk-confirm-archive" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="bulkArchive" data-close-modal="bulk-confirm-archive" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition text-sm font-semibold text-white">Arsipkan</button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal id="bulk-confirm-restore" size="md" title="Kembalikan dari Arsip">
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">Kembalikan <span id="bulk-confirm-restore-count" class="font-semibold text-white">0</span> pengajuan AK1 dari arsip ke daftar utama?</p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="bulk-confirm-restore" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="bulkRestore" data-close-modal="bulk-confirm-restore" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Kembalikan</button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal id="confirm-archive" size="md" title="Arsipkan Pengajuan">
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">
+                Arsipkan pengajuan AK1 ini?
+                <span id="confirmArchiveSubtitle" class="font-semibold text-white">{{ $archiveTargetName }}</span>
+                Hanya pengajuan non-aktif yang dapat diarsipkan.
+            </p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="confirm-archive" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="doArchiveSingle" data-close-modal="confirm-archive" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition text-sm font-semibold text-white">Arsipkan</button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal id="confirm-restore" size="md" title="Kembalikan Pengajuan">
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-300 leading-relaxed">
+                Kembalikan pengajuan ini dari arsip ke daftar utama?
+            </p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="confirm-restore" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="doRestoreSingle" data-close-modal="confirm-restore" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Kembalikan</button>
+            </div>
+        </div>
+    </x-modal>
+
+@once
+@push('scripts')
+    <script>
+        document.addEventListener('open-bulk-error', () => {
+            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'bulk-error' }));
+        });
+        document.addEventListener('show-confirm-archive', () => {
+            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-archive' }));
+        });
+        document.addEventListener('show-confirm-restore', () => {
+            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-restore' }));
+        });
+    </script>
+@endpush
+@endonce
 
     {{-- ===== Modal Batalkan Persetujuan (x-modal) ===== --}}
     <x-modal name="unapprove-ak1" :show="false" maxWidth="lg" animation="slide-up" title="Batalkan Persetujuan">
@@ -903,6 +1094,18 @@
                 };
 
                 // fungsi revisi dihapus, digantikan oleh openRejectModal di atas
+
+                window.openArchiveModal = function (id, name = '') {
+                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-archive' }));
+                    const comp = document.querySelector('[wire\\:id]');
+                    if (!comp) return;
+                    window.Livewire.find(comp.getAttribute('wire:id')).call('setArchiveTarget', id, name);
+                    const title = document.getElementById('confirmArchiveTitle');
+                    const subtitle = document.getElementById('confirmArchiveSubtitle');
+                    if (title) title.textContent = 'Arsipkan Pengajuan';
+                    if (subtitle) subtitle.textContent = name || '';
+                };
 
                 const escapeHtml = (unsafe) => (unsafe ?? '')
                     .replace(/&/g, '&amp;')

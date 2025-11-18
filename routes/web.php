@@ -63,6 +63,7 @@ Route::middleware(['auth', 'role:admin,admin_ak1,superadmin'])
 
         // Verifikasi AK1
         Route::get('/ak1', [CardVerificationController::class, 'index'])->name('ak1.index');
+        Route::get('/ak1/arsip', [CardVerificationController::class, 'archive'])->name('ak1.archive');
         Route::get('/ak1/{application}', [CardVerificationController::class, 'show'])->name('ak1.show');
         Route::post('/ak1/{application}/approve', [CardVerificationController::class, 'approve'])->name('ak1.approve');
         Route::post('/ak1/{application}/reject', [CardVerificationController::class, 'reject'])->name('ak1.reject');

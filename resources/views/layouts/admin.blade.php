@@ -343,6 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
             stopOnFocus: true
         }).showToast();
     @endif
+
+    @if (session('toast.success'))
+        Toastify({
+            text: @json(session('toast.success')),
+            duration: 3500,
+            close: true,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#16a34a",
+            stopOnFocus: true
+        }).showToast();
+    @endif
 });
 </script>
 
