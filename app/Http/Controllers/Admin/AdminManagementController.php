@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class AdminManagementController extends Controller
 {
@@ -18,7 +20,15 @@ class AdminManagementController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('admin.manage_admin.index', compact('admins'));
+        // Ambil aktivitas login terakhir dari tabel sessions (jika memakai session driver database)
+        $lastActivities = DB::table('sessions')
+            ->whereIn('user_id', $admins->pluck('id'))
+            ->select('user_id', DB::raw('MAX(last_activity) as last_activity'))
+            ->groupBy('user_id')
+            ->pluck('last_activity', 'user_id')
+            ->map(fn ($ts) => Carbon::createFromTimestamp($ts));
+
+        return view('admin.manage_admin.index', compact('admins', 'lastActivities'));
     }
 
     /**

@@ -7,8 +7,8 @@
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-semibold text-gray-100">Kelola Admin Disnaker Portal</h1>
       <button
-        data-modal-target="create-admin"
-        data-modal-toggle="create-admin"
+        type="button"
+        onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'create-admin' }))"
         class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
       >+ Tambah Admin</button>
     </div>
@@ -33,10 +33,10 @@
           <thead class="bg-slate-800 text-slate-200 uppercase text-xs sticky top-0 z-20 border-b border-slate-700 shadow-md shadow-slate-900/30">
             <tr>
               <th class="px-4 py-3 text-left">Nama</th>
-              <th class="px-4 py-3 text-left">Email</th>
+              <th class="px-4 py-3 text-left">Kontak</th>
               <th class="px-4 py-3 text-left">Role</th>
               <th class="px-4 py-3 text-left">Status</th>
-              <th class="px-4 py-3 text-left">Dibuat</th>
+              <th class="px-4 py-3 text-left">Login Terakhir</th>
               <th class="px-4 py-3 text-left">Aksi</th>
             </tr>
           </thead>
@@ -47,7 +47,12 @@
               @endif
               <tr class="hover:bg-slate-800/50 transition">
                 <td class="px-4 py-3">{{ $admin->name }}</td>
-                <td class="px-4 py-3">{{ $admin->email }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex flex-col gap-1">
+                    <span>{{ $admin->email }}</span>
+                    <span class="text-[11px] text-slate-400">Dibuat {{ $admin->created_at->format('d M Y H:i') }}</span>
+                  </div>
+                </td>
                 @php
                   $roleLabel = $admin->role === 'admin_laporan' ? 'Admin Laporan' : ($admin->role === 'admin_ak1' ? 'Admin AK1' : ucfirst($admin->role ?? '-'));
                   $roleDot = $admin->role === 'admin_laporan' ? 'bg-amber-400' : 'bg-emerald-400';
@@ -65,7 +70,16 @@
                     <span class="px-2 py-1 text-[11px] rounded-full bg-red-700/30 text-red-200 border border-red-600/40">Inactive</span>
                   @endif
                 </td>
-                <td class="px-4 py-3">{{ $admin->created_at->format('d M Y H:i') }}</td>
+                @php
+                  $lastLogin = $lastActivities[$admin->id] ?? null;
+                @endphp
+                <td class="px-4 py-3">
+                  @if($lastLogin)
+                    <span class="text-sm text-slate-200">{{ $lastLogin->format('d M Y H:i') }}</span>
+                  @else
+                    <span class="text-sm text-slate-400">Belum ada aktivitas</span>
+                  @endif
+                </td>
                 <td class="px-4 py-3">
                   <x-admin-action-dropdown :admin="$admin" />
                 </td>

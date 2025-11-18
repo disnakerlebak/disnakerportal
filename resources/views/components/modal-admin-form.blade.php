@@ -66,7 +66,7 @@
   </form>
 
   <x-slot name="footer">
-    <button type="button" data-modal-hide="{{ $modalId }}"
+    <button type="button" data-close-modal="{{ $modalId }}"
             class="px-4 py-2 rounded-md border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
       {{ __('Batal') }}
     </button>

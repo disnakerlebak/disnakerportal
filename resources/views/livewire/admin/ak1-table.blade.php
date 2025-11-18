@@ -112,6 +112,7 @@
                                         'to_status'   => $log->to_status,
                                         'notes'       => $log->notes,
                                         'actor'       => $log->actor?->name,
+                                        'actor_role'  => $log->actor?->role,
                                         'created_at'  => optional($log->created_at)->format('d M Y H:i'),
                                         'timestamp'   => optional($log->created_at)?->timestamp,
                                     ];
@@ -257,7 +258,7 @@
                                                              data-app-name="{{ $app->user->name }}"
                                                              data-app-email="{{ $app->user->email }}"
                                                              data-current-status="{{ $app->status }}"
-                                                             data-logs='@json($logPayload)'>
+                                                             data-logs="{{ base64_encode(json_encode($logPayload)) }}">
                                                 Riwayat
                                             </x-dropdown-item>
                                         </x-dropdown>
@@ -449,6 +450,14 @@
                 };
 
                 const getEl = (id) => document.getElementById(id);
+                const formatActorRole = (role) => {
+                    if (!role) return '';
+                    const adminRoles = ['superadmin','admin_ak1','admin_laporan','admin_verifikator','admin_loker','admin_statistik'];
+                    if (adminRoles.includes(role)) return 'Admin';
+                    if (role === 'pencaker') return 'Pemohon';
+                    if (role === 'perusahaan') return 'Perusahaan';
+                    return role;
+                };
 
                 window.closeModal = function () {
                     window.dispatchEvent(new CustomEvent('close-modal', { detail: 'detail-ak1' }));
@@ -760,13 +769,20 @@
                     const logModalSubtitle = getEl('logModalSubtitle');
                     const logModalBody = getEl('logModalBody');
 
-                    const logs = (JSON.parse(button.getAttribute('data-logs') || '[]') || [])
-                        .slice()
-                        .sort((a, b) => {
-                            const aDate = a.timestamp ? new Date(a.timestamp * 1000) : new Date(a.created_at || 0);
-                            const bDate = b.timestamp ? new Date(b.timestamp * 1000) : new Date(b.created_at || 0);
-                            return aDate - bDate;
-                        });
+                    let logs = [];
+                    try {
+                        const raw = button.getAttribute('data-logs') || '';
+                        const decoded = raw ? atob(raw) : '[]';
+                        logs = (JSON.parse(decoded) || [])
+                            .slice()
+                            .sort((a, b) => {
+                                const aDate = a.timestamp ? new Date(a.timestamp * 1000) : new Date(a.created_at || 0);
+                                const bDate = b.timestamp ? new Date(b.timestamp * 1000) : new Date(b.created_at || 0);
+                                return aDate - bDate;
+                            });
+                    } catch (err) {
+                        console.error('Gagal parse log pengajuan', err);
+                    }
 
                     const name = button.getAttribute('data-app-name') || 'Pemohon';
                     const email = button.getAttribute('data-app-email') || '';
@@ -801,6 +817,7 @@
                                         <p class="mt-1 text-xs text-gray-500">Perubahan: <span class="text-gray-300">${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}</span></p>
                                         <p class="mt-2 text-sm text-gray-300 leading-relaxed">
                                             Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}</span>
+                                            ${formatActorRole(log.actor_role) ? ` (${formatActorRole(log.actor_role)})` : ''}
                                         </p>
                                         ${noteSection}
                                     </div>
