@@ -50,24 +50,36 @@
         const modal = document.getElementById(id);
         if (!modal) return;
 
+        const cleanupBackdrop = () => {
+            document.documentElement.classList.remove('overflow-hidden');
+            document.body.classList.remove('overflow-hidden');
+            document.querySelectorAll('[modal-backdrop]').forEach(el => el.remove());
+        };
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            cleanupBackdrop();
+        };
+
         const closeButtons = modal.querySelectorAll('[data-close-modal]');
-        closeButtons.forEach(btn => btn.addEventListener('click', () => modal.classList.add('hidden')));
+        closeButtons.forEach(btn => btn.addEventListener('click', hideModal));
 
         window.addEventListener('open-modal', (e) => {
             if (e.detail === id || (e.detail?.id && e.detail.id === id)) {
                 modal.classList.remove('hidden');
+                cleanupBackdrop(); // bersihkan backdrop Flowbite jika masih tertinggal
             }
         });
         window.addEventListener('close-modal', (e) => {
             if (!e.detail || e.detail === id || (e.detail?.id && e.detail.id === id)) {
-                modal.classList.add('hidden');
+                hideModal();
             }
         });
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (!modal.classList.contains('hidden')) {
-                    modal.classList.add('hidden');
+                    hideModal();
                 }
             }
         });
