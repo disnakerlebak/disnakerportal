@@ -286,17 +286,11 @@
     </div>
 
     {{-- Modal konfirmasi verifikasi --}}
-    <x-modal name="confirm-company-verify" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
-        <div class="modal-panel-header flex items-center justify-between px-6 py-4">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-100" id="companyVerifyTitle">Konfirmasi</h3>
-                <p class="text-sm text-gray-400 mt-1" id="companyVerifySubtitle"></p>
-            </div>
-            <button type="button"
-                    onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-verify'}))"
-                    class="modal-close">✕</button>
-        </div>
+    <x-modal id="confirm-company-verify" size="md" title="Konfirmasi Verifikasi">
         <div class="px-6 py-5 space-y-4">
+            <div>
+                <p class="text-sm text-gray-400" id="companyVerifySubtitle"></p>
+            </div>
             <p class="text-sm text-gray-300 leading-relaxed" id="companyVerifyBody"></p>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button"
@@ -311,17 +305,11 @@
     </x-modal>
 
     {{-- Modal konfirmasi status akun --}}
-    <x-modal name="confirm-company-user-status" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
-        <div class="modal-panel-header flex items-center justify-between px-6 py-4">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-100" id="companyUserStatusTitle">Konfirmasi</h3>
-                <p class="text-sm text-gray-400 mt-1" id="companyUserStatusSubtitle"></p>
-            </div>
-            <button type="button"
-                    onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-user-status'}))"
-                    class="modal-close">✕</button>
-        </div>
+    <x-modal id="confirm-company-user-status" size="md" title="Konfirmasi Status User">
         <div class="px-6 py-5 space-y-4">
+            <div>
+                <p class="text-sm text-gray-400" id="companyUserStatusSubtitle"></p>
+            </div>
             <p class="text-sm text-gray-300 leading-relaxed" id="companyUserStatusBody"></p>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button"
@@ -336,17 +324,11 @@
     </x-modal>
 
     {{-- Modal konfirmasi hapus --}}
-    <x-modal name="confirm-company-delete" :show="false" maxWidth="md" animation="slide-up" :hideHeader="true">
-        <div class="modal-panel-header flex items-center justify-between px-6 py-4">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-100">Hapus Akun Perusahaan</h3>
-                <p class="text-sm text-gray-400 mt-1" id="companyDeleteSubtitle"></p>
-            </div>
-            <button type="button"
-                    onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-delete'}))"
-                    class="modal-close">✕</button>
-        </div>
+    <x-modal id="confirm-company-delete" size="md" title="Hapus Akun Perusahaan">
         <div class="px-6 py-5 space-y-4">
+            <div>
+                <p class="text-sm text-gray-400" id="companyDeleteSubtitle"></p>
+            </div>
             <p class="text-sm text-gray-300 leading-relaxed">
                 Hapus akun perusahaan ini beserta seluruh data terkait? Tindakan ini tidak dapat dibatalkan.
             </p>
@@ -375,22 +357,25 @@
     </x-modal>
 
     {{-- Modal approve --}}
-    <x-modal name="modal-company-approve" :show="false" maxWidth="md" animation="slide-up">
+    <x-modal id="modal-company-approve" size="md" title="Setujui Perusahaan">
         <div class="px-6 py-5 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-100" id="companyApproveTitle">Setujui Perusahaan</h3>
-            <p class="text-sm text-gray-300" id="companyApproveSubtitle"></p>
-        <div class="flex justify-end gap-2 pt-2">
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-approve'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-            <button type="button" id="companyApproveBtn" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
+            <div>
+                <p class="text-sm text-gray-400" id="companyApproveSubtitle"></p>
+            </div>
+            <p class="text-sm text-gray-300 leading-relaxed">Setujui perusahaan ini? Pastikan data dan informasi perusahaan sudah sesuai sebelum disetujui</p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-approve'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" id="companyApproveBtn" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
+            </div>
         </div>
-    </div>
     </x-modal>
 
     {{-- Modal reject verifikasi --}}
-    <x-modal name="modal-company-reject" :show="false" maxWidth="md" animation="slide-up">
+    <x-modal id="modal-company-reject" size="md" title="Tolak Verifikasi">
         <div class="px-6 py-5 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-100" id="companyRejectTitle">Tolak Verifikasi</h3>
-            <p class="text-sm text-gray-300" id="companyRejectSubtitle"></p>
+            <div>
+                <p class="text-sm text-gray-400" id="companyRejectSubtitle"></p>
+            </div>
             <p class="text-sm text-gray-300 leading-relaxed">Tolak verifikasi perusahaan ini? Status akan dikembalikan ke pending.</p>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-reject'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
@@ -400,10 +385,11 @@
     </x-modal>
 
     {{-- Modal batalkan verifikasi --}}
-    <x-modal name="modal-company-unapprove" :show="false" maxWidth="md" animation="slide-up">
+    <x-modal id="modal-company-unapprove" size="md" title="Batalkan Verifikasi">
         <div class="px-6 py-5 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-100" id="companyUnapproveTitle">Batalkan Verifikasi</h3>
-            <p class="text-sm text-gray-300" id="companyUnapproveSubtitle"></p>
+            <div>
+                <p class="text-sm text-gray-400" id="companyUnapproveSubtitle"></p>
+            </div>
             <p class="text-sm text-gray-300 leading-relaxed">Batalkan persetujuan verifikasi perusahaan ini? Status akan dikembalikan ke pending.</p>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-unapprove'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
