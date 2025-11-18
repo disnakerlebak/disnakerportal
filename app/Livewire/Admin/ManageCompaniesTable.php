@@ -15,6 +15,7 @@ class ManageCompaniesTable extends Component
     public string $q = '';
     public string $verificationStatus = '';
     public int $perPage = 10;
+    public array $selected = [];
 
     protected $queryString = [
         'q' => ['except' => ''],
@@ -71,6 +72,59 @@ class ManageCompaniesTable extends Component
         session()->flash('success', 'Akun perusahaan berhasil dihapus.');
     }
 
+    public function bulkApprove(): void
+    {
+        if (empty($this->selected)) return;
+
+        CompanyProfile::whereIn('id', $this->selected)->update([
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
+        $this->selected = [];
+        session()->flash('success', 'Perusahaan terpilih berhasil disetujui.');
+    }
+
+    public function bulkActivateUsers(): void
+    {
+        $companyIds = $this->selected;
+        if (empty($companyIds)) return;
+
+        $userIds = CompanyProfile::whereIn('id', $companyIds)->pluck('user_id')->filter();
+        if ($userIds->isEmpty()) return;
+
+        User::whereIn('id', $userIds)->update(['status' => 'active']);
+        $this->selected = [];
+        session()->flash('success', 'Akun perusahaan terpilih berhasil diaktifkan.');
+    }
+
+    public function bulkDeactivateUsers(): void
+    {
+        $companyIds = $this->selected;
+        if (empty($companyIds)) return;
+
+        $userIds = CompanyProfile::whereIn('id', $companyIds)->pluck('user_id')->filter();
+        if ($userIds->isEmpty()) return;
+
+        User::whereIn('id', $userIds)->update(['status' => 'inactive']);
+        $this->selected = [];
+        session()->flash('success', 'Akun perusahaan terpilih berhasil dinonaktifkan.');
+    }
+
+    public function bulkDelete(): void
+    {
+        $companyIds = $this->selected;
+        if (empty($companyIds)) return;
+
+        $userIds = CompanyProfile::whereIn('id', $companyIds)->pluck('user_id')->filter();
+        if ($userIds->isNotEmpty()) {
+            User::whereIn('id', $userIds)->delete();
+        }
+
+        $this->selected = [];
+        session()->flash('success', 'Perusahaan terpilih berhasil dihapus.');
+    }
+
     public function render()
     {
         $query = CompanyProfile::query()
@@ -97,4 +151,3 @@ class ManageCompaniesTable extends Component
         ]);
     }
 }
-

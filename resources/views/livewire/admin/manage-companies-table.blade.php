@@ -19,23 +19,16 @@
             selected: @entangle('selected'),
             get count(){ return (this.selected || []).length; },
             openConfirm(action){
-                if(this.count === 0){
-                    return window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
-                        detail:{ title:'Tidak ada perusahaan dipilih', message:'Pilih minimal satu perusahaan.', action:null }
-                    }));
-                }
-                let title='', message='';
-                if(action === 'activate-user'){
-                    title = 'Aktifkan User';
-                    message = `Aktifkan ${this.count} user perusahaan?`;
+                if(this.count === 0){ return; }
+                if(action === 'approve'){
+                    $wire.bulkApprove();
+                } else if(action === 'activate-user'){
+                    $wire.bulkActivateUsers();
                 } else if(action === 'deactivate-user'){
-                    title = 'Nonaktifkan User';
-                    message = `Nonaktifkan ${this.count} user perusahaan?`;
+                    $wire.bulkDeactivateUsers();
                 } else if(action === 'delete'){
-                    title = 'Hapus Perusahaan';
-                    message = `Hapus ${this.count} perusahaan terpilih?`;
+                    $wire.bulkDelete();
                 }
-                window.dispatchEvent(new CustomEvent('open-bulk-confirm', { detail:{ title, message, action } }));
                 this.open = false;
             }
         }" @click.stop>
@@ -51,6 +44,13 @@
                  @click.outside="open=false"
                  x-transition
                  class="absolute right-0 mt-2 w-48 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('approve')"
+                        :disabled="count === 0">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+                    Setujui Perusahaan
+                </button>
                 <button type="button"
                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         @click="openConfirm('activate-user')"
@@ -149,8 +149,9 @@
                         </td>
                         <td class="p-3 align-top">
                             <div class="flex flex-col gap-1">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold
+                                <span class="inline-flex items-center gap-2 px-2 py-0.5 rounded-full text-[11px] font-semibold
                                     {{ $verified ? 'bpill-emerald' : 'bpill-amber' }}">
+                                    <span class="h-2 w-2 rounded-full {{ $verified ? 'bg-emerald-300' : 'bg-amber-400' }}"></span>
                                     {{ $verified ? 'Disetujui' : 'Belum Disetujui' }}
                                 </span>
                                 <span class="text-xs text-slate-400">
