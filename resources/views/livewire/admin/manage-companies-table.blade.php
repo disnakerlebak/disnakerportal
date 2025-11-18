@@ -12,6 +12,70 @@
             <option value="pending">Belum Disetujui</option>
             <option value="approved">Disetujui</option>
         </select>
+
+        {{-- Actions bulk (mirip pencaker) --}}
+        <div class="ml-auto relative" x-data="{
+            open:false,
+            selected: @entangle('selected'),
+            get count(){ return (this.selected || []).length; },
+            openConfirm(action){
+                if(this.count === 0){
+                    return window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
+                        detail:{ title:'Tidak ada perusahaan dipilih', message:'Pilih minimal satu perusahaan.', action:null }
+                    }));
+                }
+                let title='', message='';
+                if(action === 'activate-user'){
+                    title = 'Aktifkan User';
+                    message = `Aktifkan ${this.count} user perusahaan?`;
+                } else if(action === 'deactivate-user'){
+                    title = 'Nonaktifkan User';
+                    message = `Nonaktifkan ${this.count} user perusahaan?`;
+                } else if(action === 'delete'){
+                    title = 'Hapus Perusahaan';
+                    message = `Hapus ${this.count} perusahaan terpilih?`;
+                }
+                window.dispatchEvent(new CustomEvent('open-bulk-confirm', { detail:{ title, message, action } }));
+                this.open = false;
+            }
+        }" @click.stop>
+            <button type="button"
+                    @click="open = !open"
+                    class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 text-sm font-semibold text-slate-100 hover:bg-slate-700">
+                Actions
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div x-show="open"
+                 @click.outside="open=false"
+                 x-transition
+                 class="absolute right-0 mt-2 w-48 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('activate-user')"
+                        :disabled="count === 0">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+                    Aktifkan User
+                </button>
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-amber-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('deactivate-user')"
+                        :disabled="count === 0">
+                    <span class="inline-block w-2 h-2 rounded-full bg-amber-400"></span>
+                    Nonaktifkan User
+                </button>
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-rose-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="openConfirm('delete')"
+                        :disabled="count === 0">
+                    <svg class="w-4 h-4 text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a1 1 0 00-1-1h-4a1 1 0 00-1 1v2m-3 0h12" />
+                    </svg>
+                    Hapus
+                </button>
+            </div>
+        </div>
     </div>
 
     @if (session()->has('success'))
@@ -36,6 +100,11 @@
             <table class="min-w-full text-sm text-slate-200">
                 <thead class="bg-slate-800 text-slate-200">
                 <tr>
+                    <th class="p-3 w-10">
+                        <input type="checkbox"
+                               @click="event.target.checked ? $wire.set('selected', {{ $companies->pluck('id') }}) : $wire.set('selected', [])"
+                               class="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500">
+                    </th>
                     <th class="p-3 text-left">Nama Perusahaan</th>
                     <th class="p-3 text-left">Jenis / Bidang Usaha</th>
                     <th class="p-3 text-left">Domisili Perusahaan</th>
@@ -52,6 +121,10 @@
                         $verified = $c->verification_status === 'approved';
                     @endphp
                     <tr class="hover:bg-slate-800/50 transition">
+                        <td class="p-3 align-top">
+                            <input type="checkbox" wire:model="selected" value="{{ $c->id }}"
+                                   class="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500">
+                        </td>
                         <td class="p-3 align-top">
                             <div class="font-semibold text-slate-100">
                                 {{ $c->nama_perusahaan ?? '-' }}
@@ -76,8 +149,8 @@
                         </td>
                         <td class="p-3 align-top">
                             <div class="flex flex-col gap-1">
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-medium
-                                    {{ $verified ? 'bg-emerald-600/90 text-emerald-50' : 'bg-amber-500/90 text-slate-950' }}">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold
+                                    {{ $verified ? 'bpill-emerald' : 'bpill-amber' }}">
                                     {{ $verified ? 'Disetujui' : 'Belum Disetujui' }}
                                 </span>
                                 <span class="text-xs text-slate-400">
@@ -102,139 +175,43 @@
                         </td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center">
-                                <div class="relative"
-                                     x-data="{
-                                        open:false,
-                                        dropUp:false,
-                                        style:'',
-                                        width:256,
-                                        init() { window.addEventListener('close-dropdowns', () => { this.open=false; }); },
-                                        toggle(e) {
-                                            this.open = !this.open;
-                                            if (this.open) {
-                                                const rect = e.currentTarget.getBoundingClientRect();
-                                                const spaceBelow = window.innerHeight - rect.bottom;
-                                                this.dropUp = spaceBelow < 260;
-                                                let left = rect.right - this.width;
-                                                left = Math.max(8, Math.min(left, window.innerWidth - this.width - 8));
-                                                let top = this.dropUp ? rect.top - 8 : rect.bottom + 8;
-                                                this.style = `left:${left}px;top:${top}px`;
-                                            }
-                                        },
-                                        close() { this.open = false; }
-                                     }"
-                                     x-init="init()">
-                                    <button @click="toggle($event)"
-                                            type="button"
-                                            class="rounded-md border border-slate-700 bg-slate-800 p-2 text-white text-sm transition duration-200 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                             stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="5" r="1"/>
-                                            <circle cx="12" cy="12" r="1"/>
-                                            <circle cx="12" cy="19" r="1"/>
-                                        </svg>
-                                    </button>
-
-                                    <template x-teleport="body">
-                                        <div x-show="open" @click.away="close()" @keydown.escape.window="close()"
-                                             x-transition:enter="transition ease-out duration-150"
-                                             x-transition:enter-start="opacity-0 transform scale-95"
-                                             x-transition:enter-end="opacity-100 transform scale-100"
-                                             x-transition:leave="transition ease-in duration-100"
-                                             x-transition:leave-start="opacity-100 transform scale-100"
-                                             x-transition:leave-end="opacity-0 transform scale-95"
-                                             :class="dropUp ? 'origin-bottom-right' : 'origin-top-right'"
-                                             class="fixed z-[9999] w-64 rounded-lg border border-slate-800 bg-slate-900 shadow-lg ring-1 ring-indigo-500/10 divide-y divide-slate-800"
-                                             :style="style + (dropUp ? ';transform: translateY(-100%)' : '')">
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-blue-700/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                      window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                      window.dispatchEvent(new CustomEvent('company-detail', {
-                                                        detail: {
-                                                          url: '{{ route('admin.company.show', $c) }}',
-                                                          name: '{{ $c->nama_perusahaan }}',
-                                                          email: '{{ $user->email }}'
-                                                        }
-                                                      }));
-                                                    ">
-                                                <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">
-                                                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z\"/>
-                                                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z\"/>
-                                                </svg>
-                                                Detail
-                                            </button>
-
-                                            @if(!$verified)
-                                                <button type="button"
-                                                        class="w-full text-left px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-700/20 flex items-center gap-2 transition"
-                                                        @click="
-                                                            window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                            openCompanyApproveModal($event.currentTarget);
-                                                        "
-                                                        data-company-id="{{ $c->id }}"
-                                                        data-company-name="{{ $c->nama_perusahaan }}">
-                                                    <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\">
-                                                        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" />
-                                                    </svg>
-                                                    Setujui
-                                                </button>
-                                            @else
-                                                <button type="button"
-                                                        class="w-full text-left px-4 py-2 text-sm text-amber-300 hover:bg-amber-700/20 flex items-center gap-2 transition"
-                                                        @click="
-                                                            window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                            openCompanyUnapproveModal($event.currentTarget);
-                                                        "
-                                                        data-company-id="{{ $c->id }}"
-                                                        data-company-name="{{ $c->nama_perusahaan }}">
-                                                    <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\">
-                                                        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M18 12H6\" />
-                                                    </svg>
-                                                    Batal Setuju
-                                                </button>
-                                            @endif
-
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm {{ $isActive ? 'text-amber-300 hover:bg-amber-700/20' : 'text-emerald-300 hover:bg-emerald-700/20' }} flex items-center gap-2 transition"
-                                                    @click="
-                                                        window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                        openCompanyUserStatusModal($event.currentTarget);
-                                                    "
-                                                    data-user-id="{{ $user->id }}"
-                                                    data-company-name="{{ $c->nama_perusahaan }}"
-                                                    data-user-email="{{ $user->email }}"
-                                                    data-user-active="{{ $isActive ? '1' : '0' }}">
-                                                <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\">
-                                                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6v12m6-6H6\" />
-                                                </svg>
-                                                {{ $isActive ? 'Nonaktifkan User' : 'Aktifkan User' }}
-                                            </button>
-
-                                            <button type="button"
-                                                    class="w-full text-left px-4 py-2 text-sm text-rose-300 hover:bg-rose-700/20 flex items-center gap-2 transition"
-                                                    @click="
-                                                        window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                                                        openCompanyDeleteModal($event.currentTarget);
-                                                    "
-                                                    data-user-id="{{ $user->id }}"
-                                                    data-company-name="{{ $c->nama_perusahaan }}"
-                                                    data-user-email="{{ $user->email }}">
-                                                <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">
-                                                    <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"
-                                                          d=\"M6 7h12M9 7V4h6v3m-7 4v7m4-7v7m4-7v7M5 7l1 13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-13\"/>
-                                                </svg>
-                                                Hapus User
-                                            </button>
-                                        </div>
-                                    </template>
-                                </div>
+                                <x-dropdown :id="'company-actions-'.$c->id">
+                                    <x-dropdown-item class="text-blue-300 hover:text-blue-100"
+                                                     onclick="openCompanyDetail('{{ route('admin.company.show', $c) }}')">
+                                        Detail
+                                    </x-dropdown-item>
+                                    @if(!$verified)
+                                        <x-dropdown-item class="text-emerald-300 hover:text-emerald-100"
+                                                         data-company-id="{{ $c->id }}"
+                                                         data-company-name="{{ $c->nama_perusahaan }}"
+                                                         onclick="openCompanyApproveModal(this)">
+                                            Setujui
+                                        </x-dropdown-item>
+                                        <x-dropdown-item class="text-rose-300 hover:text-rose-100"
+                                                         data-company-id="{{ $c->id }}"
+                                                         data-company-name="{{ $c->nama_perusahaan }}"
+                                                         onclick="openCompanyRejectModal(this)">
+                                            Tolak
+                                        </x-dropdown-item>
+                                    @else
+                                        <x-dropdown-item class="text-orange-300 hover:text-orange-100"
+                                                         data-company-id="{{ $c->id }}"
+                                                         data-company-name="{{ $c->nama_perusahaan }}"
+                                                         onclick="openCompanyUserStatus('{{ $c->id }}', '{{ $c->nama_perusahaan }}', '{{ $isActive ? 'inactive' : 'active' }}')">
+                                            {{ $isActive ? 'Nonaktifkan User' : 'Aktifkan User' }}
+                                        </x-dropdown-item>
+                                    @endif
+                                    <x-dropdown-item class="text-cyan-300 hover:text-cyan-100"
+                                                     onclick="openCompanyLog({{ $c->id }})">
+                                        Riwayat
+                                    </x-dropdown-item>
+                                </x-dropdown>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="p-6 text-center text-slate-400">
+                        <td colspan="7" class="p-6 text-center text-slate-400">
                             Belum ada perusahaan terdaftar.
                         </td>
                     </tr>
@@ -247,7 +224,7 @@
             {{ $companies->links() }}
         </div>
     </div>
-    
+
     {{-- Modal detail perusahaan --}}
     <div x-data="{ open:false, html:'', loading:false }"
          @company-detail.window="
@@ -355,152 +332,64 @@
         </div>
     </x-modal>
 
-    @once
-        @push('scripts')
-            <script>
-                // Helper dropdown persis seperti di manage-jobseekers (override tanpa guard)
-                window.dropdownMenu = function () {
-                    return {
-                        open: false,
-                        dropUp: false,
-                        style: '',
-                        width: 256, // w-64
-                        init() {
-                            window.addEventListener('close-dropdowns', () => { this.open = false; });
-                        },
-                        toggle(e) {
-                            this.open = !this.open;
-                            if (this.open) {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const spaceBelow = window.innerHeight - rect.bottom;
-                                this.dropUp = spaceBelow < 260;
-                                let left = rect.right - this.width;
-                                left = Math.max(8, Math.min(left, window.innerWidth - this.width - 8));
-                                let top = this.dropUp ? rect.top - 8 : rect.bottom + 8;
-                                this.style = `left:${left}px;top:${top}px`;
-                            }
-                        },
-                        close() { this.open = false; }
-                    }
-                };
+    {{-- Modal log --}}
+    <x-modal name="log-company" :show="false" maxWidth="3xl" animation="zoom">
+        <div class="flex items-start justify-between border-b border-slate-800 px-6 py-4">
+            <div>
+                <h3 class="text-lg font-semibold" id="companyLogTitle">Riwayat Perusahaan</h3>
+                <p class="text-sm text-gray-400 mt-1" id="companyLogSubtitle"></p>
+            </div>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'log-company'}))" class="text-slate-300 hover:text-white">✕</button>
+        </div>
+        <div id="companyLogBody" class="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4"></div>
+    </x-modal>
 
-                let currentCompanyId = null;
-                let currentUserId = null;
+    {{-- Modal approve --}}
+    <x-modal name="modal-company-approve" :show="false" maxWidth="md" animation="slide-up">
+        <div class="px-6 py-5 space-y-4">
+            <h3 class="text-lg font-semibold text-gray-100" id="companyApproveTitle">Setujui Perusahaan</h3>
+            <p class="text-sm text-gray-300" id="companyApproveSubtitle"></p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-approve'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <form method="POST" id="companyApproveForm">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
+                </form>
+            </div>
+        </div>
+    </x-modal>
 
-                window.openCompanyApproveModal = function (button) {
-                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-verify' }));
+    {{-- Modal reject --}}
+    <x-modal name="modal-company-reject" :show="false" maxWidth="md" animation="slide-up">
+        <div class="px-6 py-5 space-y-4">
+            <h3 class="text-lg font-semibold text-gray-100" id="companyRejectTitle">Tolak Perusahaan</h3>
+            <p class="text-sm text-gray-300" id="companyRejectSubtitle"></p>
+            <form method="POST" id="companyRejectForm" class="space-y-3">
+                @csrf
+                <label class="block text-sm text-gray-300">Alasan Penolakan</label>
+                <textarea name="reason" rows="3" class="w-full rounded-lg bg-slate-800 border border-slate-700 text-gray-100"></textarea>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-reject'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 transition text-sm font-semibold text-white">Tolak</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
 
-                    currentCompanyId = button.getAttribute('data-company-id');
-                    const name = button.getAttribute('data-company-name') || '';
-
-                    document.getElementById('companyVerifyTitle').textContent = 'Setujui Perusahaan';
-                    document.getElementById('companyVerifyBody').textContent =
-                        'Setujui profil perusahaan ini? Status verifikasi akan menjadi Disetujui.';
-                    document.getElementById('companyVerifySubtitle').textContent = name;
-
-                    const btn = document.getElementById('confirmCompanyVerifyBtn');
-                    if (btn) {
-                        btn.textContent = 'Setujui';
-                        btn.classList.remove('bg-amber-600','hover:bg-amber-700');
-                        btn.classList.add('bg-emerald-600','hover:bg-emerald-700');
-                        btn.onclick = function () {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).approve(currentCompanyId);
-                            }
-                            window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-verify'}));
-                        };
-                    }
-                };
-
-                window.openCompanyUnapproveModal = function (button) {
-                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-verify' }));
-
-                    currentCompanyId = button.getAttribute('data-company-id');
-                    const name = button.getAttribute('data-company-name') || '';
-
-                    document.getElementById('companyVerifyTitle').textContent = 'Batalkan Persetujuan';
-                    document.getElementById('companyVerifyBody').textContent =
-                        'Batalkan persetujuan perusahaan ini? Status verifikasi akan dikembalikan menjadi pending.';
-                    document.getElementById('companyVerifySubtitle').textContent = name;
-
-                    const btn = document.getElementById('confirmCompanyVerifyBtn');
-                    if (btn) {
-                        btn.textContent = 'Batal Setuju';
-                        btn.classList.remove('bg-emerald-600','hover:bg-emerald-700');
-                        btn.classList.add('bg-amber-600','hover:bg-amber-700');
-                        btn.onclick = function () {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).unapprove(currentCompanyId);
-                            }
-                            window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-verify'}));
-                        };
-                    }
-                };
-
-                window.openCompanyUserStatusModal = function (button) {
-                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-user-status' }));
-
-                    currentUserId = button.getAttribute('data-user-id');
-                    const name = button.getAttribute('data-company-name') || '';
-                    const email = button.getAttribute('data-user-email') || '';
-                    const isActive = button.getAttribute('data-user-active') === '1';
-
-                    document.getElementById('companyUserStatusTitle').textContent = isActive
-                        ? 'Nonaktifkan Akun Perusahaan'
-                        : 'Aktifkan Akun Perusahaan';
-                    document.getElementById('companyUserStatusBody').textContent = isActive
-                        ? 'Nonaktifkan akun perusahaan ini? Mereka tidak dapat login sampai diaktifkan kembali.'
-                        : 'Aktifkan kembali akun perusahaan ini? Mereka akan dapat login kembali.';
-                    document.getElementById('companyUserStatusSubtitle').textContent =
-                        email ? `${name} · ${email}` : name;
-
-                    const btn = document.getElementById('confirmCompanyUserStatusBtn');
-                    if (btn) {
-                        btn.textContent = isActive ? 'Nonaktifkan' : 'Aktifkan';
-                        btn.classList.remove('bg-emerald-600','hover:bg-emerald-700','bg-amber-600','hover:bg-amber-700');
-                        btn.classList.add(isActive ? 'bg-amber-600','hover:bg-amber-700' : 'bg-emerald-600','hover:bg-emerald-700');
-                        btn.onclick = function () {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).toggleUserStatus(currentUserId);
-                            }
-                            window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-user-status'}));
-                        };
-                    }
-                };
-
-                window.openCompanyDeleteModal = function (button) {
-                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
-
-                    currentUserId = button.getAttribute('data-user-id');
-                    const name = button.getAttribute('data-company-name') || '';
-                    const email = button.getAttribute('data-user-email') || '';
-
-                    document.getElementById('companyDeleteSubtitle').textContent =
-                        email ? `${name} · ${email}` : name;
-
-                    const btn = document.getElementById('confirmCompanyDeleteBtn');
-                    if (btn) {
-                        btn.onclick = function () {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).deleteUser(currentUserId);
-                            }
-                            window.dispatchEvent(new CustomEvent('close-modal', {detail: 'confirm-company-delete'}));
-                        };
-                    }
-                };
-            </script>
-        @endpush
-    @endonce
+    {{-- Modal unapprove --}}
+    <x-modal name="modal-company-unapprove" :show="false" maxWidth="md" animation="slide-up">
+        <div class="px-6 py-5 space-y-4">
+            <h3 class="text-lg font-semibold text-gray-100" id="companyUnapproveTitle">Batalkan Persetujuan</h3>
+            <p class="text-sm text-gray-300" id="companyUnapproveSubtitle"></p>
+            <form method="POST" id="companyUnapproveForm" class="space-y-3">
+                @csrf
+                <label class="block text-sm text-gray-300">Catatan (opsional)</label>
+                <textarea name="notes" rows="3" class="w-full rounded-lg bg-slate-800 border border-slate-700 text-gray-100"></textarea>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'modal-company-unapprove'}))" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Batalkan</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
 </div>
