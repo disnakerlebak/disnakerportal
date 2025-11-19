@@ -8,6 +8,7 @@ use App\Models\RejectionReason;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -174,6 +175,7 @@ class Ak1Table extends Component
     // ===== Bulk Actions =====
     public function bulkApprove(): void
     {
+        DB::transaction(function () {
         $ids = array_map('intval', $this->selected);
         if (count($ids) < 2) {
             $this->bulkErrorMessage = 'Pilih lebih dari 1 pengajuan untuk aksi massal.';
@@ -184,6 +186,8 @@ class Ak1Table extends Component
         $allowedStatuses = ['Menunggu Verifikasi', 'Menunggu Revisi Verifikasi'];
         $apps = CardApplication::with('parent')
             ->whereIn('id', $ids)
+            ->orderBy('id') // pastikan urutan deterministik agar nomor berurutan
+            ->lockForUpdate()
             ->get();
 
         if ($apps->count() !== count($ids) || $apps->contains(fn ($a) => !in_array($a->status, $allowedStatuses, true))) {
@@ -192,26 +196,33 @@ class Ak1Table extends Component
             return;
         }
 
+        // Ambil nomor terakhir yang sudah dipakai tahun ini, lock untuk hindari tabrakan saat bulk
+        $latest = CardApplication::whereYear('created_at', now()->year)
+            ->where('status', 'Disetujui')
+            ->whereNotNull('nomor_ak1')
+            // Abaikan perbaikan karena nomor memakai parent, bukan penerbitan baru
+            ->where(function ($q) {
+                $q->where('type', '!=', 'perbaikan')->orWhereNull('type');
+            })
+            ->orderByDesc('id')
+            ->lockForUpdate()
+            ->first();
+
+        $currentNumber = 0;
+        if ($latest && preg_match('/DTK-AK1-(\d+)-/', $latest->nomor_ak1, $m)) {
+            $currentNumber = (int) $m[1];
+        }
+        $prefix = 'DTK-AK1';
+        $monthYear = now()->format('my');
+
         foreach ($apps as $app) {
             $nomorAk1 = $app->nomor_ak1;
             if (!$nomorAk1) {
                 if ($app->type === 'perbaikan' && $app->parent) {
                     $nomorAk1 = $app->parent->nomor_ak1;
                 } else {
-                    $prefix = 'DTK-AK1';
-                    $monthYear = now()->format('my');
-                    $latest = CardApplication::whereYear('created_at', now()->year)
-                        ->where('status', 'Disetujui')
-                        ->whereNotNull('nomor_ak1')
-                        ->orderByDesc('id')
-                        ->first();
-
-                    if ($latest && preg_match('/DTK-AK1-(\d+)-/', $latest->nomor_ak1, $m)) {
-                        $nextNumber = str_pad(((int) $m[1]) + 1, 4, '0', STR_PAD_LEFT);
-                    } else {
-                        $nextNumber = '0001';
-                    }
-
+                    $currentNumber++;
+                    $nextNumber = str_pad($currentNumber, 4, '0', STR_PAD_LEFT);
                     $nomorAk1 = "{$prefix}-{$nextNumber}-{$monthYear}";
                 }
             }
@@ -238,6 +249,7 @@ class Ak1Table extends Component
         $this->selectAll = false;
         session()->flash('success', 'Pengajuan terpilih berhasil disetujui.');
         $this->resetPage();
+        }); // end transaction
     }
 
     public function bulkUnapprove(): void
