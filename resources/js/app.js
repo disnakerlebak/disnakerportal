@@ -47,14 +47,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const menu = document.getElementById(id);
         if (!menu) return;
 
+        // Ukur ukuran asli meski menu masih tersembunyi
+        const measure = () => {
+            const wasHidden = menu.classList.contains("hidden");
+            const previousVisibility = menu.style.visibility;
+            if (wasHidden) {
+                menu.classList.remove("hidden");
+                menu.style.visibility = "hidden";
+            }
+            const width = menu.offsetWidth || menu.scrollWidth || 208;
+            const height = menu.offsetHeight || menu.scrollHeight || 200;
+            if (wasHidden) {
+                menu.classList.add("hidden");
+                menu.style.visibility = previousVisibility || "";
+            }
+            return { width, height };
+        };
+
         const isOpen = !menu.classList.contains("hidden");
         closeAll();
         if (isOpen) return; // jika sudah terbuka, tinggal tutup
 
         // posisi fixed relative viewport + scroll
         const rect = trigger.getBoundingClientRect();
-        const menuWidth = menu.offsetWidth || 208;
-        const menuHeight = menu.offsetHeight || 200;
+        const { width: menuWidth, height: menuHeight } = measure();
         let top = rect.bottom + window.scrollY + margin;
         let left = rect.right + window.scrollX - menuWidth;
 
