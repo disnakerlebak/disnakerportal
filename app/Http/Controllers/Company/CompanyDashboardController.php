@@ -15,8 +15,12 @@ class CompanyDashboardController extends Controller
         $user = $request->user();
 
         $company = CompanyProfile::where('user_id', $user->id)->first();
+        $isVerified = $company?->verification_status === 'approved';
+        $verificationStatus = 'Belum Diverifikasi';
 
-        $verificationStatus = $company ? 'Terverifikasi' : 'Belum Diverifikasi';
+        if ($company) {
+            $verificationStatus = $isVerified ? 'Terverifikasi' : 'Menunggu Verifikasi Admin';
+        }
 
         $activeJobsCount = 0;
         $totalApplicants = 0;
@@ -37,10 +41,11 @@ class CompanyDashboardController extends Controller
 
         return view('company.dashboard', [
             'verificationStatus' => $verificationStatus,
+            'canPostJobs'        => $isVerified,
             'activeJobsCount'    => $activeJobsCount,
             'totalApplicants'    => $totalApplicants,
             'monthlyApplicants'  => $monthlyApplicants,
+            'company'            => $company,
         ]);
     }
 }
-

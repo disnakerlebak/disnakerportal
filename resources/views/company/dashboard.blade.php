@@ -4,6 +4,15 @@
 
 @section('content')
     <div class="max-w-6xl mx-auto py-8 px-4 space-y-6">
+        @if(session('error'))
+            <div class="rounded-xl border border-rose-600/50 bg-rose-600/10 px-4 py-3 text-sm text-rose-200">
+                {{ session('error') }}
+            </div>
+        @elseif(session('success'))
+            <div class="rounded-xl border border-emerald-600/40 bg-emerald-600/10 px-4 py-3 text-sm text-emerald-200">
+                {{ session('success') }}
+            </div>
+        @endif
         <!-- Heading -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -12,14 +21,26 @@
                     Ringkasan aktivitas lowongan dan pelamar di DisnakerPortal.
                 </p>
             </div>
-            <a href="{{ route('company.jobs.create') }}"
-               class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 4v16m8-8H4"/>
-                </svg>
-                <span>Buat Lowongan</span>
-            </a>
+            @if($canPostJobs)
+                <a href="{{ route('company.jobs.create') }}"
+                   class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>Buat Lowongan</span>
+                </a>
+            @else
+                <button type="button"
+                        class="inline-flex items-center gap-2 rounded-lg bg-slate-800/70 px-4 py-2 text-sm font-semibold text-slate-300 shadow cursor-not-allowed"
+                        title="Perusahaan belum diverifikasi">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>Menunggu Verifikasi</span>
+                </button>
+            @endif
         </div>
 
         <!-- Statistik cards -->
@@ -31,7 +52,7 @@
                         <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
                             Status Verifikasi
                         </p>
-                        <p class="mt-2 text-lg font-semibold text-slate-100">
+                        <p class="mt-2 text-lg font-semibold {{ $canPostJobs ? 'text-emerald-300' : 'text-amber-200' }}">
                             {{ $verificationStatus ?? 'Belum Diverifikasi' }}
                         </p>
                     </div>
@@ -44,7 +65,11 @@
                     </div>
                 </div>
                 <p class="mt-2 text-xs text-slate-500">
-                    Pastikan profil perusahaan terisi lengkap untuk proses verifikasi lebih cepat.
+                    @if($canPostJobs)
+                        Terima kasih telah melengkapi proses verifikasi. Anda sudah dapat mengelola lowongan kerja.
+                    @else
+                        Lengkapi profil perusahaan dan tunggu persetujuan admin untuk mulai mempublikasikan lowongan.
+                    @endif
                 </p>
             </div>
 
@@ -125,20 +150,32 @@
         <div class="mt-4 rounded-xl border border-dashed border-slate-700/60 bg-slate-900/40 p-4 text-sm text-slate-300">
             <div class="flex items-center justify-between gap-3">
                 <div>
-                    <p class="font-semibold text-slate-100">Belum ada aktivitas terbaru</p>
+                    <p class="font-semibold text-slate-100">
+                        @if($canPostJobs)
+                            Belum ada aktivitas terbaru
+                        @else
+                            Menunggu verifikasi
+                        @endif
+                    </p>
                     <p class="mt-1 text-xs text-slate-400">
-                        Setelah Anda membuat lowongan dan mulai menerima pelamar, ringkasan aktivitas akan muncul di sini.
+                        @if($canPostJobs)
+                            Setelah Anda membuat lowongan dan mulai menerima pelamar, ringkasan aktivitas akan muncul di sini.
+                        @else
+                            Tim kami akan meninjau data perusahaan Anda. Hubungi Disnaker jika membutuhkan update status verifikasi.
+                        @endif
                     </p>
                 </div>
-                <a href="{{ route('company.jobs.index') }}"
-                   class="inline-flex items-center gap-1 text-xs font-medium text-indigo-400 hover:text-indigo-300">
-                    Lihat semua lowongan
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M13.5 4.5L21 12l-7.5 7.5M21 12H3"/>
-                    </svg>
-                </a>
+                @if($canPostJobs)
+                    <a href="{{ route('company.jobs.index') }}"
+                       class="inline-flex items-center gap-1 text-xs font-medium text-indigo-400 hover:text-indigo-300">
+                        Lihat semua lowongan
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13.5 4.5L21 12l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </a>
+                @endif
             </div>
         </div>
     </div>
