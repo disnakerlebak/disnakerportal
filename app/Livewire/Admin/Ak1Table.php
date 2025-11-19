@@ -69,6 +69,18 @@ class Ak1Table extends Component
         'perpanjangan' => 'Perpanjangan',
     ];
 
+    #[Url(as: 'sort', except: 'created_at')]
+    public string $sortField = 'created_at';
+
+    #[Url(as: 'dir', except: 'desc')]
+    public string $sortDirection = 'desc';
+
+    protected array $sortableColumns = [
+        'created_at'  => 'created_at',
+        'approved_at' => 'approved_at',
+        'nomor_ak1'   => 'nomor_ak1',
+    ];
+
     public function mount(): void
     {
         $this->activeOnly = !$this->archivedOnly;
@@ -129,7 +141,7 @@ class Ak1Table extends Component
 
     public function render(): View
     {
-        $apps = CardApplication::with(['user.jobseekerProfile', 'lastHandler.actor', 'logs.actor'])
+        $query = CardApplication::with(['user.jobseekerProfile', 'lastHandler.actor', 'logs.actor'])
             ->when($this->search, function (Builder $query) {
                 $query->whereHas('user', function (Builder $userQuery) {
                     $userQuery->where('name', 'like', '%' . $this->search . '%')
@@ -150,7 +162,13 @@ class Ak1Table extends Component
             }, function (Builder $query) {
                 $query->whereNotNull('archived_at');
             })
-            ->latest('created_at')
+            ;
+
+        $sortColumn = $this->getSortColumn();
+        $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
+        $apps = $query->orderBy($sortColumn, $direction)
+            ->when($sortColumn !== 'created_at', fn ($q) => $q->orderByDesc('created_at'))
             ->paginate(20);
 
         $this->currentPageIds = $apps->pluck('id')->all();
@@ -170,6 +188,27 @@ class Ak1Table extends Component
         // Dengan wire:model.defer pada form, klik tombol ini akan
         // mengirim perubahan ke server dan memicu re-render + update URL
         $this->resetPage();
+    }
+
+    public function sortBy(string $field): void
+    {
+        if (!array_key_exists($field, $this->sortableColumns)) {
+            return;
+        }
+
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
+    protected function getSortColumn(): string
+    {
+        return $this->sortableColumns[$this->sortField] ?? 'created_at';
     }
 
     // ===== Bulk Actions =====

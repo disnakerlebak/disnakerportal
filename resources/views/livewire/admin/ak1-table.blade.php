@@ -148,13 +148,73 @@
                         <thead class="bg-slate-800 text-slate-200 uppercase text-xs whitespace-nowrap sticky top-0 z-20 border-b border-slate-700 shadow-md shadow-slate-900/30">
                         <tr>
                             <th class="p-3 text-center"><input type="checkbox" wire:model="selectAll" class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500"></th>
-                            <th class="p-3 text-center whitespace-nowrap">Pemohon</th>
+                            <th class="p-3 text-center whitespace-nowrap">
+                                <button type="button"
+                                        wire:click="sortBy('created_at')"
+                                        class="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-200 hover:text-white mx-auto">
+                                    <span>Pemohon</span>
+                                    @php
+                                        $isSorted = $sortField === 'created_at';
+                                    @endphp
+                                    <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                        @if($isSorted)
+                                            @if($sortDirection === 'asc')
+                                                <path d="M10 6l4 4H6l4-4z" />
+                                            @else
+                                                <path d="M10 14l-4-4h8l-4 4z" />
+                                            @endif
+                                        @else
+                                            <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                        @endif
+                                    </svg>
+                                </button>
+                            </th>
                             <th class="p-3 text-center whitespace-nowrap">Status Disabilitas</th>
                             <th class="p-3 text-center whitespace-nowrap">Tipe Pengajuan</th>
                             <th class="p-3 text-center whitespace-nowrap">Status</th>
                             <th class="p-3 text-center whitespace-nowrap">Keterangan</th>
-                            <th class="p-3 text-center whitespace-nowrap">Nomor AK/1</th>
-                            <th class="p-3 text-center whitespace-nowrap">Ditangani Oleh</th>
+                            <th class="p-3 text-center whitespace-nowrap">
+                                <button type="button"
+                                        wire:click="sortBy('nomor_ak1')"
+                                        class="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-200 hover:text-white mx-auto">
+                                    <span>Nomor AK/1</span>
+                                    @php
+                                        $isSorted = $sortField === 'nomor_ak1';
+                                    @endphp
+                                    <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                        @if($isSorted)
+                                            @if($sortDirection === 'asc')
+                                                <path d="M10 6l4 4H6l4-4z" />
+                                            @else
+                                                <path d="M10 14l-4-4h8l-4 4z" />
+                                            @endif
+                                        @else
+                                            <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                        @endif
+                                    </svg>
+                                </button>
+                            </th>
+                            <th class="p-3 text-center whitespace-nowrap">
+                                <button type="button"
+                                        wire:click="sortBy('approved_at')"
+                                        class="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-200 hover:text-white mx-auto">
+                                    <span>Ditangani Oleh</span>
+                                    @php
+                                        $isSorted = $sortField === 'approved_at';
+                                    @endphp
+                                    <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                        @if($isSorted)
+                                            @if($sortDirection === 'asc')
+                                                <path d="M10 6l4 4H6l4-4z" />
+                                            @else
+                                                <path d="M10 14l-4-4h8l-4 4z" />
+                                            @endif
+                                        @else
+                                            <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                        @endif
+                                    </svg>
+                                </button>
+                            </th>
                             <th class="p-3 text-center whitespace-nowrap">Aksi</th>
                         </tr>
                         </thead>

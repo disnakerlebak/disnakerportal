@@ -2,7 +2,11 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\CardApplication;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,6 +18,19 @@ class JobseekerTable extends Component
     public $hasTraining = false;
     public $hasWork = false;
     public $perPage = 20;
+    #[Url(as: 'sort', except: 'last_ak1_created_at')]
+    public string $sortField = 'last_ak1_created_at';
+    #[Url(as: 'dir', except: 'desc')]
+    public string $sortDirection = 'desc';
+
+    protected array $sortableFields = [
+        'usia',
+        'pendidikan',
+        'keahlian',
+        'pengalaman',
+        'nomor_ak1',
+        'last_ak1_created_at',
+    ];
 
     protected $queryString = [
         'q' => ['except' => ''],
@@ -40,6 +57,36 @@ class JobseekerTable extends Component
         $this->resetPage();
     }
 
+    public function sortBy(string $field): void
+    {
+        if (!in_array($field, $this->sortableFields, true)) {
+            return;
+        }
+
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
+    protected function applySorting(Builder $query): Builder
+    {
+        $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
+        return match ($this->sortField) {
+            'usia' => $query->orderBy('jp.tanggal_lahir', $direction === 'asc' ? 'desc' : 'asc'),
+            'pendidikan' => $query->orderBy('jp.pendidikan_terakhir', $direction),
+            'keahlian' => $query->orderBy('training_count', $direction),
+            'pengalaman' => $query->orderBy('experience_count', $direction),
+            'nomor_ak1' => $query->orderBy('latest_nomor_ak1', $direction),
+            default => $query->orderBy('last_ak1_created_at', $direction)->orderBy('users.id'),
+        };
+    }
+
     public function render()
     {
         $query = User::query()
@@ -52,7 +99,30 @@ class JobseekerTable extends Component
             ])
             ->withMax(['cardApplications as last_ak1_created_at' => function ($q) {
                 $q->where('status', 'Disetujui')->where('is_active', true);
-            }], 'created_at');
+            }], 'created_at')
+            ->leftJoin('jobseeker_profiles as jp', 'jp.user_id', '=', 'users.id')
+            ->addSelect('users.*')
+            ->selectSub(
+                CardApplication::select('nomor_ak1')
+                    ->whereColumn('user_id', 'users.id')
+                    ->where('status', 'Disetujui')
+                    ->where('is_active', true)
+                    ->orderByDesc('created_at')
+                    ->limit(1),
+                'latest_nomor_ak1'
+            )
+            ->selectSub(
+                DB::table('trainings')
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('jobseeker_profile_id', 'jp.id'),
+                'training_count'
+            )
+            ->selectSub(
+                DB::table('work_experiences')
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('jobseeker_profile_id', 'jp.id'),
+                'experience_count'
+            );
 
         if (filled($this->q)) {
             $keyword = trim($this->q);
@@ -71,7 +141,9 @@ class JobseekerTable extends Component
             $query->whereHas('jobseekerProfile.workExperiences');
         }
 
-        $users = $query->orderByDesc('last_ak1_created_at')->paginate($this->perPage);
+        $query = $this->applySorting($query);
+
+        $users = $query->paginate($this->perPage);
 
         return view('livewire.admin.jobseeker-table', [
             'users' => $users,

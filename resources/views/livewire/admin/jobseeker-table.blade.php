@@ -42,13 +42,103 @@
                 <tr>
                     <th class="p-3 text-left">Nama Lengkap</th>
                     <th class="p-3 text-left">Jenis Kelamin</th>
-                    <th class="p-3 text-left">Usia</th>
-                    <th class="p-3 text-left">Pendidikan</th>
-                    <th class="p-3 text-left">Keahlian</th>
-                    <th class="p-3 text-left whitespace-nowrap">Pengalaman Kerja</th>
-                    <th class="p-3 text-left whitespace-nowrap">Status Disabilitas</th>
+                    <th class="p-3 text-left">
+                        <button type="button"
+                                wire:click="sortBy('usia')"
+                                class="flex items-center gap-1 text-xs font-semibold capitalize tracking-wide text-slate-200 hover:text-white">
+                            <span>Usia</span>
+                            @php $isSorted = $sortField === 'usia'; @endphp
+                            <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                @if($isSorted)
+                                    @if($sortDirection === 'asc')
+                                        <path d="M10 6l4 4H6l4-4z" />
+                                    @else
+                                        <path d="M10 14l-4-4h8l-4 4z" />
+                                    @endif
+                                @else
+                                    <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                @endif
+                            </svg>
+                        </button>
+                    </th>
+                    <th class="p-3 text-left">
+                        <button type="button"
+                                wire:click="sortBy('pendidikan')"
+                                class="flex items-center gap-1 text-xs font-semibold capitalize tracking-wide text-slate-200 hover:text-white">
+                            <span>Pendidikan</span>
+                            @php $isSorted = $sortField === 'pendidikan'; @endphp
+                            <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                @if($isSorted)
+                                    @if($sortDirection === 'asc')
+                                        <path d="M10 6l4 4H6l4-4z" />
+                                    @else
+                                        <path d="M10 14l-4-4h8l-4 4z" />
+                                    @endif
+                                @else
+                                    <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                @endif
+                            </svg>
+                        </button>
+                    </th>
+                    <th class="p-3 text-left">
+                        <button type="button"
+                                wire:click="sortBy('keahlian')"
+                                class="flex items-center gap-1 text-xs font-semibold capitalize tracking-wide text-slate-200 hover:text-white">
+                            <span>Keahlian</span>
+                            @php $isSorted = $sortField === 'keahlian'; @endphp
+                            <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                @if($isSorted)
+                                    @if($sortDirection === 'asc')
+                                        <path d="M10 6l4 4H6l4-4z" />
+                                    @else
+                                        <path d="M10 14l-4-4h8l-4 4z" />
+                                    @endif
+                                @else
+                                    <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                @endif
+                            </svg>
+                        </button>
+                    </th>
+                    <th class="p-3 text-left whitespace-nowrap">
+                        <button type="button"
+                                wire:click="sortBy('pengalaman')"
+                                class="flex items-center gap-1 text-xs font-semibold capitalize tracking-wide text-slate-200 hover:text-white">
+                            <span>Pengalaman Kerja</span>
+                            @php $isSorted = $sortField === 'pengalaman'; @endphp
+                            <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                @if($isSorted)
+                                    @if($sortDirection === 'asc')
+                                        <path d="M10 6l4 4H6l4-4z" />
+                                    @else
+                                        <path d="M10 14l-4-4h8l-4 4z" />
+                                    @endif
+                                @else
+                                    <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                @endif
+                            </svg>
+                        </button>
+                    </th>
+                    <th class="p-3 text-left">Status Disabilitas</th>
                     <th class="p-3 text-left">Kecamatan</th>
-                    <th class="p-3 text-left whitespace-nowrap">No. AK/1</th>
+                    <th class="p-3 text-left whitespace-nowrap">
+                        <button type="button"
+                                wire:click="sortBy('nomor_ak1')"
+                                class="flex items-center gap-1 text-xs font-semibold capitalize tracking-wide text-slate-200 hover:text-white">
+                            <span>No. AK/1</span>
+                            @php $isSorted = $sortField === 'nomor_ak1'; @endphp
+                            <svg class="w-3.5 h-3.5 {{ $isSorted ? 'text-indigo-400' : 'text-slate-500' }}" viewBox="0 0 20 20" fill="currentColor">
+                                @if($isSorted)
+                                    @if($sortDirection === 'asc')
+                                        <path d="M10 6l4 4H6l4-4z" />
+                                    @else
+                                        <path d="M10 14l-4-4h8l-4 4z" />
+                                    @endif
+                                @else
+                                    <path d="M10 5l4 4H6l4-4zm0 10l-4-4h8l-4 4z" />
+                                @endif
+                            </svg>
+                        </button>
+                    </th>
                     <th class="p-3 text-left">Aksi</th>
                 </tr>
                 </thead>
@@ -62,8 +152,8 @@
                         $workCount = $p?->work_experiences_count ?? 0;
                     @endphp
                     <tr class="hover:bg-slate-800/50 transition">
-                        <td class="p-3">{{ $p->nama_lengkap ?? '-' }}</td>
-                        <td class="p-3">{{ $p->jenis_kelamin ?? '-' }}</td>
+                        <td class="p-3">{{ $p?->nama_lengkap ? ucwords(strtolower($p->nama_lengkap)) : ($u->name ? ucwords(strtolower($u->name)) : '-') }}</td>
+                        <td class="p-3">{{ $p?->jenis_kelamin ? ucwords(strtolower($p->jenis_kelamin)) : '-' }}</td>
                         <td class="p-3">{{ $usia }}</td>
                         <td class="p-3">{{ $p->pendidikan_terakhir ?? '-' }}</td>
                         <td class="p-3 whitespace-nowrap">{{ $trainingCount }} Pelatihan</td>
