@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\CardApplication;
+use App\Models\CardApplicationLog;
 use App\Models\RejectionReason;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,14 +32,14 @@ class Ak1Table extends Component
 
     public bool $archivedOnly = false;
 
-    public ?int $archiveTarget = null;
-    public ?string $archiveTargetName = null;
+    public array $archiveIds = [];
+    public ?string $archiveLabel = null;
     public ?string $bulkErrorMessage = null;
 
-    public function setArchiveTarget(int $id, ?string $name = null): void
+    public function resetArchiveState(): void
     {
-        $this->archiveTarget = $id;
-        $this->archiveTargetName = $name;
+        $this->archiveIds = [];
+        $this->archiveLabel = null;
     }
 
     /** @var array<int,int> */
@@ -175,6 +176,7 @@ class Ak1Table extends Component
     {
         $ids = array_map('intval', $this->selected);
         if (count($ids) < 2) {
+            $this->bulkErrorMessage = 'Pilih lebih dari 1 pengajuan untuk aksi massal.';
             $this->dispatch('open-bulk-error', title: 'Pilih minimal 2 pengajuan', message: 'Pilih lebih dari 1 pengajuan untuk aksi massal.');
             return;
         }
@@ -185,6 +187,7 @@ class Ak1Table extends Component
             ->get();
 
         if ($apps->count() !== count($ids) || $apps->contains(fn ($a) => !in_array($a->status, $allowedStatuses, true))) {
+            $this->bulkErrorMessage = 'Pastikan semua pilihan berstatus Menunggu Verifikasi/Revisi dan belum Disetujui.';
             $this->dispatch('open-bulk-error', title: 'Tidak valid untuk disetujui', message: 'Pastikan semua pilihan berstatus Menunggu Verifikasi/Revisi dan belum Disetujui.');
             return;
         }
@@ -241,12 +244,14 @@ class Ak1Table extends Component
     {
         $ids = array_map('intval', $this->selected);
         if (count($ids) < 2) {
+            $this->bulkErrorMessage = 'Pilih lebih dari 1 pengajuan untuk aksi massal.';
             $this->dispatch('open-bulk-error', title: 'Pilih minimal 2 pengajuan', message: 'Pilih lebih dari 1 pengajuan untuk aksi massal.');
             return;
         }
 
         $apps = CardApplication::whereIn('id', $ids)->get();
         if ($apps->count() !== count($ids) || $apps->contains(fn ($a) => $a->status !== 'Disetujui')) {
+            $this->bulkErrorMessage = 'Aksi batal persetujuan hanya untuk pengajuan berstatus Disetujui.';
             $this->dispatch('open-bulk-error', title: 'Tidak valid untuk dibatalkan', message: 'Aksi batal persetujuan hanya untuk pengajuan berstatus Disetujui.');
             return;
         }
@@ -280,12 +285,14 @@ class Ak1Table extends Component
     {
         $ids = array_map('intval', $this->selected);
         if (count($ids) < 2) {
+            $this->bulkErrorMessage = 'Pilih lebih dari 1 pengajuan untuk arsip.';
             $this->dispatch('open-bulk-error', title: 'Pilih minimal 2 pengajuan', message: 'Pilih lebih dari 1 pengajuan untuk arsip.');
             return;
         }
 
         $apps = CardApplication::whereIn('id', $ids)->get();
         if ($apps->count() !== count($ids) || $apps->contains(fn ($a) => $a->is_active)) {
+            $this->bulkErrorMessage = 'Pastikan semua pengajuan berstatus non-aktif sebelum diarsipkan.';
             $this->dispatch('open-bulk-error', title: 'Arsip hanya untuk AK1 non-aktif', message: 'Pastikan semua pengajuan berstatus non-aktif sebelum diarsipkan.');
             return;
         }
@@ -304,6 +311,7 @@ class Ak1Table extends Component
     {
         $ids = array_map('intval', $this->selected);
         if (count($ids) < 2) {
+            $this->bulkErrorMessage = 'Pilih lebih dari 1 pengajuan untuk keluar dari arsip.';
             $this->dispatch('open-bulk-error', title: 'Pilih minimal 2 pengajuan', message: 'Pilih lebih dari 1 pengajuan untuk keluar dari arsip.');
             return;
         }
@@ -318,61 +326,121 @@ class Ak1Table extends Component
         $this->resetPage();
     }
 
-    public function archiveSingle(int $id): void
+    public function prepareArchiveSingle($id): void
     {
-        $app = CardApplication::findOrFail($id);
-        $this->archiveTarget = $id;
-        $this->archiveTargetName = $app->user?->name;
+        $this->archiveIds = [(int)$id];
+        $app = CardApplication::find($id);
+        $this->archiveLabel = $app?->user?->jobseekerProfile?->nama_lengkap
+            ?? $app?->user?->name
+            ?? 'Pencaker';
 
-        if ($app->is_active) {
-            $this->bulkErrorMessage = 'Nonaktifkan atau batalkan persetujuan sebelum diarsipkan.';
-            $this->dispatch('open-bulk-error');
-            return;
-        }
-
-        $this->bulkErrorMessage = null;
-        $this->dispatch('show-confirm-archive');
+        $this->dispatch('open-modal', 'confirm-archive');
     }
 
-    public function doArchiveSingle(): void
+    public function prepareArchiveBulk(): void
     {
-        if (!$this->archiveTarget) {
+        if (count($this->selected) === 0) {
+            $this->dispatch('toast', type: 'error', message: 'Tidak ada data yang dipilih.');
             return;
         }
 
-        $app = CardApplication::find($this->archiveTarget);
-        if (!$app || $app->is_active) {
-            $this->bulkErrorMessage = 'Nonaktifkan atau batalkan persetujuan sebelum diarsipkan.';
-            $this->dispatch('open-bulk-error');
-            return;
+        $this->archiveIds = array_map('intval', $this->selected);
+        $this->archiveLabel = count($this->archiveIds) . ' pengajuan terpilih';
+        $this->dispatch('open-modal', 'confirm-archive');
+    }
+
+    public function performArchive(): void
+    {
+        if (empty($this->archiveIds)) return;
+
+        foreach ($this->archiveIds as $id) {
+            $app = CardApplication::find($id);
+            if (!$app) continue;
+
+            $app->update(['archived_at' => now()]);
+
+            CardApplicationLog::create([
+                'card_application_id' => $app->id,
+                'actor_id'    => auth()->id(),
+                'action'      => 'archived',
+                'from_status' => $app->status,
+                'to_status'   => $app->status,
+                'notes'       => 'Pengajuan diarsipkan',
+            ]);
         }
 
-        $app->update(['archived_at' => Carbon::now()]);
-        $this->archiveTarget = null;
-        $this->archiveTargetName = null;
-        session()->flash('toast.success', 'Pengajuan dipindahkan ke arsip.');
-        $this->resetPage();
+        $this->resetArchiveState();
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->dispatch('close-modal', 'confirm-archive');
+        $this->dispatch('$refresh');
+        $this->dispatch('toast', type: 'success', message: 'Berhasil mengarsipkan pengajuan.');
+    }
+
+    public function prepareRestoreSingle($id): void
+    {
+        $this->archiveIds = [(int)$id];
+        $this->archiveLabel = null;
+        $this->dispatch('open-modal', 'confirm-restore');
     }
 
     public function doRestoreSingle(): void
     {
-        if (!$this->archiveTarget) {
-            return;
+        if (empty($this->archiveIds)) return;
+
+        foreach ($this->archiveIds as $id) {
+            $app = CardApplication::find($id);
+            if (!$app) continue;
+
+            $app->archived_at = null;
+            $app->save();
         }
 
-        $app = CardApplication::find($this->archiveTarget);
-        if (!$app) return;
-
-        $app->update(['archived_at' => null]);
-        $this->archiveTarget = null;
-        $this->archiveTargetName = null;
-        session()->flash('toast.success', 'Pengajuan dikembalikan dari arsip.');
+        $this->resetArchiveState();
+        $this->dispatch('close-modal', 'confirm-restore');
+        $this->dispatch('$refresh');
+        $this->dispatch('toast', type: 'success', message: 'Pengajuan dikembalikan dari arsip.');
         $this->resetPage();
     }
 
-    public function openRestoreFromDropdown(int $id): void
+    // Arsip bulk langsung tanpa modal (boleh 1 atau lebih, hanya non-aktif)
+    public function archiveSelected(): void
     {
-        $this->archiveTarget = $id;
-        $this->dispatch('show-confirm-restore');
+        if (empty($this->selected)) {
+            $this->dispatch('toast', type: 'error', message: 'Tidak ada yang dipilih.');
+            return;
+        }
+
+        $ids = array_map('intval', $this->selected);
+        $apps = CardApplication::whereIn('id', $ids)->get();
+        $eligible = $apps->where('is_active', false);
+
+        if ($eligible->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'Hanya AK1 non-aktif yang dapat diarsipkan.');
+            return;
+        }
+
+        $archivedCount = 0;
+        foreach ($eligible as $app) {
+            $app->update(['archived_at' => now()]);
+
+            CardApplicationLog::create([
+                'card_application_id' => $app->id,
+                'actor_id'    => auth()->id(),
+                'action'      => 'archived',
+                'from_status' => $app->status,
+                'to_status'   => $app->status,
+                'notes'       => 'Pengajuan diarsipkan',
+            ]);
+            $archivedCount++;
+        }
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->dispatch('$refresh');
+        if ($archivedCount > 0) {
+            $this->dispatch('toast', type: 'success', message: 'Berhasil mengarsipkan pengajuan terpilih.');
+        }
+        $this->resetPage();
     }
 }

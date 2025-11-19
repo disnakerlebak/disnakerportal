@@ -93,12 +93,13 @@
                     <span>Batalkan Persetujuan</span>
                 </button>
                 @if(!$archivedOnly)
-                    <button type="button"
-                            class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-blue-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            @click="openConfirm('archive')">
-                        <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
-                        <span>Arsipkan</span>
-                    </button>
+                <button type="button"
+                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-blue-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        wire:click="archiveSelected"
+                        @click="open=false">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
+                    <span>Arsipkan</span>
+                </button>
                 @else
                     <button type="button"
                             class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -340,14 +341,9 @@
                                                 </li>
                                             @endif
 
-                                            @if(!$archivedOnly && !$app->is_active)
-                                                <x-dropdown-item class="text-blue-300 hover:text-blue-100"
-                                                                 onclick="openArchiveModal({{ $app->id }}, '{{ addslashes($app->user->name) }}')">
-                                                    Arsipkan
-                                                </x-dropdown-item>
-                                            @elseif($archivedOnly)
+                                            @if($archivedOnly)
                                                 <x-dropdown-item class="text-emerald-300 hover:text-emerald-100"
-                                                                 wire:click="openRestoreFromDropdown({{ $app->id }})">
+                                                                 onclick="openRestoreModal({{ $app->id }})">
                                                     Kembalikan
                                                 </x-dropdown-item>
                                             @endif
@@ -496,13 +492,11 @@
     <x-modal id="confirm-archive" size="md" title="Arsipkan Pengajuan">
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">
-                Arsipkan pengajuan AK1 ini?
-                <span id="confirmArchiveSubtitle" class="font-semibold text-white">{{ $archiveTargetName }}</span>
-                Hanya pengajuan non-aktif yang dapat diarsipkan.
+                {{ $archiveLabel ?? 'Pengajuan akan diarsipkan.' }}
             </p>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" data-close-modal="confirm-archive" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                <button type="button" wire:click="doArchiveSingle" data-close-modal="confirm-archive" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition text-sm font-semibold text-white">Arsipkan</button>
+                <button type="button" wire:click="performArchive" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold">Arsipkan</button>
             </div>
         </div>
     </x-modal>
@@ -521,16 +515,40 @@
 
 @once
 @push('scripts')
-    <script>
-        document.addEventListener('open-bulk-error', () => {
-            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'bulk-error' }));
-        });
-        document.addEventListener('show-confirm-archive', () => {
-            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-archive' }));
-        });
-        document.addEventListener('show-confirm-restore', () => {
-            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-restore' }));
-        });
+        <script>
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('open-bulk-error', (detail) => {
+                    const msg = detail?.message || '';
+                    const el = document.getElementById('bulkErrorMessage');
+                    if (el) el.textContent = msg;
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'bulk-error' }));
+                });
+                Livewire.on('toast', (detail) => {
+                    if (typeof Toastify === 'undefined') return;
+                    Toastify({
+                        text: detail?.message || 'Berhasil',
+                        duration: 3500,
+                        close: true,
+                        gravity: 'bottom',
+                        position: 'right',
+                        backgroundColor: detail?.type === 'error' ? '#dc2626' : '#16a34a',
+                        stopOnFocus: true,
+                    }).showToast();
+                });
+                Livewire.on('open-modal', (id) => {
+                    window.dispatchEvent(new CustomEvent('open-modal', { detail: id }));
+                });
+                Livewire.on('close-modal', (id) => {
+                    window.dispatchEvent(new CustomEvent('close-modal', { detail: id }));
+                });
+            });
+
+        function openRestoreModal(id){
+            const comp = document.querySelector('[wire\\:id]');
+            if (!comp || !window.Livewire) return;
+            const wireId = comp.getAttribute('wire:id');
+            window.Livewire.find(wireId)?.call('prepareRestoreSingle', id);
+        }
     </script>
 @endpush
 @endonce
@@ -828,7 +846,7 @@
                         });
 
                         const infoHeader = `
-                            <div class="mb-4 rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-xs sm:text-sm text-gray-200">
+                            <div class="mb-4 rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-xs sm:text-sm text-gray-200">
                                 <div class="flex flex-wrap gap-4">
                                     <div>
                                         <div class="text-[10px] uppercase tracking-wide text-gray-400">Status Pengajuan</div>
@@ -1094,18 +1112,6 @@
                 };
 
                 // fungsi revisi dihapus, digantikan oleh openRejectModal di atas
-
-                window.openArchiveModal = function (id, name = '') {
-                    window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-archive' }));
-                    const comp = document.querySelector('[wire\\:id]');
-                    if (!comp) return;
-                    window.Livewire.find(comp.getAttribute('wire:id')).call('setArchiveTarget', id, name);
-                    const title = document.getElementById('confirmArchiveTitle');
-                    const subtitle = document.getElementById('confirmArchiveSubtitle');
-                    if (title) title.textContent = 'Arsipkan Pengajuan';
-                    if (subtitle) subtitle.textContent = name || '';
-                };
 
                 const escapeHtml = (unsafe) => (unsafe ?? '')
                     .replace(/&/g, '&amp;')

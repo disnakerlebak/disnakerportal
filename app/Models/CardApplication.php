@@ -22,6 +22,7 @@ class CardApplication extends Model
         'is_active',
         'snapshot_before',
         'snapshot_after',
+        'archived_at',
     ];
 
     /**
