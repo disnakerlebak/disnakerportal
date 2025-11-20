@@ -461,6 +461,7 @@ class CardVerificationController extends Controller
                 'to_status'   => $log->to_status,
                 'notes'       => $log->notes,
                 'actor'       => $log->actor?->name,
+                'actor_role'  => $log->actor?->role,
                 'created_at'  => optional($log->created_at)->format('d M Y H:i'),
                 'timestamp'   => optional($log->created_at)?->timestamp,
                 'nomor_ak1'   => $log->application?->nomor_ak1,

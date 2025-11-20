@@ -384,6 +384,14 @@
                     .replace(/'/g, '&#39;');
 
                 const formatStatus = (status) => statusLabels[status] || status || '-';
+                const formatActorRole = (role) => {
+                    if (!role) return '';
+                    const adminRoles = ['superadmin','admin_ak1','admin_laporan','admin_verifikator','admin_loker','admin_statistik'];
+                    if (adminRoles.includes(role)) return 'Admin';
+                    if (role === 'pencaker') return 'Pemohon';
+                    if (role === 'perusahaan') return 'Perusahaan';
+                    return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                };
 
                 const buildTimeline = (logs) => {
                     const items = logs.map((log, idx) => {
@@ -394,6 +402,7 @@
                         const extra = [];
                         if (log.nomor_ak1) extra.push(`No. AK1: ${escapeHtml(log.nomor_ak1)}`);
                         if (log.type) extra.push(`Tipe: ${escapeHtml(log.type)}`);
+                        const roleLabel = formatActorRole(log.actor_role);
 
                         const noteSection = log.notes
                             ? `<div class="mt-3 rounded-lg bg-gray-800/60 px-3 py-2 text-sm text-gray-200">
@@ -416,7 +425,7 @@
                                         <span class="text-gray-300">${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}</span>
                                     </p>
                                     <p class="mt-2 text-sm text-gray-300 leading-relaxed">
-                                        Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}</span>
+                                        Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}${roleLabel ? ` (${escapeHtml(roleLabel)})` : ''}</span>
                                     </p>
                                     ${extra.length ? `<p class="mt-1 text-xs text-gray-400">${extra.join(' · ')}</p>` : ''}
                                     ${noteSection}
