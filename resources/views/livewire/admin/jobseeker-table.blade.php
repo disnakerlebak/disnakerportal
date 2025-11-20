@@ -162,33 +162,57 @@
                         <td class="p-3">{{ $p->domisili_kecamatan ?? '-' }}</td>
                         <td class="p-3 whitespace-nowrap text-xs">{{ $app?->nomor_ak1 ?? '-' }}</td>
                         <td class="p-3 text-center">
-                            <div class="flex items-center justify-center">
-                                <x-dropdown :id="'approved-jobseeker-actions-'.$u->id">
-                                    <x-dropdown-item
-                                        class="text-blue-300 hover:text-blue-100"
-                                        onclick="window.dispatchEvent(new CustomEvent('pencaker-detail', { detail: { url: '{{ route('admin.pencaker.detail', $u->id) }}', ak1: '{{ $app?->nomor_ak1 ?? '' }}' } }));">
+                        <div class="flex items-center justify-center">
+                            <x-dropdown :id="'approved-jobseeker-actions-'.$u->id">
+                                {{-- DETAIL --}}
+                                <x-dropdown-item
+                                    class="text-blue-300 hover:text-blue-100"
+                                    onclick="
+                                        window.dispatchEvent(
+                                            new CustomEvent('approved-admin:open', {
+                                                detail: {
+                                                    id: 'approved-admin:detail',
+                                                    url: '{{ route('admin.pencaker.detail', $u->id) }}',
+                                                    ak1: '{{ $app?->nomor_ak1 ?? '' }}'
+                                                }
+                                            })
+                                        );
+                                    ">
                                         Lihat Detail
-                                    </x-dropdown-item>
+                                </x-dropdown-item>
 
-                                    @if($app)
-                                        <li>
-                                            <a href="{{ route('admin.ak1.cetak', $app->id) }}"
-                                               target="_blank"
-                                               class="flex w-full items-center gap-2 px-4 py-2 rounded-md text-indigo-300 hover:text-indigo-100 hover:bg-slate-700 transition">
-                                                Unduh AK1
-                                            </a>
-                                        </li>
-                                    @endif
+                                @if($app)
+                                    <li>
+                                        <a href="{{ route('admin.ak1.cetak', $app->id) }}"
+                                        target="_blank"
+                                        class="flex w-full items-center gap-2 px-4 py-2 rounded-md text-indigo-300 hover:text-indigo-100 hover:bg-slate-700 transition">
+                                            Unduh AK1
+                                        </a>
+                                    </li>
+                                @endif
 
-                                    <x-dropdown-item
-                                        class="text-purple-300 hover:text-purple-100"
-                                        onclick="window.openUserAk1History('{{ route('admin.ak1.userLogs', $u->id) }}','{{ $p->nama_lengkap ?? $u->name ?? 'Pencaker' }}','{{ $u->email }}');">
-                                        Riwayat AK1
-                                    </x-dropdown-item>
+                            {{-- RIWAYAT AK1 --}}
+                            <x-dropdown-item
+                                class="text-purple-300 hover:text-purple-100"
+                                onclick="
+                                    window.dispatchEvent(
+                                        new CustomEvent('approved-admin:open', {
+                                            detail: {
+                                                id: 'approved-admin:history',
+                                                url: '{{ route('admin.ak1.userLogs', $u->id) }}',
+                                                name: '{{ $p->nama_lengkap ?? $u->name ?? 'Pencaker' }}',
+                                                email: '{{ $u->email }}'
+                                            }
+                                        })
+                                    );
+                                ">
+                        Riwayat AK1
+                    </x-dropdown-item>
 
-                                </x-dropdown>
-                            </div>
-                        </td>
+                    </x-dropdown>
+                </div>
+            </td>
+
                     </tr>
                 @empty
                     <tr>
@@ -206,22 +230,34 @@
         </div>
     </div>
 
-    <div x-data="{ open:false, html:'', loading:false, ak1:'' }"
-         @pencaker-detail.window="open=true; loading=true; html=''; ak1=($event.detail.ak1||''); fetch($event.detail.url, {headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.text()).then(t=>{ html=t; }).catch(()=>{ html='<div class=\'p-6 text-red-300\'>Gagal memuat detail.</div>'; }).finally(()=>{ loading=false; })">
-        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
-             @keydown.escape.window="open=false">
-            <div @click.outside="open=false" class="modal-panel w-full max-w-5xl shadow-lg overflow-hidden">
-                <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
-                    <h3 class="text-lg font-semibold text-gray-100">Detail Pencaker <span x-show="ak1" class="ml-2 text-sm font-normal text-gray-300">— AK/1: <span x-text="ak1"></span></span></h3>
-                    <button class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700" @click="open=false">Tutup</button>
-                </div>
-                <div class="max-h-[85vh] overflow-y-auto">
-                    <template x-if="loading"><div class="p-6 text-gray-300">Memuat...</div></template>
-                    <div class="p-6" x-html="html"></div>
-                </div>
-            </div>
+    {{-- MODAL DETAIL PENCaker --}}
+<div id="approved-admin:detail"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4"
+     x-data="approvedDetailModal()"
+     @click.self="close()">
+    <div class="modal-panel w-full max-w-5xl shadow-lg overflow-hidden">
+        <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+            <h3 class="text-lg font-semibold text-gray-100">
+                Detail Pencaker
+                <span x-show="ak1" class="ml-2 text-sm font-normal text-gray-300">
+                    — AK/1: <span x-text="ak1"></span>
+                </span>
+            </h3>
+            <button
+                class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700"
+                @click="close()">
+                Tutup
+            </button>
+        </div>
+        <div class="max-h-[85vh] overflow-y-auto">
+            <template x-if="loading">
+                <div class="p-6 text-gray-300">Memuat...</div>
+            </template>
+            <div class="p-6" x-html="html"></div>
         </div>
     </div>
+</div>
+
 
     {{-- Modal Konfirmasi (custom, non-Flowbite) --}}
     <div id="confirm-modal-approved" class="hidden fixed inset-0 z-[99999] modal-backdrop flex items-center justify-center p-4">
@@ -247,145 +283,68 @@
         </div>
     </div>
 
-    <div id="log-ak1-user-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4" onclick="if(event.target===this) closeUserAk1Log()">
+    {{-- MODAL RIWAYAT AK1 (TIMELINE) --}}
+    <div id="approved-admin:history"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4"
+        x-data="approvedHistoryModal()"
+        @click.self="close()">
         <div class="modal-panel w-full max-w-4xl shadow-xl overflow-hidden">
             <div class="modal-panel-header flex items-start justify-between px-6 py-4 sticky top-0 z-10">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-100" id="userAk1LogTitle">Riwayat AK1 Pencaker</h3>
-                    <p class="text-sm text-gray-400 mt-1" id="userAk1LogSubtitle"></p>
+                    <h3 class="text-lg font-semibold text-gray-100" x-text="title"></h3>
+                    <p class="text-sm text-gray-400 mt-1" x-text="subtitle"></p>
                 </div>
-                <button type="button" onclick="closeUserAk1Log()" class="modal-close">✕</button>
+                <button type="button" @click="close()" class="modal-close">✕</button>
             </div>
-            <div id="userAk1LogBody" class="px-6 py-5 max-h-[75vh] overflow-y-auto space-y-4"></div>
+            <div class="px-6 py-5 max-h-[75vh] overflow-y-auto">
+                <template x-if="loading">
+                    <p class="text-sm text-slate-300">Memuat riwayat...</p>
+                </template>
+                <div x-html="html" class="space-y-4"></div>
+            </div>
         </div>
     </div>
 
+
     @once
-        @push('scripts')
-            <script>
-                // -------- Modal handlers (pencaker disetujui) --------
-                const confirmModal = document.getElementById('confirm-modal-approved');
-                const confirmTitle = document.getElementById('confirmTitle');
-                const confirmSubtitle = document.getElementById('confirmSubtitle');
-                const confirmBody = document.getElementById('confirmBody');
-                const confirmBtn = document.getElementById('confirmActionBtn');
-                let approvedCurrentUserId = null;
+    @push('scripts')
+        <script>
+            // ========= MODAL ENGINE: APPROVED JOBSEEKERS =========
 
-                window.openDeactivateModalApproved = function (button) {
-                    approvedCurrentUserId = button.getAttribute('data-user-id');
-                    const name = button.getAttribute('data-user-name') || '';
-                    const email = button.getAttribute('data-user-email') || '';
-                    const subtitle = document.getElementById('deactivateModalSubtitle');
-                    const title = document.getElementById('deactivateModalTitle');
-                    const body = document.getElementById('deactivateModalBody');
-                    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+            function approvedDetailModal() {
+                return {
+                    html: '',
+                    loading: false,
+                    ak1: '',
+                    load(detail) {
+                        this.ak1 = detail?.ak1 || '';
+                        const url = detail?.url;
 
-                    if (confirmTitle) confirmTitle.textContent = 'Nonaktifkan Akun Pencaker';
-                    if (confirmBody) confirmBody.textContent = 'Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.';
-                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+                        if (!url) {
+                            this.html = "<div class='p-6 text-red-300'>URL detail tidak tersedia.</div>";
+                            this.loading = false;
+                            return;
+                        }
 
-                    if (confirmBtn) {
-                        confirmBtn.textContent = 'Nonaktifkan';
-                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-amber-600 hover:bg-amber-700 transition';
-                        confirmBtn.onclick = function() {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).deactivateUser(approvedCurrentUserId);
-                            }
-                            closeConfirmModalApproved();
-                        };
+                        this.loading = true;
+                        this.html = '';
+
+                        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                            .then(r => r.text())
+                            .then(t => { this.html = t; })
+                            .catch(() => {
+                                this.html = "<div class='p-6 text-red-300'>Gagal memuat detail.</div>";
+                            })
+                            .finally(() => { this.loading = false; });
+                    },
+                    close() {
+                        const el = document.getElementById('approved-admin:detail');
+                        if (el) el.classList.add('hidden');
                     }
+                }
+            }
 
-                    openConfirmModalApproved();
-                };
-
-                window.openActivateModalApproved = function (button) {
-                    approvedCurrentUserId = button.getAttribute('data-user-id');
-                    const name = button.getAttribute('data-user-name') || '';
-                    const email = button.getAttribute('data-user-email') || '';
-                    const subtitle = document.getElementById('deactivateModalSubtitle');
-                    const title = document.getElementById('deactivateModalTitle');
-                    const body = document.getElementById('deactivateModalBody');
-                    const confirmBtn = document.getElementById('confirmDeactivateBtn');
-
-                    if (confirmTitle) confirmTitle.textContent = 'Aktifkan Akun Pencaker';
-                    if (confirmBody) confirmBody.textContent = 'Aktifkan kembali akun pencaker ini? Mereka akan dapat login dan mengakses layanan kembali.';
-                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
-                    if (confirmBtn) {
-                        confirmBtn.textContent = 'Aktifkan';
-                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 transition';
-                        confirmBtn.onclick = function () {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).activateUser(approvedCurrentUserId);
-                            }
-                            closeConfirmModalApproved();
-                        };
-                    }
-
-                    openConfirmModalApproved();
-                };
-
-                window.openResetModalApproved = function (button) {
-                    approvedCurrentUserId = button.getAttribute('data-user-id');
-                    const name = button.getAttribute('data-user-name') || '';
-                    const email = button.getAttribute('data-user-email') || '';
-
-                    if (confirmTitle) confirmTitle.textContent = 'Reset Profil Pencaker';
-                    if (confirmBody) confirmBody.textContent = 'Reset seluruh profil & riwayat (pendidikan, pelatihan, pengalaman) pencaker ini? AK1 tetap dipertahankan.';
-                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
-
-                    if (confirmBtn) {
-                        confirmBtn.textContent = 'Reset Profil';
-                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-sky-600 hover:bg-sky-700 transition';
-                        confirmBtn.onclick = function() {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).resetProfile(approvedCurrentUserId);
-                            }
-                            closeConfirmModalApproved();
-                        };
-                    }
-
-                    openConfirmModalApproved();
-                };
-
-                window.openDeleteModalApproved = function (button) {
-                    approvedCurrentUserId = button.getAttribute('data-user-id');
-                    const name = button.getAttribute('data-user-name') || '';
-                    const email = button.getAttribute('data-user-email') || '';
-
-                    if (confirmTitle) confirmTitle.textContent = 'Hapus Pencaker';
-                    if (confirmBody) confirmBody.innerHTML = "Hapus pencaker ini <span class='font-semibold text-rose-300'>BESERTA seluruh data dan riwayat AK1</span>? Tindakan ini tidak dapat dibatalkan.";
-                    if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
-
-                    if (confirmBtn) {
-                        confirmBtn.textContent = 'Hapus Pencaker';
-                        confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-rose-600 hover:bg-rose-700 transition';
-                        confirmBtn.onclick = function() {
-                            const wireComponent = document.querySelector('[wire\\:id]');
-                            if (wireComponent && window.Livewire) {
-                                const wireId = wireComponent.getAttribute('wire:id');
-                                window.Livewire.find(wireId).deleteUser(approvedCurrentUserId);
-                            }
-                            closeConfirmModalApproved();
-                        };
-                    }
-
-                    openConfirmModalApproved();
-                };
-
-                window.openConfirmModalApproved = function () {
-                    if (confirmModal) confirmModal.classList.remove('hidden');
-                };
-                window.closeConfirmModalApproved = function () {
-                    if (confirmModal) confirmModal.classList.add('hidden');
-                };
-
-                // -------- Riwayat AK1 helpers --------
+            function approvedHistoryModal() {
                 const statusLabels = {
                     'Menunggu Verifikasi': 'Menunggu Verifikasi',
                     'Menunggu Revisi Verifikasi': 'Menunggu Revisi Verifikasi',
@@ -426,98 +385,283 @@
 
                 const formatStatus = (status) => statusLabels[status] || status || '-';
 
-                window.closeUserAk1Log = function () {
-                    const overlay = document.getElementById('log-ak1-user-overlay');
-                    if (overlay) overlay.classList.add('hidden');
+                const buildTimeline = (logs) => {
+                    const items = logs.map((log, idx) => {
+                        const label = actionLabels[log.action] || log.action;
+                        const circleColor = actionColors[log.action] || 'bg-gray-400';
+                        const isLast = idx === logs.length - 1;
+
+                        const extra = [];
+                        if (log.nomor_ak1) extra.push(`No. AK1: ${escapeHtml(log.nomor_ak1)}`);
+                        if (log.type) extra.push(`Tipe: ${escapeHtml(log.type)}`);
+
+                        const noteSection = log.notes
+                            ? `<div class="mt-3 rounded-lg bg-gray-800/60 px-3 py-2 text-sm text-gray-200">
+                                    <span class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Catatan</span>
+                                    <p class="mt-1 leading-relaxed">${escapeHtml(log.notes).replace(/\\n/g, '<br>')}</p>
+                               </div>`
+                            : '';
+
+                        return `
+                            <div class="relative pl-10">
+                                <span class="absolute left-1 top-1.5 inline-flex h-3 w-3 rounded-full ${circleColor} ring-4 ring-gray-900"></span>
+                                ${isLast ? '' : '<span class="absolute left-2.5 top-4 bottom-0 border-l border-gray-700"></span>'}
+                                <div class="rounded-xl border border-gray-800 bg-gray-900/60 px-4 py-3 shadow-sm">
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                        <h4 class="text-sm font-semibold text-gray-100">${escapeHtml(label)}</h4>
+                                        <span class="text-xs text-gray-400">${log.created_at ?? '-'}</span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Perubahan:
+                                        <span class="text-gray-300">${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}</span>
+                                    </p>
+                                    <p class="mt-2 text-sm text-gray-300 leading-relaxed">
+                                        Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}</span>
+                                    </p>
+                                    ${extra.length ? `<p class="mt-1 text-xs text-gray-400">${extra.join(' · ')}</p>` : ''}
+                                    ${noteSection}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2 text-sm font-semibold text-gray-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Linimasa Pengajuan AK1</span>
+                            </div>
+                            <div class="space-y-6">${items}</div>
+                        </div>
+                    `;
                 };
 
-                window.openUserAk1History = async function (url, name, email) {
-                    const overlay = document.getElementById('log-ak1-user-overlay');
-                    if (overlay) overlay.classList.remove('hidden');
-                    const title = document.getElementById('userAk1LogTitle');
-                    const subtitle = document.getElementById('userAk1LogSubtitle');
-                    const body = document.getElementById('userAk1LogBody');
+                return {
+                    html: '',
+                    loading: false,
+                    title: 'Riwayat AK1 Pencaker',
+                    subtitle: '',
+                    load(detail) {
+                        this.title = `Riwayat AK1 — ${detail?.name || 'Pencaker'}`;
+                        this.subtitle = detail?.email || '';
+                        const url = detail?.url;
 
-                    if (title) title.textContent = `Riwayat AK1 — ${name || 'Pencaker'}`;
-                    if (subtitle) subtitle.textContent = email || '';
-                    if (body) body.innerHTML = '<p class="text-sm text-slate-300">Memuat riwayat...</p>';
-
-                    try {
-                        const res = await fetch(url, { headers: { 'Accept': 'application/json' }});
-                        if (!res.ok) throw new Error('HTTP ' + res.status);
-                        const data = await res.json();
-                        const logs = (data.logs || [])
-                            .slice()
-                            .sort((a, b) => {
-                                const aDate = a.timestamp ? new Date(a.timestamp * 1000) : new Date(a.created_at || 0);
-                                const bDate = b.timestamp ? new Date(b.timestamp * 1000) : new Date(b.created_at || 0);
-                                return aDate - bDate;
-                            });
-
-                        if (!logs.length) {
-                            if (body) body.innerHTML = '<p class="text-sm text-gray-400">Belum ada riwayat AK1.</p>';
+                        if (!url) {
+                            this.html = "<p class='text-sm text-red-400'>URL riwayat tidak tersedia.</p>";
+                            this.loading = false;
                             return;
                         }
 
-                        const content = logs.map((log, idx) => {
-                            const label = actionLabels[log.action] || log.action;
-                            const noteSection = log.notes
-                                ? `<div class="mt-3 rounded-lg bg-gray-800/60 px-3 py-2 text-sm text-gray-200">
-                                        <span class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Catatan</span>
-                                        <p class="mt-1 leading-relaxed">${escapeHtml(log.notes).replace(/\\n/g, '<br>')}</p>
-                                   </div>`
-                                : '';
-                            const circleColor = actionColors[log.action] || 'bg-gray-400';
-                            const isLast = idx === logs.length - 1;
+                        this.loading = true;
+                        this.html = '';
 
-                            const extra = [];
-                            if (log.nomor_ak1) extra.push(`No. AK1: ${escapeHtml(log.nomor_ak1)}`);
-                            if (log.type) extra.push(`Tipe: ${escapeHtml(log.type)}`);
+                        fetch(url, { headers: { 'Accept': 'application/json' } })
+                            .then(res => {
+                                if (!res.ok) throw new Error('HTTP ' + res.status);
+                                return res.json();
+                            })
+                            .then(data => {
+                                const logs = (data.logs || [])
+                                    .slice()
+                                    .sort((a, b) => {
+                                        const aDate = a.timestamp ? new Date(a.timestamp * 1000) : new Date(a.created_at || 0);
+                                        const bDate = b.timestamp ? new Date(b.timestamp * 1000) : new Date(b.created_at || 0);
+                                        return aDate - bDate;
+                                    });
 
-                            return `
-                                <div class="relative pl-10">
-                                    <span class="absolute left-1 top-1.5 inline-flex h-3 w-3 rounded-full ${circleColor} ring-4 ring-gray-900"></span>
-                                    ${isLast ? '' : '<span class="absolute left-2.5 top-4 bottom-0 border-l border-gray-700"></span>'}
-                                    <div class="rounded-xl border border-gray-800 bg-gray-900/60 px-4 py-3 shadow-sm">
-                                        <div class="flex flex-wrap items-center justify-between gap-2">
-                                            <h4 class="text-sm font-semibold text-gray-100">${escapeHtml(label)}</h4>
-                                            <span class="text-xs text-gray-400">${log.created_at ?? '-'}</span>
-                                        </div>
-                                        <p class="mt-1 text-xs text-gray-500">Perubahan: <span class="text-gray-300">${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}</span></p>
-                                        <p class="mt-2 text-sm text-gray-300 leading-relaxed">
-                                            Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}</span>
-                                        </p>
-                                        ${extra.length ? `<p class="mt-1 text-xs text-gray-400">${extra.join(' · ')}</p>` : ''}
-                                        ${noteSection}
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
+                                if (!logs.length) {
+                                    this.html = "<p class='text-sm text-gray-400'>Belum ada riwayat AK1.</p>";
+                                    return;
+                                }
 
-                        if (body) {
-                            body.innerHTML = `
-                                <div class="space-y-4">
-                                    <div class="flex items-center gap-2 text-sm font-semibold text-gray-200">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        Linimasa Pengajuan AK1
-                                    </div>
-                                    <div class="space-y-6">${content}</div>
-                                </div>
-                            `;
-                        }
-                    } catch (error) {
-                        if (body) body.innerHTML = `<p class="text-sm text-red-400">Gagal memuat riwayat. ${error.message}</p>`;
+                                this.html = buildTimeline(logs);
+                            })
+                            .catch(error => {
+                                this.html = `<p class='text-sm text-red-400'>Gagal memuat riwayat. ${error.message}</p>`;
+                            })
+                            .finally(() => { this.loading = false; });
+                    },
+                    close() {
+                        const el = document.getElementById('approved-admin:history');
+                        if (el) el.classList.add('hidden');
                     }
+                }
+            }
+
+            (function () {
+                const withAlpine = (id, cb) => {
+                    const el = document.getElementById(id);
+                    if (!el || !window.Alpine) return;
+                    const data = Alpine.$data(el);
+                    if (!data) return;
+                    cb(data, el);
                 };
 
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        closeUserAk1Log();
+                window.addEventListener('approved-admin:open', (event) => {
+                    const detail = event.detail || {};
+                    if (!detail.id) return;
+
+                    if (detail.id === 'approved-admin:detail') {
+                        withAlpine('approved-admin:detail', (comp, el) => {
+                            comp.load(detail);
+                            el.classList.remove('hidden');
+                        });
+                    }
+
+                    if (detail.id === 'approved-admin:history') {
+                        withAlpine('approved-admin:history', (comp, el) => {
+                            comp.load(detail);
+                            el.classList.remove('hidden');
+                        });
                     }
                 });
-            </script>
-        @endpush
-    @endonce
+
+                window.addEventListener('approved-admin:close', (event) => {
+                    const id = typeof event.detail === 'string'
+                        ? event.detail
+                        : event.detail?.id;
+
+                    if (!id) return;
+
+                    if (id === 'approved-admin:detail') {
+                        withAlpine('approved-admin:detail', comp => comp.close && comp.close());
+                    }
+
+                    if (id === 'approved-admin:history') {
+                        withAlpine('approved-admin:history', comp => comp.close && comp.close());
+                    }
+                });
+
+                // ESC → tutup semua modal approved-admin
+                document.addEventListener('keydown', (e) => {
+                    if (e.key !== 'Escape') return;
+                    ['approved-admin:detail', 'approved-admin:history'].forEach(id => {
+                        window.dispatchEvent(new CustomEvent('approved-admin:close', { detail: { id } }));
+                    });
+                });
+            })();
+
+
+            // ========= MODAL KONFIRMASI (LAMA) – TETAP DIPAKAI =========
+
+            const confirmModal = document.getElementById('confirm-modal-approved');
+            const confirmTitle = document.getElementById('confirmTitle');
+            const confirmSubtitle = document.getElementById('confirmSubtitle');
+            const confirmBody = document.getElementById('confirmBody');
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            let approvedCurrentUserId = null;
+
+            window.openDeactivateModalApproved = function (button) {
+                approvedCurrentUserId = button.getAttribute('data-user-id');
+                const name = button.getAttribute('data-user-name') || '';
+                const email = button.getAttribute('data-user-email') || '';
+
+                if (confirmTitle) confirmTitle.textContent = 'Nonaktifkan Akun Pencaker';
+                if (confirmBody) confirmBody.textContent = 'Nonaktifkan akun pencaker ini? Mereka tidak dapat login sampai diaktifkan kembali.';
+                if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Nonaktifkan';
+                    confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-amber-600 hover:bg-amber-700 transition';
+                    confirmBtn.onclick = function() {
+                        const wireComponent = document.querySelector('[wire\\:id]');
+                        if (wireComponent && window.Livewire) {
+                            const wireId = wireComponent.getAttribute('wire:id');
+                            window.Livewire.find(wireId).deactivateUser(approvedCurrentUserId);
+                        }
+                        closeConfirmModalApproved();
+                    };
+                }
+
+                openConfirmModalApproved();
+            };
+
+            window.openActivateModalApproved = function (button) {
+                approvedCurrentUserId = button.getAttribute('data-user-id');
+                const name = button.getAttribute('data-user-name') || '';
+                const email = button.getAttribute('data-user-email') || '';
+
+                if (confirmTitle) confirmTitle.textContent = 'Aktifkan Akun Pencaker';
+                if (confirmBody) confirmBody.textContent = 'Aktifkan kembali akun pencaker ini? Mereka akan dapat login dan mengakses layanan kembali.';
+                if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Aktifkan';
+                    confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 transition';
+                    confirmBtn.onclick = function () {
+                        const wireComponent = document.querySelector('[wire\\:id]');
+                        if (wireComponent && window.Livewire) {
+                            const wireId = wireComponent.getAttribute('wire:id');
+                            window.Livewire.find(wireId).activateUser(approvedCurrentUserId);
+                        }
+                        closeConfirmModalApproved();
+                    };
+                }
+
+                openConfirmModalApproved();
+            };
+
+            window.openResetModalApproved = function (button) {
+                approvedCurrentUserId = button.getAttribute('data-user-id');
+                const name = button.getAttribute('data-user-name') || '';
+                const email = button.getAttribute('data-user-email') || '';
+
+                if (confirmTitle) confirmTitle.textContent = 'Reset Profil Pencaker';
+                if (confirmBody) confirmBody.textContent = 'Reset seluruh profil & riwayat (pendidikan, pelatihan, pengalaman) pencaker ini? AK1 tetap dipertahankan.';
+                if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Reset Profil';
+                    confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-sky-600 hover:bg-sky-700 transition';
+                    confirmBtn.onclick = function() {
+                        const wireComponent = document.querySelector('[wire\\:id]');
+                        if (wireComponent && window.Livewire) {
+                            const wireId = wireComponent.getAttribute('wire:id');
+                            window.Livewire.find(wireId).resetProfile(approvedCurrentUserId);
+                        }
+                        closeConfirmModalApproved();
+                    };
+                }
+
+                openConfirmModalApproved();
+            };
+
+            window.openDeleteModalApproved = function (button) {
+                approvedCurrentUserId = button.getAttribute('data-user-id');
+                const name = button.getAttribute('data-user-name') || '';
+                const email = button.getAttribute('data-user-email') || '';
+
+                if (confirmTitle) confirmTitle.textContent = 'Hapus Pencaker';
+                if (confirmBody) confirmBody.innerHTML = "Hapus pencaker ini <span class='font-semibold text-rose-300'>BESERTA seluruh data dan riwayat AK1</span>? Tindakan ini tidak dapat dibatalkan.";
+                if (confirmSubtitle) confirmSubtitle.textContent = email ? `${name} · ${email}` : name;
+
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Hapus Pencaker';
+                    confirmBtn.className = 'px-4 py-2 rounded-lg text-white text-sm font-semibold bg-rose-600 hover:bg-rose-700 transition';
+                    confirmBtn.onclick = function() {
+                        const wireComponent = document.querySelector('[wire\\:id]');
+                        if (wireComponent && window.Livewire) {
+                            const wireId = wireComponent.getAttribute('wire:id');
+                            window.Livewire.find(wireId).deleteUser(approvedCurrentUserId);
+                        }
+                        closeConfirmModalApproved();
+                    };
+                }
+
+                openConfirmModalApproved();
+            };
+
+            window.openConfirmModalApproved = function () {
+                if (confirmModal) confirmModal.classList.remove('hidden');
+            };
+            window.closeConfirmModalApproved = function () {
+                if (confirmModal) confirmModal.classList.add('hidden');
+            };
+        </script>
+    @endpush
+@endonce
+
 </div>
