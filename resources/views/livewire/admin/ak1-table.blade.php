@@ -55,16 +55,22 @@
             openConfirm(action){
                 if(this.count < 2){
                     document.getElementById('bulkErrorMessage').textContent = 'Pilih minimal 2 pengajuan untuk aksi massal.';
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'bulk-error' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:open', { detail: { id: 'ak1-admin:bulk-error' } }));
                     return;
                 }
-                let modalId = 'bulk-confirm-approve';
-                if (action === 'unapprove') modalId = 'bulk-confirm-unapprove';
-                if (action === 'archive') modalId = 'bulk-confirm-archive';
-                if (action === 'restore') modalId = 'bulk-confirm-restore';
-                const counter = document.getElementById(`${modalId}-count`);
+                const counterMap = {
+                    'ak1-admin:bulk-approve': 'bulk-confirm-approve-count',
+                    'ak1-admin:bulk-unapprove': 'bulk-confirm-unapprove-count',
+                    'ak1-admin:bulk-archive': 'bulk-confirm-archive-count',
+                    'ak1-admin:bulk-restore': 'bulk-confirm-restore-count',
+                };
+                let modalId = 'ak1-admin:bulk-approve';
+                if (action === 'unapprove') modalId = 'ak1-admin:bulk-unapprove';
+                if (action === 'archive') modalId = 'ak1-admin:bulk-archive';
+                if (action === 'restore') modalId = 'ak1-admin:bulk-restore';
+                const counter = document.getElementById(counterMap[modalId]);
                 if (counter) counter.textContent = this.count;
-                window.dispatchEvent(new CustomEvent('open-modal', { detail: modalId }));
+                window.dispatchEvent(new CustomEvent('ak1-admin:open', { detail: { id: modalId } }));
                 this.open = false;
             }
         }" @click.stop>
@@ -450,7 +456,7 @@
     </div>
 
     {{-- ===== Modal Tolak/Minta Revisi (x-modal) ===== --}}
-    <x-modal name="reject-ak1" :show="false" maxWidth="md" animation="slide-up" title="Tolak / Minta Revisi">
+    <x-modal id="ak1-admin:reject" :show="false" maxWidth="md" animation="slide-up" title="Tolak / Minta Revisi">
         <form id="rejectForm" method="POST" class="px-6 py-5">
             @csrf
             <fieldset class="mb-4">
@@ -479,7 +485,7 @@
                 <textarea name="notes" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-gray-200"></textarea>
                 </div>
             <div class="flex justify-end gap-2">
-                <button type="button" data-close-modal="reject-ak1" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
+                <button type="button" data-close-modal="ak1-admin:reject" class="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600">Batal</button>
                 <button type="submit" class="px-3 py-1.5 rounded bg-red-700 hover:bg-red-800 text-white">Kirim</button>
             </div>
         </form>
@@ -500,75 +506,75 @@
     </div>
 
     {{-- ===== Modal Bulk Actions ===== --}}
-    <x-modal id="bulk-error" size="md" title="Aksi Tidak Dapat Dilanjutkan">
+    <x-modal id="ak1-admin:bulk-error" size="md" title="Aksi Tidak Dapat Dilanjutkan">
         <div class="px-6 py-5 space-y-4">
             <p id="bulkErrorMessage" class="text-sm text-gray-300 leading-relaxed">{{ $bulkErrorMessage }}</p>
             <div class="flex justify-end">
-                <button type="button" data-close-modal="bulk-error" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Tutup</button>
+                <button type="button" data-close-modal="ak1-admin:bulk-error" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Tutup</button>
             </div>
         </div>
     </x-modal>
 
-    <x-modal id="bulk-confirm-approve" size="md" title="Setujui Pengajuan Terpilih">
+    <x-modal id="ak1-admin:bulk-approve" size="md" title="Setujui Pengajuan Terpilih">
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">Setujui <span id="bulk-confirm-approve-count" class="font-semibold text-white">0</span> pengajuan AK1? Hanya pengajuan dengan status Menunggu Verifikasi/Revisi yang akan diproses.</p>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="bulk-confirm-approve" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                <button type="button" wire:click="bulkApprove" data-close-modal="bulk-confirm-approve" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
+                <button type="button" data-close-modal="ak1-admin:bulk-approve" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="bulkApprove" data-close-modal="ak1-admin:bulk-approve" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Setujui</button>
             </div>
         </div>
     </x-modal>
 
-    <x-modal id="bulk-confirm-unapprove" size="md" title="Batalkan Persetujuan">
+    <x-modal id="ak1-admin:bulk-unapprove" size="md" title="Batalkan Persetujuan">
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">Batalkan persetujuan untuk <span id="bulk-confirm-unapprove-count" class="font-semibold text-white">0</span> pengajuan AK1? Hanya pengajuan berstatus Disetujui yang akan diproses.</p>
         <div class="flex justify-end gap-2 pt-2">
-            <button type="button" data-close-modal="bulk-confirm-unapprove" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-            <button type="button" wire:click="bulkUnapprove" data-close-modal="bulk-confirm-unapprove" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Batalkan</button>
+            <button type="button" data-close-modal="ak1-admin:bulk-unapprove" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+            <button type="button" wire:click="bulkUnapprove" data-close-modal="ak1-admin:bulk-unapprove" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Batalkan</button>
         </div>
     </div>
     </x-modal>
 
-    <x-modal id="bulk-confirm-archive" size="md" title="Arsipkan Pengajuan">
+    <x-modal id="ak1-admin:bulk-archive" size="md" title="Arsipkan Pengajuan">
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">Arsipkan <span id="bulk-confirm-archive-count" class="font-semibold text-white">0</span> pengajuan AK1 non-aktif? Data tetap tersimpan di arsip.</p>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="bulk-confirm-archive" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                <button type="button" wire:click="bulkArchive" data-close-modal="bulk-confirm-archive" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition text-sm font-semibold text-white">Arsipkan</button>
+                <button type="button" data-close-modal="ak1-admin:bulk-archive" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="bulkArchive" data-close-modal="ak1-admin:bulk-archive" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition text-sm font-semibold text-white">Arsipkan</button>
             </div>
         </div>
     </x-modal>
 
-    <x-modal id="bulk-confirm-restore" size="md" title="Kembalikan dari Arsip">
+    <x-modal id="ak1-admin:bulk-restore" size="md" title="Kembalikan dari Arsip">
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">Kembalikan <span id="bulk-confirm-restore-count" class="font-semibold text-white">0</span> pengajuan AK1 dari arsip ke daftar utama?</p>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="bulk-confirm-restore" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                <button type="button" wire:click="bulkRestore" data-close-modal="bulk-confirm-restore" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Kembalikan</button>
+                <button type="button" data-close-modal="ak1-admin:bulk-restore" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="bulkRestore" data-close-modal="ak1-admin:bulk-restore" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Kembalikan</button>
             </div>
         </div>
     </x-modal>
 
-    <x-modal id="confirm-archive" size="md" title="Arsipkan Pengajuan">
+    <x-modal id="ak1-admin:archive-confirm" size="md" title="Arsipkan Pengajuan">
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">
                 {{ $archiveLabel ?? 'Pengajuan akan diarsipkan.' }}
             </p>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="confirm-archive" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" data-close-modal="ak1-admin:archive-confirm" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
                 <button type="button" wire:click="performArchive" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold">Arsipkan</button>
             </div>
         </div>
     </x-modal>
 
-    <x-modal id="confirm-restore" size="md" title="Kembalikan Pengajuan">
+    <x-modal id="ak1-admin:restore-confirm" size="md" title="Kembalikan Pengajuan">
         <div class="px-6 py-5 space-y-4">
             <p class="text-sm text-gray-300 leading-relaxed">
                 Kembalikan pengajuan ini dari arsip ke daftar utama?
             </p>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="confirm-restore" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
-                <button type="button" wire:click="doRestoreSingle" data-close-modal="confirm-restore" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Kembalikan</button>
+                <button type="button" data-close-modal="ak1-admin:restore-confirm" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" wire:click="doRestoreSingle" data-close-modal="ak1-admin:restore-confirm" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 transition text-sm font-semibold text-white">Kembalikan</button>
             </div>
         </div>
     </x-modal>
@@ -576,12 +582,38 @@
 @once
 @push('scripts')
         <script>
+            const ak1ModalManager = (() => {
+                const toggleModal = (id, show) => {
+                    if (!id) return;
+                    const modal = document.getElementById(id);
+                    if (!modal) return;
+                    modal.classList.toggle('hidden', !show);
+                };
+
+                const resolveId = (detail) => {
+                    if (!detail) return null;
+                    return typeof detail === 'string' ? detail : detail.id;
+                };
+
+                window.addEventListener('ak1-admin:open', (event) => {
+                    const id = resolveId(event.detail);
+                    if (!id) return;
+                    toggleModal(id, true);
+                });
+
+                window.addEventListener('ak1-admin:close', (event) => {
+                    const id = resolveId(event.detail);
+                    if (!id) return;
+                    toggleModal(id, false);
+                });
+            })();
+
             document.addEventListener('livewire:init', () => {
                 Livewire.on('open-bulk-error', (detail) => {
                     const msg = detail?.message || '';
                     const el = document.getElementById('bulkErrorMessage');
                     if (el) el.textContent = msg;
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'bulk-error' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:open', { detail: { id: 'ak1-admin:bulk-error' } }));
                 });
                 Livewire.on('toast', (detail) => {
                     if (typeof Toastify === 'undefined') return;
@@ -595,11 +627,13 @@
                         stopOnFocus: true,
                     }).showToast();
                 });
-                Livewire.on('open-modal', (id) => {
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: id }));
+                Livewire.on('ak1-admin:open', (payload = {}) => {
+                    const detail = typeof payload === 'object' ? payload : { id: payload };
+                    window.dispatchEvent(new CustomEvent('ak1-admin:open', { detail }));
                 });
-                Livewire.on('close-modal', (id) => {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: id }));
+                Livewire.on('ak1-admin:close', (payload = {}) => {
+                    const detail = typeof payload === 'object' ? payload : { id: payload };
+                    window.dispatchEvent(new CustomEvent('ak1-admin:close', { detail }));
                 });
             });
 
@@ -614,7 +648,7 @@
 @endonce
 
     {{-- ===== Modal Batalkan Persetujuan (x-modal) ===== --}}
-    <x-modal name="unapprove-ak1" :show="false" maxWidth="lg" animation="slide-up" title="Batalkan Persetujuan">
+    <x-modal id="ak1-admin:unapprove" :show="false" maxWidth="lg" animation="slide-up" title="Batalkan Persetujuan">
         <div class="px-6 pt-2 text-sm text-gray-400" id="unapproveModalSubtitle"></div>
         <form id="unapproveForm" method="POST" class="px-6 pb-5 space-y-4">
             @csrf
@@ -629,14 +663,14 @@
                           placeholder="Catat alasan pembatalan jika diperlukan..."></textarea>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="unapprove-ak1" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" data-close-modal="ak1-admin:unapprove" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
                 <button type="submit" class="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-sm font-semibold text-white">Ya, Batalkan Persetujuan</button>
             </div>
         </form>
     </x-modal>
 
     {{-- ===== Modal Setujui (x-modal) ===== --}}
-    <x-modal name="approve-ak1" :show="false" maxWidth="md" animation="slide-up" title="Konfirmasi Persetujuan">
+    <x-modal id="ak1-admin:approve" :show="false" maxWidth="md" animation="slide-up" title="Konfirmasi Persetujuan">
         <div class="px-6 pt-2 text-sm text-gray-400" id="approveModalSubtitle"></div>
         <form id="approveForm" method="POST" class="px-6 pb-5 space-y-4">
             @csrf
@@ -650,7 +684,7 @@
                           placeholder="Catatan untuk pemohon..."></textarea>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="approve-ak1" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
+                <button type="button" data-close-modal="ak1-admin:approve" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">Batal</button>
                 <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition text-sm font-semibold text-white">Ya, Setujui</button>
             </div>
         </form>
@@ -726,10 +760,6 @@
                     if (role === 'pencaker') return 'Pemohon';
                     if (role === 'perusahaan') return 'Perusahaan';
                     return role;
-                };
-
-                window.closeModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'detail-ak1' }));
                 };
 
                 function renderSnapshotBlock(title, snapshot, includeDocuments = true) {
@@ -1024,9 +1054,9 @@
                     if (e.key === 'Escape') {
                         closeDetailModal();
                         closeLogModal();
-                        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'reject-ak1' }));
-                        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'unapprove-ak1' }));
-                        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'approve-ak1' }));
+                        ['ak1-admin:reject', 'ak1-admin:unapprove', 'ak1-admin:approve'].forEach(id => {
+                            window.dispatchEvent(new CustomEvent('ak1-admin:close', { detail: { id } }));
+                        });
                     }
                 });
 
@@ -1112,7 +1142,7 @@
 
                 window.openUnapproveModal = function (button) {
                     window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'unapprove-ak1' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:open', { detail: { id: 'ak1-admin:unapprove' } }));
                     const form = getEl('unapproveForm');
                     const subtitle = getEl('unapproveModalSubtitle');
                     const notes = getEl('unapproveNotes');
@@ -1128,12 +1158,12 @@
                 };
 
                 window.closeUnapproveModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'unapprove-ak1' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:close', { detail: { id: 'ak1-admin:unapprove' } }));
                 };
 
                 window.openApproveModal = function (button) {
                     window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'approve-ak1' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:open', { detail: { id: 'ak1-admin:approve' } }));
                     const form = getEl('approveForm');
                     const subtitle = getEl('approveModalSubtitle');
                     const notes = getEl('approveNotes');
@@ -1148,12 +1178,12 @@
                 };
 
                 window.closeApproveModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'approve-ak1' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:close', { detail: { id: 'ak1-admin:approve' } }));
                 };
 
                 window.openRejectModal = function (id) {
                     window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'reject-ak1' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:open', { detail: { id: 'ak1-admin:reject' } }));
                     const form = getEl('rejectForm');
                     if (!form) return;
                     // default ke penolakan
@@ -1168,7 +1198,7 @@
                 };
 
                 window.closeRejectModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'reject-ak1' }));
+                    window.dispatchEvent(new CustomEvent('ak1-admin:close', { detail: { id: 'ak1-admin:reject' } }));
                 };
 
                 // fungsi revisi dihapus, digantikan oleh openRejectModal di atas

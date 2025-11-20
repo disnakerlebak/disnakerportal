@@ -385,7 +385,7 @@ class Ak1Table extends Component
             ?? $app?->user?->name
             ?? 'Pencaker';
 
-        $this->dispatch('open-modal', 'confirm-archive');
+        $this->dispatch('ak1-admin:open', id: 'ak1-admin:archive-confirm');
     }
 
     public function prepareArchiveBulk(): void
@@ -397,7 +397,7 @@ class Ak1Table extends Component
 
         $this->archiveIds = array_map('intval', $this->selected);
         $this->archiveLabel = count($this->archiveIds) . ' pengajuan terpilih';
-        $this->dispatch('open-modal', 'confirm-archive');
+        $this->dispatch('ak1-admin:open', id: 'ak1-admin:archive-confirm');
     }
 
     public function performArchive(): void
@@ -423,7 +423,7 @@ class Ak1Table extends Component
         $this->resetArchiveState();
         $this->selected = [];
         $this->selectAll = false;
-        $this->dispatch('close-modal', 'confirm-archive');
+        $this->dispatch('ak1-admin:close', id: 'ak1-admin:archive-confirm');
         $this->dispatch('$refresh');
         $this->dispatch('toast', type: 'success', message: 'Berhasil mengarsipkan pengajuan.');
     }
@@ -432,7 +432,7 @@ class Ak1Table extends Component
     {
         $this->archiveIds = [(int)$id];
         $this->archiveLabel = null;
-        $this->dispatch('open-modal', 'confirm-restore');
+        $this->dispatch('ak1-admin:open', id: 'ak1-admin:restore-confirm');
     }
 
     public function doRestoreSingle(): void
@@ -448,7 +448,7 @@ class Ak1Table extends Component
         }
 
         $this->resetArchiveState();
-        $this->dispatch('close-modal', 'confirm-restore');
+        $this->dispatch('ak1-admin:close', id: 'ak1-admin:restore-confirm');
         $this->dispatch('$refresh');
         $this->dispatch('toast', type: 'success', message: 'Pengajuan dikembalikan dari arsip.');
         $this->resetPage();
