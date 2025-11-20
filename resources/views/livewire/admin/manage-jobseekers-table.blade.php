@@ -51,8 +51,9 @@
             get count(){ return (this.selected || []).length; },
             openConfirm(action){
                 if(this.count === 0){
-                    return window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
+                    return window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
                         detail:{
+                            id:'jobseeker-admin:bulk-confirm',
                             title:'Tidak ada user dipilih',
                             message:'Pilih minimal satu user.',
                             action:null,
@@ -66,20 +67,20 @@
                 } else if(action === 'activate'){
                     title = 'Aktifkan Akun';
                     message = `Apakah Anda yakin mengaktifkan ${this.count} user ini?`;
-                    window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
-                        detail: { title, message, action: 'activate' }
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
+                        detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'activate' }
                     }));
                 } else if(action === 'deactivate'){
                     title = 'Nonaktifkan Akun';
                     message = `Apakah Anda yakin menonaktifkan ${this.count} user ini?`;
-                    window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
-                        detail: { title, message, action: 'deactivate' }
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
+                        detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'deactivate' }
                     }));
                 } else if(action === 'delete'){
                     title = 'Hapus Akun';
                     message = `Apakah Anda yakin menghapus ${this.count} user ini?`;
-                    window.dispatchEvent(new CustomEvent('open-bulk-confirm', {
-                        detail: { title, message, action: 'delete' }
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
+                        detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'delete' }
                     }));
                 }
                 this.open = false;
@@ -242,8 +243,9 @@
                                     <x-dropdown-item data-trigger="dropdown-modal"
                                                      class="text-blue-300 hover:text-blue-100"
                                                      onclick="
-                                                        window.dispatchEvent(new CustomEvent('pencaker-detail', {
+                                                        window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
                                                           detail: {
+                                                            id: 'jobseeker-admin:detail',
                                                             url: '{{ route('admin.pencaker.detail', $u->id) }}',
                                                             ak1: '{{ $app?->nomor_ak1 ?? '' }}'
                                                           }
@@ -256,8 +258,11 @@
                                                      class="text-purple-300 hover:text-purple-100"
                                                      onclick="
                                                         window.dispatchEvent(
-                                                            new CustomEvent('open-history-modal', {
-                                                                detail: { url: '{{ route('admin.manage.history', $u->id) }}' }
+                                                            new CustomEvent('jobseeker-admin:open', {
+                                                                detail: {
+                                                                    id: 'jobseeker-admin:history',
+                                                                    url: '{{ route('admin.manage.history', $u->id) }}'
+                                                                }
                                                             })
                                                         );
                                                      ">
@@ -321,140 +326,136 @@
         </div>
     </div>
 
-    {{-- Modal konfirmasi aksi massal (diletakkan di luar dropdown agar overlay tidak terblokir) --}}
-    <div x-data="{
-        confirmOpen:false,
-        confirmTitle:'',
-        confirmMessage:'',
-        confirmAction:null,
-        proceed(){
-            if(this.confirmAction === 'delete'){
-                $wire.bulkDelete();
-            } else if(this.confirmAction === 'activate'){
-                $wire.bulkActivate();
-            } else if(this.confirmAction === 'deactivate'){
-                $wire.bulkDeactivate();
+    {{-- Modal konfirmasi aksi massal --}}
+    <div id="jobseeker-admin:bulk-confirm"
+         class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
+         x-data="{
+            confirmTitle:'',
+            confirmMessage:'',
+            confirmAction:null,
+            handleOpen(detail){
+                if((detail?.id || detail) !== 'jobseeker-admin:bulk-confirm') return;
+                this.confirmTitle = detail?.title || '';
+                this.confirmMessage = detail?.message || '';
+                this.confirmAction = detail?.action || null;
+            },
+            close(){
+                window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail: { id: 'jobseeker-admin:bulk-confirm' } }));
+            },
+            proceed(){
+                if(this.confirmAction === 'delete'){
+                    $wire.bulkDelete();
+                } else if(this.confirmAction === 'activate'){
+                    $wire.bulkActivate();
+                } else if(this.confirmAction === 'deactivate'){
+                    $wire.bulkDeactivate();
+                }
+                this.close();
             }
-            this.confirmOpen = false;
-        }
-    }"
-    @open-bulk-confirm.window="
-        confirmOpen = true;
-        confirmTitle = $event.detail.title;
-        confirmMessage = $event.detail.message;
-        confirmAction = $event.detail.action;
-    ">
-        <div x-cloak
-             x-show="confirmOpen"
-             x-transition.opacity
-             class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
-            <div class="modal-panel w-full max-w-md p-5">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-100" x-text="confirmTitle"></h3>
-                        <p class="text-sm text-gray-300 mt-1" x-text="confirmMessage"></p>
-                    </div>
-                    <button class="modal-close" @click="confirmOpen=false">✕</button>
+         }"
+         @jobseeker-admin:open.window="handleOpen($event.detail)">
+        <div class="modal-panel w-full max-w-md p-5">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-100" x-text="confirmTitle"></h3>
+                    <p class="text-sm text-gray-300 mt-1" x-text="confirmMessage"></p>
                 </div>
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button"
-                            class="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-100 hover:bg-gray-700"
-                            @click="confirmOpen=false">
-                        Batal
-                    </button>
-                    <button type="button"
-                            class="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700"
-                            @click="proceed()">
-                        Ya, lanjutkan
-                    </button>
-                </div>
+                <button class="modal-close" @click="close()">✕</button>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button"
+                        class="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-100 hover:bg-gray-700"
+                        @click="close()">
+                    Batal
+                </button>
+                <button type="button"
+                        class="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700"
+                        @click="proceed()">
+                    Ya, lanjutkan
+                </button>
             </div>
         </div>
     </div>
-    {{-- Modal detail pencaker (re-use pola yang lama) --}}
-    <div x-data="{ open:false, html:'', loading:false, ak1:'' }"
-         @pencaker-detail.window="
-            open=true; loading=true; html=''; ak1=($event.detail.ak1||'');
-            fetch($event.detail.url, {headers:{'X-Requested-With':'XMLHttpRequest'}})
-                .then(r=>r.text())
-                .then(t=>{ html=t; })
-                .catch(()=>{ html='<div class=\'p-6 text-red-300\'>Gagal memuat detail.</div>'; })
-                .finally(()=>{ loading=false; });
-         ">
-        <div x-show="open" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
-             @keydown.escape.window="open=false">
-            <div @click.outside="open=false" class="modal-panel w-full max-w-5xl shadow-lg overflow-hidden">
-                <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
-                    <h3 class="text-lg font-semibold text-gray-100">
-                        Detail Pencaker
-                        <span x-show="ak1" class="ml-2 text-sm font-normal text-gray-300">
-                            — AK/1: <span x-text="ak1"></span>
-                        </span>
-                    </h3>
-                    <button class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700" @click="open=false">Tutup</button>
-                </div>
-                <div class="max-h-[85vh] overflow-y-auto">
-                    <template x-if="loading"><div class="p-6 text-gray-300">Memuat...</div></template>
-                    <div class="p-6" x-html="html"></div>
-                </div>
-            </div>
+    
+    {{-- MODAL DETAIL Pencaker --}}
+<div id="jobseeker-admin:detail"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+
+    <div x-data="{
+            html:'', loading:false, ak1:'',
+            load(detail){
+                if(!detail?.url) { this.html = '<div class=\'p-6 text-red-300\'>URL detail tidak valid</div>'; return; }
+                this.loading = true;
+                this.html = '';
+                this.ak1 = detail.ak1 || '';
+
+                fetch(detail.url, { headers:{ 'X-Requested-With': 'XMLHttpRequest' }})
+                    .then(r => r.text())
+                    .then(t => { this.html = t; })
+                    .catch(()=>{ this.html = '<div class=\'p-6 text-red-300\'>Gagal memuat detail.</div>'; })
+                    .finally(()=>{ this.loading=false; });
+            },
+            close(){
+                window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail:{ id:'jobseeker-admin:detail' }}));
+            }
+        }"
+        @jobseeker-admin:open.window="if($event.detail.id === 'jobseeker-admin:detail'){ load($event.detail); }"
+        class="modal-panel w-full max-w-5xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
+
+        <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+            <h3 class="text-lg font-semibold text-gray-100">Detail Pencaker</h3>
+            <button @click="close()" class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700">Tutup</button>
+        </div>
+
+        <div class="max-h-[80vh] overflow-y-auto p-6">
+            <template x-if="loading">
+                <div class="p-6 text-gray-300">Memuat detail...</div>
+            </template>
+            <div x-html="html"></div>
         </div>
     </div>
+</div>
 
-    {{-- MODAL RIWAYAT Pencaker --}}
-    <div 
-        x-data="{ showHistory:false, html:'', loading:false }"
-        @open-history-modal.window="
-            console.log('EVENT MASUK:', $event.detail.url);
-            showHistory = true;
-            loading = true;
-            html = '';
+{{-- MODAL RIWAYAT Pencaker --}}
+<div id="jobseeker-admin:history"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
 
-            fetch($event.detail.url, {
-                headers: { 'X-Requested-With':'XMLHttpRequest' }
-            })
-            .then(r => r.text())
-            .then(t => { html = t })
-            .catch(() => { html = '<div class=\'p-6 text-red-400\'>Gagal memuat riwayat.</div>' })
-            .finally(() => { loading = false });
-        "
-    >
-        <div 
-            x-show="showHistory"
-            x-transition.opacity.duration.200ms
-            class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
-            @keydown.escape.window="showHistory = false"
-        >
-            <div @click.outside="showHistory = false"
-                 x-transition.scale.origin-top.duration.200ms
-                 class="modal-panel w-full max-w-5xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
-            >
-                {{-- Header --}}
-                <div class="modal-panel-header px-6 py-3 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-100">Riwayat Pencaker</h3>
-                    <button class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700" @click="showHistory = false">
-                        Tutup
-                    </button>
-                </div>
+    <div x-data="{
+            html:'', loading:false,
+            load(detail){
+                if(!detail?.url) { this.html='<div class=\'p-6 text-red-300\'>URL riwayat tidak valid</div>'; return;}
+                this.loading = true;
+                this.html = '';
 
-                {{-- Body --}}
-                <div class="flex-1 overflow-y-auto p-6">
+                fetch(detail.url, { headers:{ 'X-Requested-With':'XMLHttpRequest' }})
+                    .then(r=>r.text())
+                    .then(t=>{ this.html = t; })
+                    .catch(()=>{ this.html='<div class=\'p-6 text-red-300\'>Gagal memuat riwayat.</div>'; })
+                    .finally(()=>{ this.loading=false; });
+            },
+            close(){
+                window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail:{ id:'jobseeker-admin:history' }}));
+            }
+        }"
+        @jobseeker-admin:open.window="if($event.detail.id === 'jobseeker-admin:history'){ load($event.detail); }"
+        class="modal-panel w-full max-w-5xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
 
-                    {{-- Loading --}}
-                    <template x-if="loading">
-                        <div class="text-gray-300">Memuat riwayat...</div>
-                    </template>
+        <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+            <h3 class="text-lg font-semibold text-gray-100">Riwayat Pencaker</h3>
+            <button @click="close()" class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700">Tutup</button>
+        </div>
 
-                    {{-- Content --}}
-                    <div x-html="html"></div>
-
-                </div>
-            </div>
+        <div class="max-h-[80vh] overflow-y-auto p-6">
+            <template x-if="loading">
+                <div class="p-6 text-gray-300">Memuat riwayat...</div>
+            </template>
+            <div x-html="html"></div>
         </div>
     </div>
+</div>
 
     {{-- Modal Konfirmasi Nonaktifkan / Aktifkan Akun --}}
-    <x-modal id="confirm-deactivate" size="md" title="Nonaktifkan Akun Pencaker">
+    <x-modal id="jobseeker-admin:confirm-deactivate" size="md" title="Nonaktifkan Akun Pencaker">
         <div class="px-6 py-5 space-y-4 rounded-2xl">
             <div>
                 <p class="text-sm text-gray-400" id="deactivateModalSubtitle"></p>
@@ -470,7 +471,7 @@
     </x-modal>
 
     {{-- Modal Konfirmasi Reset Profil --}}
-    <x-modal id="confirm-reset" size="md" title="Reset Profil Pencaker">
+    <x-modal id="jobseeker-admin:confirm-reset" size="md" title="Reset Profil Pencaker">
         <div class="px-6 py-5 space-y-4">
             <div>
                 <p class="text-sm text-gray-400" id="resetModalSubtitle"></p>
@@ -486,7 +487,7 @@
     </x-modal>
 
     {{-- Modal Konfirmasi Hapus Pencaker --}}
-    <x-modal id="confirm-delete" size="md" title="Hapus Pencaker">
+    <x-modal id="jobseeker-admin:confirm-delete" size="md" title="Hapus Pencaker">
         <div class="px-6 py-5 space-y-4">
             <div>
                 <p class="text-sm text-gray-400" id="deleteModalSubtitle"></p>
@@ -505,6 +506,55 @@
     @once
         @push('scripts')
             <script>
+                (() => {
+                    const toggleModal = (id, show) => {
+                        if (!id) return;
+                        const modal = document.getElementById(id);
+                        if (!modal) return;
+                        modal.classList.toggle('hidden', !show);
+                    };
+
+                    const resolveId = (detail) => {
+                        if (typeof detail === 'string') return detail;
+                        return detail?.id;
+                    };
+
+                    window.addEventListener('jobseeker-admin:open', (event) => {
+                        const id = resolveId(event.detail);
+                        if (!id) return;
+                        const modal = document.getElementById(id);
+                        toggleModal(id, true);
+                        if (modal?.__x?.$data?.load) {
+                            modal.__x.$data.load(event.detail || {});
+                        }
+                    });
+
+                    window.addEventListener('jobseeker-admin:close', (event) => {
+                        const id = resolveId(event.detail);
+                        if (!id) return;
+                        toggleModal(id, false);
+                    });
+
+                    // ESC close (hanya untuk modal jobseeker-admin)
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            // daftar modal yang boleh di-close
+                            const modals = [
+                    'jobseeker-admin:detail',
+                    'jobseeker-admin:history',
+                    'jobseeker-admin:confirm-deactivate',
+                    'jobseeker-admin:confirm-reset',
+                    'jobseeker-admin:confirm-delete'
+                    ];
+
+                    modals.forEach(id => {
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail: { id } }));
+                        });
+                        }
+                    });
+
+                })();
+
                 window.dropdownMenu = function () {
                     return {
                         open: false,
@@ -536,7 +586,6 @@
                 // Modal Nonaktifkan
                 window.openDeactivateModal = function (button) {
                     window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-deactivate' }));
                     currentUserId = button.getAttribute('data-user-id');
                     const name = button.getAttribute('data-user-name') || '';
                     const email = button.getAttribute('data-user-email') || '';
@@ -562,16 +611,16 @@
                             closeDeactivateModal();
                         };
                     }
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', { detail: { id: 'jobseeker-admin:confirm-deactivate' } }));
                 };
 
                 window.closeDeactivateModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-deactivate' }));
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail: { id: 'jobseeker-admin:confirm-deactivate' } }));
                 };
 
                 // Modal Aktifkan
                 window.openActivateModal = function (button) {
                     window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-deactivate' }));
                     currentUserId = button.getAttribute('data-user-id');
                     const name = button.getAttribute('data-user-name') || '';
                     const email = button.getAttribute('data-user-email') || '';
@@ -596,12 +645,12 @@
                             closeDeactivateModal();
                         };
                     }
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', { detail: { id: 'jobseeker-admin:confirm-deactivate' } }));
                 };
 
                 // Modal Reset
                 window.openResetModal = function (button) {
                     window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-reset' }));
                     currentUserId = button.getAttribute('data-user-id');
                     const name = button.getAttribute('data-user-name') || '';
                     const email = button.getAttribute('data-user-email') || '';
@@ -621,16 +670,16 @@
                             closeResetModal();
                         };
                     }
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', { detail: { id: 'jobseeker-admin:confirm-reset' } }));
                 };
 
                 window.closeResetModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-reset' }));
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail: { id: 'jobseeker-admin:confirm-reset' } }));
                 };
 
                 // Modal Delete
                 window.openDeleteModal = function (button) {
                     window.dispatchEvent(new CustomEvent('close-dropdowns'));
-                    window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-delete' }));
                     currentUserId = button.getAttribute('data-user-id');
                     const name = button.getAttribute('data-user-name') || '';
                     const email = button.getAttribute('data-user-email') || '';
@@ -650,10 +699,11 @@
                             closeDeleteModal();
                         };
                     }
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', { detail: { id: 'jobseeker-admin:confirm-delete' } }));
                 };
 
                 window.closeDeleteModal = function () {
-                    window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-delete' }));
+                    window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail: { id: 'jobseeker-admin:confirm-delete' } }));
                 };
             </script>
         @endpush
