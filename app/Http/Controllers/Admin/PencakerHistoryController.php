@@ -39,6 +39,15 @@ class PencakerHistoryController extends Controller
             ]);
         }
 
+        $formatRole = function (?string $role) {
+            return match ($role) {
+                'superadmin', 'admin_ak1', 'admin_laporan', 'admin_verifikator', 'admin_loker', 'admin_statistik' => 'Admin',
+                'pencaker' => 'Pemohon',
+                'perusahaan' => 'Perusahaan',
+                default => $role ? ucfirst(str_replace('_', ' ', $role)) : null,
+            };
+        };
+
         foreach ($ak1Logs as $log) {
             $mappedStatus = match ($log->action) {
                 'approve'   => 'approved',
@@ -56,7 +65,12 @@ class PencakerHistoryController extends Controller
                 $extra[] = 'No. AK1: '.$log->application->nomor_ak1;
             }
             if ($log->actor?->name) {
-                $extra[] = 'Oleh: '.$log->actor->name;
+                $roleLabel = $formatRole($log->actor->role ?? null);
+                $name = $log->actor->name;
+                if ($roleLabel) {
+                    $name .= " ({$roleLabel})";
+                }
+                $extra[] = 'Oleh: '.$name;
             }
 
             $histories->push((object) [
