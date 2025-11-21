@@ -196,9 +196,9 @@
                                 class="text-purple-300 hover:text-purple-100"
                                 onclick="
                                     window.dispatchEvent(
-                                        new CustomEvent('approved-admin:open', {
+                                        new CustomEvent('timeline:open', {
                                             detail: {
-                                                id: 'approved-admin:history',
+                                                id: 'ak1-timeline',
                                                 url: '{{ route('admin.ak1.userLogs', $u->id) }}',
                                                 name: '{{ $p->nama_lengkap ?? $u->name ?? 'Pencaker' }}',
                                                 email: '{{ $u->email }}'
@@ -212,7 +212,6 @@
                     </x-dropdown>
                 </div>
             </td>
-
                     </tr>
                 @empty
                     <tr>
@@ -258,6 +257,8 @@
     </div>
 </div>
 
+    {{-- MODAL TIMELINE AK1 --}}
+    <x-timeline.modal id="ak1-timeline" />
 
     {{-- Modal Konfirmasi (custom, non-Flowbite) --}}
     <div id="confirm-modal-approved" class="hidden fixed inset-0 z-[99999] modal-backdrop flex items-center justify-center p-4">
@@ -279,28 +280,6 @@
                         <button type="button" id="confirmActionBtn" class="px-4 py-2 rounded-lg text-white text-sm font-semibold"></button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- MODAL RIWAYAT AK1 (TIMELINE) --}}
-    <div id="approved-admin:history"
-        class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4"
-        x-data="approvedHistoryModal()"
-        @click.self="close()">
-        <div class="modal-panel w-full max-w-4xl shadow-xl overflow-hidden">
-            <div class="modal-panel-header flex items-start justify-between px-6 py-4 sticky top-0 z-10">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-100" x-text="title"></h3>
-                    <p class="text-sm text-gray-400 mt-1" x-text="subtitle"></p>
-                </div>
-                <button type="button" @click="close()" class="modal-close">✕</button>
-            </div>
-            <div class="px-6 py-5 max-h-[75vh] overflow-y-auto">
-                <template x-if="loading">
-                    <p class="text-sm text-slate-300">Memuat riwayat...</p>
-                </template>
-                <div x-html="html" class="space-y-4"></div>
             </div>
         </div>
     </div>

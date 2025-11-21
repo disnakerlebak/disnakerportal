@@ -4,6 +4,8 @@
 @section('content')
     @if (class_exists('Livewire\\Livewire'))
         <livewire:admin.ak1-table />
+        {{-- GLOBAL TIMELINE MODAL --}}
+        <x-timeline.modal id="ak1-timeline" />
     @else
         <div class="max-w-4xl mx-auto px-6 py-12">
             <div class="rounded-xl border border-amber-500 bg-amber-500/10 text-amber-100 p-8 space-y-4">

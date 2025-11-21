@@ -8,6 +8,9 @@ import {
     Alpine,
 } from "../../vendor/livewire/livewire/dist/livewire.esm";
 
+// Modal manager (timeline + global modal events)
+import "./modal-manager";
+
 window.Alpine = Alpine;
 window.FlowbiteModal = Modal;
 window.FlowbiteDropdown = Dropdown;
