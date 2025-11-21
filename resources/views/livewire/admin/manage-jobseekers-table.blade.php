@@ -255,13 +255,17 @@
                                     </x-dropdown-item>
 
                                     <x-dropdown-item data-trigger="dropdown-modal"
-                                                     class="text-purple-300 hover:text-purple-100"
-                                                     onclick="
-                                                        window.dispatchEvent(
-                                                            new CustomEvent('jobseeker-admin:open', {
+                                                    class="text-purple-300 hover:text-purple-100"
+                                                    onclick="
+                                                       window.dispatchEvent(
+                                                            new CustomEvent('timeline:open', {
                                                                 detail: {
-                                                                    id: 'jobseeker-admin:history',
-                                                                    url: '{{ route('admin.manage.history', $u->id) }}'
+                                                                    id: 'pencaker-timeline',
+                                                                    url: '{{ route('admin.manage.history', $u->id) }}',
+                                                                    title: 'Riwayat Pencaker',
+                                                                    name: '{{ $p->nama_lengkap ?? $u->name ?? '-' }}',
+                                                                    email: '{{ $u->email }}',
+                                                                    nomor_ak1: '{{ $app?->nomor_ak1 ?? '' }}'
                                                                 }
                                                             })
                                                         );
@@ -416,44 +420,6 @@
     </div>
 </div>
 
-{{-- MODAL RIWAYAT Pencaker --}}
-<div id="jobseeker-admin:history"
-     class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
-
-    <div x-data="{
-            html:'', loading:false,
-            load(detail){
-                if(!detail?.url) { this.html='<div class=\'p-6 text-red-300\'>URL riwayat tidak valid</div>'; return;}
-                this.loading = true;
-                this.html = '';
-
-                fetch(detail.url, { headers:{ 'X-Requested-With':'XMLHttpRequest' }})
-                    .then(r=>r.text())
-                    .then(t=>{ this.html = t; })
-                    .catch(()=>{ this.html='<div class=\'p-6 text-red-300\'>Gagal memuat riwayat.</div>'; })
-                    .finally(()=>{ this.loading=false; });
-            },
-            close(){
-                window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail:{ id:'jobseeker-admin:history' }}));
-            }
-        }"
-        @jobseeker-admin:open.window="if($event.detail.id === 'jobseeker-admin:history'){ load($event.detail); }"
-        class="modal-panel w-full max-w-5xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
-
-        <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
-            <h3 class="text-lg font-semibold text-gray-100">Riwayat Pencaker</h3>
-            <button @click="close()" class="px-3 py-1 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700">Tutup</button>
-        </div>
-
-        <div class="max-h-[80vh] overflow-y-auto p-6">
-            <template x-if="loading">
-                <div class="p-6 text-gray-300">Memuat riwayat...</div>
-            </template>
-            <div x-html="html"></div>
-        </div>
-    </div>
-</div>
-
     {{-- Modal Konfirmasi Nonaktifkan / Aktifkan Akun --}}
     <x-modal id="jobseeker-admin:confirm-deactivate" size="md" title="Nonaktifkan Akun Pencaker">
         <div class="px-6 py-5 space-y-4 rounded-2xl">
@@ -540,12 +506,11 @@
                         if (e.key === 'Escape') {
                             // daftar modal yang boleh di-close
                             const modals = [
-                    'jobseeker-admin:detail',
-                    'jobseeker-admin:history',
-                    'jobseeker-admin:confirm-deactivate',
-                    'jobseeker-admin:confirm-reset',
-                    'jobseeker-admin:confirm-delete'
-                    ];
+                                'jobseeker-admin:detail',
+                                'jobseeker-admin:confirm-deactivate',
+                                'jobseeker-admin:confirm-reset',
+                                'jobseeker-admin:confirm-delete'
+                            ];
 
                     modals.forEach(id => {
                     window.dispatchEvent(new CustomEvent('jobseeker-admin:close', { detail: { id } }));
@@ -708,4 +673,7 @@
             </script>
         @endpush
     @endonce
+
+    {{-- Modal Timeline Global --}}
+    <x-timeline.modal id="pencaker-timeline" />
 </div>
