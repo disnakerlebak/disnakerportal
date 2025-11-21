@@ -345,161 +345,200 @@
             }
 
             function approvedHistoryModal() {
-                const statusLabels = {
-                    'Menunggu Verifikasi': 'Menunggu Verifikasi',
-                    'Menunggu Revisi Verifikasi': 'Menunggu Revisi Verifikasi',
-                    'Revisi Diminta': 'Revisi Diminta',
-                    'Batal': 'Batal',
-                    'Disetujui': 'Disetujui',
-                    'Ditolak': 'Ditolak',
-                    'Diambil': 'Diambil',
-                    'Dicetak': 'Dicetak'
-                };
 
-                const actionLabels = {
-                    approve: 'Disetujui',
-                    reject: 'Ditolak',
-                    revision: 'Revisi Diminta',
-                    unapprove: 'Persetujuan dibatalkan',
-                    printed: 'Dicetak',
-                    picked_up: 'Diambil',
-                    submitted: 'Pengajuan',
-                };
+// ====== LABELS UNTUK AK1 (VERSI FINAL) ======
+            const ak1ActionLabels = {
+                submit: "Pengajuan Baru",
+                resubmit: "Pengajuan Ulang",
+                repair_submit: "Pengajuan Perbaikan",
+                extend_submit: "Pengajuan Perpanjangan",
+                approve: "Disetujui",
+                unapprove: "Batal Setuju",
+                reject: "Ditolak",
+                revision: "Revisi Diminta",
+                printed: "Dicetak",
+                picked_up: "Diambil",
+                archived: "AK1 Diarsipkan",
+            };
 
-                const actionColors = {
-                    approve: 'bg-green-400',
-                    reject: 'bg-red-400',
-                    revision: 'bg-yellow-400',
-                    unapprove: 'bg-orange-400',
-                    printed: 'bg-sky-400',
-                    picked_up: 'bg-indigo-400',
-                    submitted: 'bg-blue-400',
-                };
+            // Badges berdasarkan jenis pengajuan
+            const ak1Badges = {
+                submit: "BARU",
+                repair_submit: "PERBAIKAN",
+                extend_submit: "PERPANJANGAN",
+            };
 
-                const escapeHtml = (unsafe) => (unsafe ?? '')
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
+            // Warna titik timeline
+            const actionColors = {
+                submit: "bg-blue-400",
+                repair_submit: "bg-yellow-400",
+                extend_submit: "bg-purple-400",
 
-                const formatStatus = (status) => statusLabels[status] || status || '-';
-                const formatActorRole = (role) => {
-                    if (!role) return '';
-                    const adminRoles = ['superadmin','admin_ak1','admin_laporan','admin_verifikator','admin_loker','admin_statistik'];
-                    if (adminRoles.includes(role)) return 'Admin';
-                    if (role === 'pencaker') return 'Pemohon';
-                    if (role === 'perusahaan') return 'Perusahaan';
-                    return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                };
+                approve: "bg-green-400",
+                reject: "bg-red-400",
+                revision: "bg-amber-400",
+                printed: "bg-sky-400",
+                picked_up: "bg-indigo-400",
+                archived: "bg-gray-400",
+            };
 
-                const buildTimeline = (logs) => {
-                    const items = logs.map((log, idx) => {
-                        const label = actionLabels[log.action] || log.action;
-                        const circleColor = actionColors[log.action] || 'bg-gray-400';
-                        const isLast = idx === logs.length - 1;
+            const escapeHtml = (unsafe) => (unsafe ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
 
-                        const extra = [];
-                        if (log.nomor_ak1) extra.push(`No. AK1: ${escapeHtml(log.nomor_ak1)}`);
-                        if (log.type) extra.push(`Tipe: ${escapeHtml(log.type)}`);
-                        const roleLabel = formatActorRole(log.actor_role);
+            const formatStatus = (status) =>
+                status && status !== "null" ? status : "—";
 
-                        const noteSection = log.notes
-                            ? `<div class="mt-3 rounded-lg bg-gray-800/60 px-3 py-2 text-sm text-gray-200">
-                                    <span class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Catatan</span>
-                                    <p class="mt-1 leading-relaxed">${escapeHtml(log.notes).replace(/\\n/g, '<br>')}</p>
-                               </div>`
-                            : '';
+            const formatRole = (role) => {
+                if (!role) return "";
+                const adminRoles = ['superadmin','admin_ak1','admin_laporan','admin_verifikator','admin_loker','admin_statistik'];
+                if (adminRoles.includes(role)) return "Admin";
+                if (role === 'pencaker') return "Pemohon";
+                if (role === 'perusahaan') return "Perusahaan";
+                return role;
+            };
 
-                        return `
-                            <div class="relative pl-10">
-                                <span class="absolute left-1 top-1.5 inline-flex h-3 w-3 rounded-full ${circleColor} ring-4 ring-gray-900"></span>
-                                ${isLast ? '' : '<span class="absolute left-2.5 top-4 bottom-0 border-l border-gray-700"></span>'}
-                                <div class="rounded-xl border border-gray-800 bg-gray-900/60 px-4 py-3 shadow-sm">
-                                    <div class="flex flex-wrap items-center justify-between gap-2">
-                                        <h4 class="text-sm font-semibold text-gray-100">${escapeHtml(label)}</h4>
-                                        <span class="text-xs text-gray-400">${log.created_at ?? '-'}</span>
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        Perubahan:
-                                        <span class="text-gray-300">${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}</span>
-                                    </p>
-                                    <p class="mt-2 text-sm text-gray-300 leading-relaxed">
-                                        Oleh: <span class="font-medium text-gray-100">${escapeHtml(log.actor || 'Sistem')}${roleLabel ? ` (${escapeHtml(roleLabel)})` : ''}</span>
-                                    </p>
-                                    ${extra.length ? `<p class="mt-1 text-xs text-gray-400">${extra.join(' · ')}</p>` : ''}
-                                    ${noteSection}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
+            const buildTimeline = (logs) => {
+                const items = logs.map((log, idx) => {
+
+                    const label =
+                        ak1ActionLabels[log.action] ||
+                        log.action ||
+                        "Aktivitas";
+
+                    const badge = ak1Badges[log.action]
+                        ? `<span class="ml-2 rounded bg-emerald-700/40 px-2 py-0.5 text-xs text-emerald-300">
+                            ${ak1Badges[log.action]}
+                        </span>`
+                        : "";
+
+                    const circleColor = actionColors[log.action] || "bg-gray-500";
+                    const isLast = idx === logs.length - 1;
+
+                    const date =
+                        log.created_at ||
+                        (log.timestamp ? new Date(log.timestamp * 1000).toLocaleString() : "-");
+
+                    const noteSection = log.notes
+                        ? `<div class="mt-3 rounded-lg bg-gray-800/60 px-3 py-2 text-sm text-gray-200">
+                                <span class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Catatan</span>
+                                <p class="mt-1 leading-relaxed">${escapeHtml(log.notes).replace(/\\n/g, '<br>')}</p>
+                        </div>`
+                        : "";
+
+                    const extraInfo =
+                        (log.nomor_ak1 || log.type)
+                            ? `<p class="mt-1 text-xs text-gray-400">
+                                ${log.nomor_ak1 ? "No. AK1: " + escapeHtml(log.nomor_ak1) : ""}
+                                ${log.type ? " · Tipe: " + escapeHtml(log.type) : ""}
+                            </p>`
+                            : "";
 
                     return `
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-2 text-sm font-semibold text-gray-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Linimasa Pengajuan AK1</span>
+                        <div class="relative pl-10">
+                            <span class="absolute left-1 top-1.5 inline-flex h-3 w-3 rounded-full ${circleColor} ring-4 ring-gray-900"></span>
+                            ${!isLast ? '<span class="absolute left-2.5 top-4 bottom-0 border-l border-gray-700"></span>' : ""}
+                            
+                            <div class="rounded-xl border border-gray-800 bg-gray-900/60 px-4 py-3 shadow-sm">
+                                
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="text-sm font-semibold text-gray-100">
+                                        ${escapeHtml(label)} ${badge}
+                                    </h4>
+                                    <span class="text-xs text-gray-400">${date}</span>
+                                </div>
+
+                                <p class="mt-1 text-xs text-gray-400">
+                                    Perubahan:
+                                    <span class="text-gray-300">
+                                        ${formatStatus(log.from_status)} → ${formatStatus(log.to_status)}
+                                    </span>
+                                </p>
+
+                                <p class="mt-2 text-sm text-gray-300 leading-relaxed">
+                                    Oleh:
+                                    <span class="font-medium text-gray-100">
+                                        ${escapeHtml(log.actor || "Sistem")}
+                                        ${formatRole(log.actor_role) ? " (" + formatRole(log.actor_role) + ")" : ""}
+                                    </span>
+                                </p>
+
+                                ${extraInfo}
+                                ${noteSection}
                             </div>
-                            <div class="space-y-6">${items}</div>
                         </div>
                     `;
-                };
+                }).join("");
 
-                return {
-                    html: '',
-                    loading: false,
-                    title: 'Riwayat AK1 Pencaker',
-                    subtitle: '',
-                    load(detail) {
-                        this.title = `Riwayat AK1 — ${detail?.name || 'Pencaker'}`;
-                        this.subtitle = detail?.email || '';
-                        const url = detail?.url;
+                return `
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-2 text-sm font-semibold text-gray-200 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Linimasa Pengajuan AK1</span>
+                        </div>
+                        <div class="space-y-6">${items}</div>
+                    </div>
+                `;
+            };
 
-                        if (!url) {
-                            this.html = "<p class='text-sm text-red-400'>URL riwayat tidak tersedia.</p>";
-                            this.loading = false;
-                            return;
-                        }
+            // ====== RETURN ALPINE OBJECT ======
+            return {
+                html: '',
+                loading: false,
+                title: 'Riwayat AK1',
+                subtitle: '',
+                load(detail) {
 
-                        this.loading = true;
-                        this.html = '';
+                    this.title = `Riwayat AK1 — ${detail?.name || 'Pencaker'}`;
+                    this.subtitle = detail?.email || '';
 
-                        fetch(url, { headers: { 'Accept': 'application/json' } })
-                            .then(res => {
-                                if (!res.ok) throw new Error('HTTP ' + res.status);
-                                return res.json();
-                            })
-                            .then(data => {
-                                const logs = (data.logs || [])
-                                    .slice()
-                                    .sort((a, b) => {
-                                        const aDate = a.timestamp ? new Date(a.timestamp * 1000) : new Date(a.created_at || 0);
-                                        const bDate = b.timestamp ? new Date(b.timestamp * 1000) : new Date(b.created_at || 0);
-                                        return aDate - bDate;
-                                    });
-
-                                if (!logs.length) {
-                                    this.html = "<p class='text-sm text-gray-400'>Belum ada riwayat AK1.</p>";
-                                    return;
-                                }
-
-                                this.html = buildTimeline(logs);
-                            })
-                            .catch(error => {
-                                this.html = `<p class='text-sm text-red-400'>Gagal memuat riwayat. ${error.message}</p>`;
-                            })
-                            .finally(() => { this.loading = false; });
-                    },
-                    close() {
-                        const el = document.getElementById('approved-admin:history');
-                        if (el) el.classList.add('hidden');
+                    const url = detail?.url;
+                    if (!url) {
+                        this.html = "<p class='text-sm text-red-400'>URL riwayat tidak tersedia.</p>";
+                        return;
                     }
-                }
+
+                    this.loading = true;
+                    this.html = "";
+
+                    fetch(url, { headers: { Accept: "application/json" } })
+                        .then((r) => r.json())
+                        .then((data) => {
+                            const logs = (data.logs || []).slice().sort((a, b) => {
+                                const da = a.timestamp ? a.timestamp : Date.parse(a.created_at);
+                                const db = b.timestamp ? b.timestamp : Date.parse(b.created_at);
+                                return da - db;
+                            });
+
+                            if (!logs.length) {
+                                this.html = "<p class='text-sm text-gray-400'>Belum ada riwayat pengajuan.</p>";
+                                return;
+                            }
+
+                            this.html = buildTimeline(logs);
+                        })
+                        .catch((e) => {
+                            this.html = `<p class='text-sm text-red-400'>Gagal memuat riwayat: ${e.message}</p>`;
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                        });
+                },
+
+                close() {
+                    const el = document.getElementById("approved-admin:history");
+                    if (el) el.classList.add("hidden");
+                },
+            };
             }
 
+            // Batas Suci
             (function () {
                 const withAlpine = (id, cb) => {
                     const el = document.getElementById(id);
