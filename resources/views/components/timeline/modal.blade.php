@@ -4,6 +4,7 @@
     id="{{ $id }}"
     x-data="timelineModal('{{ $id }}')"
     @timeline:open.window="load($event.detail)"
+    @keydown.escape.window="close()"
     x-show="open"
     x-cloak
     class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
@@ -12,8 +13,10 @@
 
         <div class="modal-panel-header flex items-start justify-between px-6 py-4 sticky top-0 z-10">
             <div>
-                <h3 class="text-lg font-semibold text-gray-100" x-text="title"></h3>
-                <p class="text-sm text-gray-400 mt-1" x-text="subtitle"></p>
+                <h3 class="text-lg font-semibold text-gray-100" x-text="headerTitle"></h3>
+                <template x-if="headerSubtitle">
+                    <p class="text-sm text-gray-400 mt-1" x-text="headerSubtitle"></p>
+                </template>
             </div>
             <button @click="close()" class="modal-close">✕</button>
         </div>

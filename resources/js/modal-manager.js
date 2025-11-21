@@ -114,15 +114,30 @@
         return {
             html: "",
             loading: false,
-            title: "",
-            subtitle: "",
+            headerTitle: "",
+            headerSubtitle: "",
+            name: "",
+            email: "",
+            nomorAk1: "",
             open: false,
             items: [],
 
             /* ---------- LOAD DATA TIMELINE DARI SERVER ---------- */
             load(detail) {
-                this.title = detail?.title ?? "Riwayat AK1";
-                this.subtitle = detail?.subtitle ?? "";
+                const baseTitle = detail?.title ?? "Riwayat AK1";
+                this.name = detail?.name ?? "";
+                this.email = detail?.email ?? "";
+                this.nomorAk1 = detail?.nomor_ak1 ?? detail?.nomor ?? "";
+
+                this.headerTitle = this.name
+                    ? `${baseTitle} — ${this.name}`
+                    : baseTitle;
+
+                const subtitleParts = [];
+                if (this.email) subtitleParts.push(this.email);
+                if (this.nomorAk1) subtitleParts.push(`No. AK1: ${this.nomorAk1}`);
+                this.headerSubtitle = subtitleParts.join(" · ");
+
                 this.open = true;
 
                 const url = detail?.url;
