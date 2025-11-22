@@ -4,18 +4,30 @@
         <p class="text-sm text-slate-300">Daftar perusahaan yang terdaftar di Disnaker Portal.</p>
     </div> -->
     {{-- Filter bar --}}
-    <div class="flex flex-wrap items-center gap-3">
+    <form wire:submit.prevent="applyFilters" class="flex flex-wrap items-center gap-3">
         <input type="text"
-               wire:model.debounce.400ms="q"
+               wire:model.defer="q"
                placeholder="Cari nama perusahaan atau email..."
                class="w-72 max-w-full rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500" />
 
-        <select wire:model="verificationStatus"
-                class="rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
-            <option value="">Semua Status Verifikasi</option>
-            <option value="pending">Belum Disetujui</option>
-            <option value="approved">Disetujui</option>
-        </select>
+            <select wire:model.defer="verificationStatus"
+                    class="rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="">Semua Status Verifikasi</option>
+                <option value="pending">Belum Disetujui</option>
+                <option value="approved">Disetujui</option>
+            </select>
+
+            <button type="submit"
+                    class="inline-flex items-center rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm font-semibold text-white shadow-sm">
+                Terapkan
+            </button>
+        <button type="button"
+                wire:click="clearFilters"
+                class="inline-flex items-center rounded-lg border border-slate-700 bg-slate-800/70 hover:bg-slate-700 px-3 py-2 text-sm font-semibold text-slate-100">
+            Reset
+        </button>
+
+        <div class="flex-1"></div>
 
         <button type="button"
                 onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'add-company-admin' }))"
@@ -23,11 +35,11 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Tambah Admin Perusahaan
+            Admin Perusahaan
         </button>
 
         {{-- Actions bulk (mirip pencaker) --}}
-        <div class="ml-auto relative" x-data="{
+        <div class="relative" x-data="{
             open:false,
             selected: @entangle('selected'),
             get count(){ return (this.selected || []).length; },
@@ -89,7 +101,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </form>
 
     @if (session()->has('success'))
         <div class="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-100">
@@ -339,7 +351,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 
     {{-- Modal konfirmasi verifikasi --}}
     <x-modal id="confirm-company-verify" size="md" title="Konfirmasi Verifikasi">

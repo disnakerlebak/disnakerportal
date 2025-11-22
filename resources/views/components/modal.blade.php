@@ -21,32 +21,29 @@
     $modalSize = $sizes[$sizeKey] ?? $sizes['md'];
 @endphp
 
-<div id="{{ $resolvedId }}" class="hidden fixed inset-0 z-[99999] flex items-center justify-center p-4">
-
-    <!-- BACKDROP ANIMATED -->
-    <div class="fixed inset-0 bg-black/40 opacity-0 transition-opacity duration-200 ease-out"
-         data-backdrop="{{ $resolvedId }}"></div>
+<div id="{{ $resolvedId }}" class="hidden fixed inset-0 z-[99999] flex items-center justify-center p-4 modal-backdrop">
 
     <div class="w-full {{ $modalSize }} max-h-full relative z-[100000]">
         <!-- PANEL ANIMATED -->
-        <div class="relative bg-white rounded-2xl modal-panel opacity-0 scale-95
-                    transition-all duration-200 ease-out shadow-xl">
+        <div class="relative modal-panel opacity-0 scale-95
+                    transition-all duration-200 ease-out shadow-2xl rounded-2xl overflow-hidden
+                    bg-slate-900/90 border border-slate-800 text-slate-100 backdrop-blur">
 
             @unless($hideHeader)
-                <div class="modal-panel-header flex items-center justify-between px-4 py-3 rounded-t-2xl">
-                    <h3 class="text-lg font-semibold">{{ $title }}</h3>
-                    <button type="button" data-close-modal="{{ $resolvedId }}" class="modal-close">
+                <div class="modal-panel-header flex items-center justify-between px-5 py-4 rounded-t-2xl border-b border-slate-800 bg-slate-900/80">
+                    <h3 class="text-lg font-semibold text-gray-100">{{ $title }}</h3>
+                    <button type="button" data-close-modal="{{ $resolvedId }}" class="modal-close text-slate-300 hover:text-white">
                         ✕
                     </button>
                 </div>
             @endunless
 
-            <div class="px-4 py-4">
+            <div class="px-5 py-5">
                 {{ $slot }}
             </div>
 
             @if (isset($footer))
-                <div class="modal-panel-footer px-4 py-3 flex items-center justify-end gap-2 rounded-b-2xl">
+                <div class="modal-panel-footer px-5 py-4 flex items-center justify-end gap-2 rounded-b-2xl border-t border-slate-800 bg-slate-900/80">
                     {{ $footer }}
                 </div>
             @endif
@@ -62,17 +59,14 @@
     if (!modal) return;
 
     const panel = modal.querySelector('.modal-panel');
-    const backdrop = modal.querySelector(`[data-backdrop="${id}"]`);
 
     const showModal = () => {
         modal.classList.remove('hidden');
 
         // start hidden state
-        backdrop.classList.add('opacity-0');
         panel.classList.add('opacity-0', 'scale-95');
 
         setTimeout(() => {
-            backdrop.classList.remove('opacity-0');
             panel.classList.remove('opacity-0', 'scale-95');
             panel.classList.add('opacity-100', 'scale-100');
         }, 10);
@@ -80,7 +74,6 @@
 
     const hideModal = () => {
         // animate exit
-        backdrop.classList.add('opacity-0');
         panel.classList.add('opacity-0', 'scale-95');
         panel.classList.remove('opacity-100', 'scale-100');
 

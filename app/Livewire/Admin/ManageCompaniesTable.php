@@ -34,16 +34,6 @@ class ManageCompaniesTable extends Component
 
     protected $paginationTheme = 'tailwind';
 
-    public function updatingQ()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingVerificationStatus()
-    {
-        $this->resetPage();
-    }
-
     public function approve(int $companyId): void
     {
         $company = CompanyProfile::findOrFail($companyId);
@@ -199,5 +189,16 @@ class ManageCompaniesTable extends Component
         return view('livewire.admin.manage-companies-table', [
             'companies' => $companies,
         ]);
+    }
+
+    public function applyFilters(): void
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset(['q', 'verificationStatus', 'selected']);
+        $this->resetPage();
     }
 }
