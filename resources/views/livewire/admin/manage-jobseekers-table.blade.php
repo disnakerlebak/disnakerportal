@@ -44,48 +44,52 @@
             Reset
         </button>
 
+        <div class="flex-1"></div>
+
         {{-- Tombol aksi massal (nonaktif/aktif & hapus + modal konfirmasi) --}}
-        <div class="ml-auto relative" x-data="{
-            open:false,
-            selected: @entangle('selected'),
-            get count(){ return (this.selected || []).length; },
-            openConfirm(action){
-                if(this.count === 0){
-                    return window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
-                        detail:{
-                            id:'jobseeker-admin:bulk-confirm',
-                            title:'Tidak ada user dipilih',
-                            message:'Pilih minimal satu user.',
-                            action:null,
-                        }
-                    }));
+        <div class="relative flex-shrink-0 self-start sm:self-auto"
+             x-data="{
+                open:false,
+                selected: @entangle('selected'),
+                get count(){ return (this.selected || []).length; },
+                openConfirm(action){
+                    if(this.count === 0){
+                        return window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
+                            detail:{
+                                id:'jobseeker-admin:bulk-confirm',
+                                title:'Tidak ada user dipilih',
+                                message:'Pilih minimal satu user.',
+                                action:null,
+                            }
+                        }));
+                    }
+                    let title = '';
+                    let message = '';
+                    if(action === 'toggle'){
+                        return;
+                    } else if(action === 'activate'){
+                        title = 'Aktifkan Akun';
+                        message = `Apakah Anda yakin mengaktifkan ${this.count} user ini?`;
+                        window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
+                            detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'activate' }
+                        }));
+                    } else if(action === 'deactivate'){
+                        title = 'Nonaktifkan Akun';
+                        message = `Apakah Anda yakin menonaktifkan ${this.count} user ini?`;
+                        window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
+                            detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'deactivate' }
+                        }));
+                    } else if(action === 'delete'){
+                        title = 'Hapus Akun';
+                        message = `Apakah Anda yakin menghapus ${this.count} user ini?`;
+                        window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
+                            detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'delete' }
+                        }));
+                    }
+                    this.open = false;
                 }
-                let title = '';
-                let message = '';
-                if(action === 'toggle'){
-                    return;
-                } else if(action === 'activate'){
-                    title = 'Aktifkan Akun';
-                    message = `Apakah Anda yakin mengaktifkan ${this.count} user ini?`;
-                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
-                        detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'activate' }
-                    }));
-                } else if(action === 'deactivate'){
-                    title = 'Nonaktifkan Akun';
-                    message = `Apakah Anda yakin menonaktifkan ${this.count} user ini?`;
-                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
-                        detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'deactivate' }
-                    }));
-                } else if(action === 'delete'){
-                    title = 'Hapus Akun';
-                    message = `Apakah Anda yakin menghapus ${this.count} user ini?`;
-                    window.dispatchEvent(new CustomEvent('jobseeker-admin:open', {
-                        detail: { id: 'jobseeker-admin:bulk-confirm', title, message, action: 'delete' }
-                    }));
-                }
-                this.open = false;
-            }
-        }" @click.stop>
+            }"
+             @click.stop>
             <button type="button"
                     @click="open = !open"
                     class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 text-sm font-semibold text-slate-100 hover:bg-slate-700">
@@ -97,7 +101,7 @@
             <div x-show="open"
                  @click.outside="open=false"
                  x-transition
-                 class="absolute right-0 mt-2 w-44 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
+                 class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-44 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-[200] origin-top-left sm:origin-top-right">
                 <button type="button"
                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         @click="openConfirm('activate')"
@@ -124,6 +128,7 @@
             </div>
         </div>
     </form>
+
 
     {{-- Tabel utama --}}
     <div class="relative z-10 flex-1 min-h-0 flex flex-col rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-hidden">

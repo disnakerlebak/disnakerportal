@@ -85,7 +85,7 @@
             <div x-show="open"
                  @click.outside="open=false"
                  x-transition
-                 class="absolute right-0 mt-2 w-52 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
+                 class="absolute right-0 top-full mt-2 w-52 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50 origin-top-right">
                 <button type="button"
                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-200 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         @click="openConfirm('approve')">

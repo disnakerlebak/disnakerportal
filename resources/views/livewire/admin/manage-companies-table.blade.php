@@ -134,8 +134,7 @@
                                 {{ $c->nama_perusahaan ?? '-' }}
                             </div>
                             <div class="text-xs text-slate-400 mt-1">
-                                Terdaftar:
-                                {{ optional($user->created_at)->format('d M Y H:i') ?? '-' }}
+                                {{ $user->email ?? '-' }}
                             </div>
                         </td>
                         <td class="p-3 align-top">
@@ -232,7 +231,19 @@
                                         Hapus Akun
                                     </x-dropdown-item>
                                     <x-dropdown-item class="text-cyan-300 hover:text-cyan-100"
-                                                     onclick="openCompanyLog({{ $c->id }})">
+                                                     onclick="
+                                                        window.dispatchEvent(
+                                                            new CustomEvent('timeline:open', {
+                                                                detail: {
+                                                                    id: 'company-timeline',
+                                                                    url: '{{ $user ? route('admin.manage.history', $user->id) : '' }}',
+                                                                    title: 'Riwayat Perusahaan',
+                                                                    name: '{{ $c->nama_perusahaan ?? '-' }}',
+                                                                    email: '{{ $user->email ?? '' }}'
+                                                                }
+                                                            })
+                                                        );
+                                                     ">
                                         Riwayat
                                     </x-dropdown-item>
                                 </x-dropdown>
@@ -344,18 +355,6 @@
         </div>
     </x-modal>
 
-    {{-- Modal log --}}
-    <x-modal name="log-company" :show="false" maxWidth="3xl" animation="zoom">
-        <div class="flex items-start justify-between border-b border-slate-800 px-6 py-4">
-            <div>
-                <h3 class="text-lg font-semibold" id="companyLogTitle">Riwayat Perusahaan</h3>
-                <p class="text-sm text-gray-400 mt-1" id="companyLogSubtitle"></p>
-            </div>
-            <button type="button" onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'log-company'}))" class="text-slate-300 hover:text-white">✕</button>
-        </div>
-        <div id="companyLogBody" class="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4"></div>
-    </x-modal>
-
     {{-- Modal approve --}}
     <x-modal id="modal-company-approve" size="md" title="Setujui Perusahaan">
         <div class="px-6 py-5 space-y-4">
@@ -397,6 +396,9 @@
             </div>
         </div>
     </x-modal>
+
+    {{-- Modal Timeline Perusahaan --}}
+    <x-timeline.modal id="company-timeline" />
 
 @push('scripts')
 <script>
@@ -471,16 +473,6 @@
             };
         }
         window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
-    };
-
-    window.openCompanyLog = function (id) {
-        const title = document.getElementById('companyLogTitle');
-        const subtitle = document.getElementById('companyLogSubtitle');
-        const body = document.getElementById('companyLogBody');
-        if (title) title.textContent = 'Riwayat Perusahaan';
-        if (subtitle) subtitle.textContent = `ID: ${id}`;
-        if (body) body.innerHTML = '<p class="text-sm text-slate-300">Riwayat belum tersedia.</p>';
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-company' }));
     };
 
     const approveBtn = document.getElementById('companyApproveBtn');
@@ -593,16 +585,6 @@
                 }
                 window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
             };
-
-    window.openCompanyLog = function (id) {
-        const title = document.getElementById('companyLogTitle');
-        const subtitle = document.getElementById('companyLogSubtitle');
-        const body = document.getElementById('companyLogBody');
-        if (title) title.textContent = 'Riwayat Perusahaan';
-        if (subtitle) subtitle.textContent = `ID: ${id}`;
-        if (body) body.innerHTML = '<p class="text-sm text-slate-300">Riwayat belum tersedia.</p>';
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'log-company' }));
-    };
 
     const approveBtn = document.getElementById('companyApproveBtn');
     if (approveBtn) {
