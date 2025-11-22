@@ -17,6 +17,15 @@
             <option value="approved">Disetujui</option>
         </select>
 
+        <button type="button"
+                onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'add-company-admin' }))"
+                class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm font-semibold text-white shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Admin Perusahaan
+        </button>
+
         {{-- Actions bulk (mirip pencaker) --}}
         <div class="ml-auto relative" x-data="{
             open:false,
@@ -266,6 +275,42 @@
         </div>
     </div>
 
+    {{-- Modal tambah admin perusahaan --}}
+    <x-modal id="add-company-admin" size="md" title="Tambah Admin Perusahaan">
+        <form wire:submit.prevent="createCompanyAdmin" class="px-1 py-1 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-200 mb-1">Nama Perusahaan</label>
+                <input type="text" wire:model.defer="newCompanyName"
+                       class="w-full rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500"
+                       placeholder="Masukkan nama perusahaan">
+                @error('newCompanyName')
+                    <p class="mt-1 text-xs text-rose-300">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-200 mb-1">Email</label>
+                <input type="email" wire:model.defer="newCompanyEmail"
+                       class="w-full rounded-lg border-slate-700 bg-slate-900/70 px-3 py-2 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500"
+                       placeholder="nama@email.com">
+                @error('newCompanyEmail')
+                    <p class="mt-1 text-xs text-rose-300">{{ $message }}</p>
+                @enderror
+                <p class="mt-2 text-xs text-slate-400">Password awal akan dibuat otomatis dan ditampilkan di notifikasi.</p>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('close-modal', {detail: 'add-company-admin'}))"
+                        class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition text-sm">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition text-sm font-semibold text-white">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </x-modal>
+
     {{-- Modal detail perusahaan --}}
     <div x-data="{ open:false, html:'', loading:false }"
          @company-detail.window="
@@ -402,6 +447,21 @@
 
 @push('scripts')
 <script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('toast', (detail) => {
+            if (typeof Toastify === 'undefined') return;
+            Toastify({
+                text: detail?.message || 'Berhasil',
+                duration: 3500,
+                close: true,
+                gravity: 'bottom',
+                position: 'right',
+                backgroundColor: detail?.type === 'error' ? '#dc2626' : '#16a34a',
+                stopOnFocus: true,
+            }).showToast();
+        });
+    });
+
 (() => {
     let currentCompanyId = null;
     let currentUserId = null;
@@ -503,97 +563,6 @@
                 lw.unapprove(parseInt(currentCompanyId));
             }
             window.dispatchEvent(new CustomEvent('close-modal', { detail: 'modal-company-unapprove' }));
-        };
-    }
-})();
-</script>
-@endpush
-</div>
-
-@push('scripts')
-<script>
-(() => {
-    let currentCompanyId = null;
-    let currentUserId = null;
-
-    const getWire = () => {
-        const comp = document.querySelector('[wire\\:id]');
-        return comp ? window.Livewire.find(comp.getAttribute('wire:id')) : null;
-    };
-
-    window.openCompanyDetail = function (url, name = '', email = '') {
-        window.dispatchEvent(new CustomEvent('company-detail', { detail: { url, name, email } }));
-    };
-
-    window.openCompanyApproveModal = function (el) {
-        currentCompanyId = el.getAttribute('data-company-id');
-        const name = el.getAttribute('data-company-name') || 'Perusahaan';
-        const subtitle = document.getElementById('companyApproveSubtitle');
-        if (subtitle) subtitle.textContent = name;
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modal-company-approve' }));
-    };
-
-    window.openCompanyRejectModal = function (el) {
-        currentCompanyId = el.getAttribute('data-company-id');
-        currentUserId = el.getAttribute('data-user-id');
-        const name = el.getAttribute('data-company-name') || 'Perusahaan';
-        const subtitle = document.getElementById('companyDeleteSubtitle');
-        if (subtitle) subtitle.textContent = name;
-        const deleteBtn = document.getElementById('confirmCompanyDeleteBtn');
-        if (deleteBtn) {
-            deleteBtn.onclick = () => {
-                const lw = getWire();
-                if (lw && currentUserId) lw.deleteUser(parseInt(currentUserId));
-                window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-delete' }));
-            };
-        }
-        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
-    };
-
-            window.openCompanyUserStatus = function (el) {
-                currentUserId = el.getAttribute('data-user-id');
-                const name = el.getAttribute('data-company-name') || 'Perusahaan';
-                const nextStatus = el.getAttribute('data-next-status') || 'inactive';
-                const subtitle = document.getElementById('companyUserStatusSubtitle');
-                const body = document.getElementById('companyUserStatusBody');
-                if (subtitle) subtitle.textContent = name;
-                if (body) body.textContent = nextStatus === 'inactive'
-                    ? 'Nonaktifkan user perusahaan ini? Mereka tidak dapat login sampai diaktifkan kembali.'
-                    : 'Aktifkan user perusahaan ini?';
-                const btn = document.getElementById('confirmCompanyUserStatusBtn');
-                if (btn) {
-                    btn.onclick = function () {
-                        const lw = getWire();
-                        if (lw && currentUserId) lw.toggleUserStatus(parseInt(currentUserId));
-                        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-user-status' }));
-                    };
-                }
-                window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-user-status' }));
-            };
-
-            window.openCompanyDeleteModal = function (el) {
-                currentUserId = el.getAttribute('data-user-id');
-                const subtitle = document.getElementById('companyDeleteSubtitle');
-                if (subtitle) subtitle.textContent = 'Hapus akun perusahaan ini?';
-                const btn = document.getElementById('confirmCompanyDeleteBtn');
-                if (btn) {
-                    btn.onclick = function () {
-                        const lw = getWire();
-                        if (lw && currentUserId) lw.deleteUser(parseInt(currentUserId));
-                        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'confirm-company-delete' }));
-                    };
-                }
-                window.dispatchEvent(new CustomEvent('open-modal', { detail: 'confirm-company-delete' }));
-            };
-
-    const approveBtn = document.getElementById('companyApproveBtn');
-    if (approveBtn) {
-        approveBtn.onclick = function () {
-            const lw = getWire();
-            if (lw && currentCompanyId) {
-                lw.approve(parseInt(currentCompanyId));
-            }
-            window.dispatchEvent(new CustomEvent('close-modal', { detail: 'modal-company-approve' }));
         };
     }
 })();

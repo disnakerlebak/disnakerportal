@@ -4,7 +4,9 @@ namespace App\Livewire\Admin;
 
 use App\Models\CompanyProfile;
 use App\Models\User;
+use App\Models\ActivityLog;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,11 +18,18 @@ class ManageCompaniesTable extends Component
     public string $verificationStatus = '';
     public int $perPage = 10;
     public array $selected = [];
+    public string $newCompanyName = '';
+    public string $newCompanyEmail = '';
 
     protected $queryString = [
         'q' => ['except' => ''],
         'verificationStatus' => ['except' => ''],
         'page' => ['except' => 1],
+    ];
+
+    protected $rules = [
+        'newCompanyName'  => ['required', 'string', 'max:255'],
+        'newCompanyEmail' => ['required', 'email', 'max:255', 'unique:users,email'],
     ];
 
     protected $paginationTheme = 'tailwind';
@@ -43,6 +52,7 @@ class ManageCompaniesTable extends Component
         $company->save();
 
         session()->flash('success', 'Perusahaan berhasil disetujui.');
+        $this->dispatch('toast', message: 'Perusahaan disetujui.', type: 'success');
     }
 
     public function unapprove(int $companyId): void
@@ -53,6 +63,7 @@ class ManageCompaniesTable extends Component
         $company->save();
 
         session()->flash('success', 'Status verifikasi perusahaan dikembalikan menjadi pending.');
+        $this->dispatch('toast', message: 'Verifikasi perusahaan dibatalkan.', type: 'success');
     }
 
     public function toggleUserStatus(int $userId): void
@@ -61,7 +72,9 @@ class ManageCompaniesTable extends Component
         $user->status = ($user->status ?? 'active') === 'active' ? 'inactive' : 'active';
         $user->save();
 
+        $label = $user->status === 'active' ? 'Akun perusahaan diaktifkan.' : 'Akun perusahaan dinonaktifkan.';
         session()->flash('success', 'Status akun perusahaan berhasil diperbarui.');
+        $this->dispatch('toast', message: $label, type: 'success');
     }
 
     public function deleteUser(int $userId): void
@@ -70,6 +83,7 @@ class ManageCompaniesTable extends Component
         $user->delete();
 
         session()->flash('success', 'Akun perusahaan berhasil dihapus.');
+        $this->dispatch('toast', message: 'Akun perusahaan dihapus.', type: 'success');
     }
 
     public function bulkApprove(): void
@@ -123,6 +137,42 @@ class ManageCompaniesTable extends Component
 
         $this->selected = [];
         session()->flash('success', 'Perusahaan terpilih berhasil dihapus.');
+    }
+
+    public function createCompanyAdmin(): void
+    {
+        $data = $this->validate();
+        $password = 'p@ssword123';
+
+        $user = User::create([
+            'name'     => $data['newCompanyName'],
+            'email'    => strtolower($data['newCompanyEmail']),
+            'password' => Hash::make($password),
+            'role'     => 'perusahaan',
+            'status'   => 'active',
+        ]);
+
+        CompanyProfile::create([
+            'user_id'         => $user->id,
+            'nama_perusahaan' => $data['newCompanyName'],
+            'alamat_lengkap'  => '-',
+            'email'           => $user->email,
+            'verification_status' => 'pending',
+        ]);
+
+        ActivityLog::create([
+            'user_id'     => $user->id,
+            'action'      => 'created',
+            'model_type'  => User::class,
+            'model_id'    => $user->id,
+            'description' => 'Akun perusahaan dibuat oleh admin',
+        ]);
+
+        session()->flash('success', 'Akun perusahaan berhasil dibuat. Password awal: ' . $password);
+        $this->dispatch('toast', message: 'Akun perusahaan berhasil dibuat. Password: ' . $password, type: 'success');
+        $this->reset(['newCompanyName', 'newCompanyEmail']);
+        $this->dispatch('close-modal', id: 'add-company-admin');
+        $this->resetPage();
     }
 
     public function render()
