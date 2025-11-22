@@ -460,6 +460,8 @@
 @push('scripts')
 <script>
     document.addEventListener('livewire:init', () => {
+        if (window.__companyToastBound) return;
+        window.__companyToastBound = true;
         Livewire.on('toast', (detail) => {
             if (typeof Toastify === 'undefined') return;
             Toastify({

@@ -41,7 +41,6 @@ class ManageCompaniesTable extends Component
         $company->verified_at = now();
         $company->save();
 
-        session()->flash('success', 'Perusahaan berhasil disetujui.');
         $this->dispatch('toast', message: 'Perusahaan disetujui.', type: 'success');
     }
 
@@ -52,7 +51,6 @@ class ManageCompaniesTable extends Component
         $company->verified_at = null;
         $company->save();
 
-        session()->flash('success', 'Status verifikasi perusahaan dikembalikan menjadi pending.');
         $this->dispatch('toast', message: 'Verifikasi perusahaan dibatalkan.', type: 'success');
     }
 
@@ -63,7 +61,6 @@ class ManageCompaniesTable extends Component
         $user->save();
 
         $label = $user->status === 'active' ? 'Akun perusahaan diaktifkan.' : 'Akun perusahaan dinonaktifkan.';
-        session()->flash('success', 'Status akun perusahaan berhasil diperbarui.');
         $this->dispatch('toast', message: $label, type: 'success');
     }
 
@@ -72,7 +69,6 @@ class ManageCompaniesTable extends Component
         $user = User::findOrFail($userId);
         $user->delete();
 
-        session()->flash('success', 'Akun perusahaan berhasil dihapus.');
         $this->dispatch('toast', message: 'Akun perusahaan dihapus.', type: 'success');
     }
 
@@ -86,7 +82,7 @@ class ManageCompaniesTable extends Component
         ]);
 
         $this->selected = [];
-        session()->flash('success', 'Perusahaan terpilih berhasil disetujui.');
+        $this->dispatch('toast', message: 'Perusahaan terpilih berhasil disetujui.', type: 'success');
     }
 
     public function bulkActivateUsers(): void
@@ -99,7 +95,7 @@ class ManageCompaniesTable extends Component
 
         User::whereIn('id', $userIds)->update(['status' => 'active']);
         $this->selected = [];
-        session()->flash('success', 'Akun perusahaan terpilih berhasil diaktifkan.');
+        $this->dispatch('toast', message: 'Akun perusahaan terpilih berhasil diaktifkan.', type: 'success');
     }
 
     public function bulkDeactivateUsers(): void
@@ -112,7 +108,7 @@ class ManageCompaniesTable extends Component
 
         User::whereIn('id', $userIds)->update(['status' => 'inactive']);
         $this->selected = [];
-        session()->flash('success', 'Akun perusahaan terpilih berhasil dinonaktifkan.');
+        $this->dispatch('toast', message: 'Akun perusahaan terpilih berhasil dinonaktifkan.', type: 'success');
     }
 
     public function bulkDelete(): void
@@ -126,7 +122,7 @@ class ManageCompaniesTable extends Component
         }
 
         $this->selected = [];
-        session()->flash('success', 'Perusahaan terpilih berhasil dihapus.');
+        $this->dispatch('toast', message: 'Perusahaan terpilih berhasil dihapus.', type: 'success');
     }
 
     public function createCompanyAdmin(): void
@@ -158,7 +154,6 @@ class ManageCompaniesTable extends Component
             'description' => 'Akun perusahaan dibuat oleh admin',
         ]);
 
-        session()->flash('success', 'Akun perusahaan berhasil dibuat. Password awal: ' . $password);
         $this->dispatch('toast', message: 'Akun perusahaan berhasil dibuat. Password: ' . $password, type: 'success');
         $this->reset(['newCompanyName', 'newCompanyEmail']);
         $this->dispatch('close-modal', id: 'add-company-admin');
