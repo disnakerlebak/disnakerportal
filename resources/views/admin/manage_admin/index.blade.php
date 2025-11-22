@@ -65,9 +65,9 @@
                 </td>
                 <td class="px-4 py-3">
                   @if($admin->status === 'active')
-                    <span class="px-2 py-1 text-[11px] rounded-full bg-green-700/30 text-green-200 border border-green-600/40">Active</span>
+                    <span class="px-2 py-1 text-[11px] rounded-full bg-green-700/30 text-green-200 border border-green-600/40">Aktif</span>
                   @else
-                    <span class="px-2 py-1 text-[11px] rounded-full bg-red-700/30 text-red-200 border border-red-600/40">Inactive</span>
+                    <span class="px-2 py-1 text-[11px] rounded-full bg-red-700/30 text-red-200 border border-red-600/40">Tidak Aktif</span>
                   @endif
                 </td>
                 @php

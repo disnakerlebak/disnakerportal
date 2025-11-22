@@ -99,6 +99,7 @@
                 </svg>
             </button>
             <div x-show="open"
+                 x-cloak
                  @click.outside="open=false"
                  x-transition
                  class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-44 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-[200] origin-top-left sm:origin-top-right">
@@ -168,7 +169,7 @@
 
                         // Status pengguna (badge seperti halaman admin)
                         $isActive = ($u->status ?? 'active') === 'active';
-                        $userStatusLabel = $isActive ? 'Active' : 'Inactive';
+                        $userStatusLabel = $isActive ? 'Aktif' : 'Tidak Aktif';
                         $userStatusClass = $isActive
                             ? 'bg-green-700/30 text-green-200 border border-green-600/40'
                             : 'bg-red-700/30 text-red-200 border border-red-600/40';

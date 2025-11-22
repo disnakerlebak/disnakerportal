@@ -9,16 +9,18 @@
     x-cloak
     class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
 >
-    <div class="modal-panel w-full max-w-4xl shadow-xl overflow-hidden" @click.outside="close()">
+    <div class="modal-panel w-full max-w-4xl shadow-xl overflow-hidden bg-slate-900/90 border border-slate-800 text-slate-100"
+         @click.outside="close()"
+         x-transition.opacity.scale.90>
 
-        <div class="modal-panel-header flex items-start justify-between px-6 py-4 sticky top-0 z-10">
+        <div class="modal-panel-header flex items-start justify-between px-6 py-4 sticky top-0 z-10 bg-slate-900/80 border-b border-slate-800">
             <div>
                 <h3 class="text-lg font-semibold text-gray-100" x-text="headerTitle"></h3>
                 <template x-if="headerSubtitle">
                     <p class="text-sm text-gray-400 mt-1" x-text="headerSubtitle"></p>
                 </template>
             </div>
-            <button @click="close()" class="modal-close">✕</button>
+            <button @click="close()" class="modal-close text-slate-300 hover:text-white">✕</button>
         </div>
 
         <div class="px-6 py-5 max-h-[75vh] overflow-y-auto">

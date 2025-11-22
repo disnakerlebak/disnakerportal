@@ -83,6 +83,7 @@
                 </svg>
             </button>
             <div x-show="open"
+                 x-cloak
                  @click.outside="open=false"
                  x-transition
                  class="absolute right-0 top-full mt-2 w-52 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50 origin-top-right">
@@ -415,11 +416,20 @@
                                             @endif
 
                                             <x-dropdown-item class="text-cyan-300 hover:text-cyan-100"
-                                                             onclick="openLogModal(this)"
-                                                             data-app-name="{{ $app->user->name }}"
-                                                             data-app-email="{{ $app->user->email }}"
-                                                             data-current-status="{{ $app->status }}"
-                                                             data-logs="{{ base64_encode(json_encode($logPayload)) }}">
+                                                             onclick="
+                                                                window.dispatchEvent(
+                                                                    new CustomEvent('timeline:open', {
+                                                                        detail: {
+                                                                            id: 'ak1-timeline',
+                                                                            url: 'data:application/json;base64,{{ base64_encode(json_encode(['logs' => $logPayload])) }}',
+                                                                            title: 'Riwayat Pengajuan',
+                                                                            name: '{{ $app->user->name }}',
+                                                                            email: '{{ $app->user->email }}',
+                                                                            nomor_ak1: '{{ $app->nomor_ak1 ?? '' }}'
+                                                                        }
+                                                                    })
+                                                                );
+                                                             ">
                                                 Riwayat
                                             </x-dropdown-item>
                                         </x-dropdown>
@@ -446,10 +456,10 @@
 
     {{-- ===== Modal Detail (custom overlay) ===== --}}
     <div id="detail-ak1-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4" onclick="if(event.target === this) closeDetailModal()">
-        <div class="modal-panel w-full max-w-5xl shadow-xl overflow-hidden">
-            <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+        <div class="modal-panel w-full max-w-5xl shadow-xl overflow-hidden bg-slate-900/90 border border-slate-800 text-slate-100">
+            <div class="modal-panel-header flex items-center justify-between px-6 py-3 sticky top-0 z-10 bg-slate-900/80 border-b border-slate-800">
                 <h3 class="text-lg font-semibold text-gray-100">Detail Pemohon AK1</h3>
-                <button type="button" onclick="closeDetailModal()" class="modal-close">✕</button>
+                <button type="button" onclick="closeDetailModal()" class="modal-close text-slate-300 hover:text-white">✕</button>
             </div>
             <div id="modalContent" class="px-6 pb-6 max-h-[85vh] overflow-y-auto"></div>
         </div>
@@ -490,20 +500,6 @@
             </div>
         </form>
     </x-modal>
-
-    {{-- ===== Modal Riwayat (custom layout, seragam dengan manage pencaker) ===== --}}
-    <div id="log-ak1-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4" onclick="if(event.target === this) closeLogModal()">
-        <div class="modal-panel w-full max-w-4xl shadow-xl overflow-hidden">
-            <div class="modal-panel-header flex items-start justify-between px-6 py-4 sticky top-0 z-10">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-100" id="logModalTitle">Riwayat Pengajuan</h3>
-                    <p class="text-sm text-gray-400 mt-1" id="logModalSubtitle"></p>
-                </div>
-                <button type="button" onclick="closeLogModal()" class="modal-close">✕</button>
-            </div>
-            <div id="logModalBody" class="px-6 py-5 max-h-[75vh] overflow-y-auto space-y-4"></div>
-        </div>
-    </div>
 
     {{-- ===== Modal Bulk Actions ===== --}}
     <x-modal id="ak1-admin:bulk-error" size="md" title="Aksi Tidak Dapat Dilanjutkan">

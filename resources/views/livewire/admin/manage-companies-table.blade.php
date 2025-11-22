@@ -66,6 +66,7 @@
                 </svg>
             </button>
             <div x-show="open"
+                 x-cloak
                  @click.outside="open=false"
                  x-transition
                  class="absolute right-0 mt-2 w-48 rounded-xl border border-slate-700 bg-slate-800 shadow-lg z-50">
@@ -191,8 +192,8 @@
                             @php
                                 $userStatusLabel = $isActive ? 'Aktif' : 'Tidak Aktif';
                                 $userStatusClass = $isActive
-                                    ? 'bg-emerald-600/90 text-emerald-50'
-                                    : 'bg-slate-600/90 text-slate-100';
+                                    ? 'bg-green-700/30 text-green-200 border border-green-600/40'
+                                    : 'bg-red-700/30 text-red-200 border border-red-600/40';
                             @endphp
                             <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $userStatusClass }}">
                                 {{ $userStatusLabel }}
