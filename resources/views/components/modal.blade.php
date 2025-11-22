@@ -105,5 +105,25 @@
             hideModal();
         }
     });
+
+    // Fallback: detect manual open (hidden => visible)
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(m => {
+            if (m.attributeName === 'class') {
+                const isVisible = !modal.classList.contains('hidden');
+
+                if (isVisible && panel.classList.contains('opacity-0')) {
+                    // Ensure no double-animation
+                    setTimeout(() => {
+                        panel.classList.remove('opacity-0', 'scale-95');
+                        panel.classList.add('opacity-100', 'scale-100');
+                    }, 10);
+                }
+            }
+        });
+    });
+
+    observer.observe(modal, { attributes: true });
+
 })();
 </script>

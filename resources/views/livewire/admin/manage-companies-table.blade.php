@@ -324,7 +324,7 @@
     </x-modal>
 
     {{-- Modal detail perusahaan --}}
-    <div x-data="{ open:false, html:'', loading:false }"
+    <div x-data="{ open:false, html:'', loading:false }" x-cloak
          @company-detail.window="
             open = true; loading = true; html = '';
             fetch($event.detail.url, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
@@ -351,7 +351,7 @@
                 </div>
             </div>
         </div>
-    </form>
+    </div>
 
     {{-- Modal konfirmasi verifikasi --}}
     <x-modal id="confirm-company-verify" size="md" title="Konfirmasi Verifikasi">
