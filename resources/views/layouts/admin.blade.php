@@ -41,10 +41,11 @@
 
 <body class="flex h-screen bg-slate-950 text-slate-100 overflow-x-hidden">
 
- <!-- ===== Sidebar ===== -->
+<!-- ===== Sidebar ===== -->
 <!-- Overlay mobile -->
-<div x-show="sidebarOpen" x-transition.opacity
+<div x-show="sidebarOpen" x-transition.opacity x-cloak
      class="fixed inset-0 z-30 bg-black/40 md:hidden"
+     style="display: none"
      @click="sidebarOpen = false"></div>
 
 <aside
