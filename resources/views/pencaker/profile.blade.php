@@ -165,7 +165,8 @@
                             <span class="sr-only">Terkunci</span>
                         </button>
                     @else
-                    <button data-modal-open="modalEducationCreate"
+                    <button type="button"
+                            onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalEducationCreate' }))"
                             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                         + Tambah Pendidikan
                     </button>
@@ -201,7 +202,7 @@
                                             </span>
                                         @else
                                             <button type="button" title="Edit"
-                                                    data-modal-open="modalEducationEdit{{ $edu->id }}"
+                                                    onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalEducationEdit{{ $edu->id }}' }))"
                                                     class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-yellow-400 hover:bg-slate-700 mr-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -209,8 +210,12 @@
                                             </button>
                                             <button type="button" title="Hapus"
                                                     class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-red-500 hover:bg-slate-700"
-                                                    data-delete-modal="modalEducationDelete"
-                                                    data-action="{{ route('pencaker.education.destroy', $edu) }}">
+                                                    onclick="
+                                                        (function(){
+                                                            const form = document.getElementById('formEducationDelete');
+                                                            if (form) { form.setAttribute('action', '{{ route('pencaker.education.destroy', $edu) }}'); }
+                                                            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalEducationDelete' }));
+                                                        })();">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                                                     <path fill-rule="evenodd" d="M9 3.75A1.5 1.5 0 0110.5 2.25h3A1.5 1.5 0 0115 3.75V4.5h4.5a.75.75 0 010 1.5H4.5a.75.75 0 010-1.5H9V3.75zM6.75 7.5A.75.75 0 017.5 6.75h9a.75.75 0 01.75.75v10.5A3.75 3.75 0 0113.5 21.75h-3A3.75 3.75 0 016.75 18V7.5z" clip-rule="evenodd"/>
                                                 </svg>
@@ -653,108 +658,135 @@
 </x-modal>
 
 {{-- Modal: Tambah Pendidikan --}}
-<x-modal-form id="modalEducationCreate"
-              title="Tambah Riwayat Pendidikan"
-              action="{{ route('pencaker.education.store') }}"
-              method="POST"
-              submitLabel="Simpan" cancelLabel="Batal">
-    <input type="hidden" name="__accordion" value="education">
-    <div>
-        <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
-        <select name="tingkat"
-                class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500" required>
-            <option value="">- Pilih -</option>
-            @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
-                <option value="{{ $tingkat }}">{{ $tingkat }}</option>
-            @endforeach
-        </select>
-    </div>
-
-    <div>
-        <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
-        <input type="text" name="nama_institusi"
-               class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
-    </div>
-
-    <div>
-        <label class="block text-sm text-slate-400">Jurusan</label>
-        <input type="text" name="jurusan"
-               class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-    </div>
-
-    <div class="grid grid-cols-2 gap-3">
-        <div>
-            <label class="block text-sm text-slate-400">Tahun Mulai</label>
-            <input type="number" name="tahun_mulai" placeholder="contoh: 2018"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Tahun Selesai</label>
-            <input type="number" name="tahun_selesai" placeholder="contoh: 2022"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-        </div>
-    </div>
-
-</x-modal-form>
-
-{{-- Modal: Edit Pendidikan --}}
-@foreach ($educations as $edu)
-    <x-modal-form id="modalEducationEdit{{ $edu->id }}"
-                  title="Edit Riwayat Pendidikan"
-                  action="{{ route('pencaker.education.update', $edu->id) }}"
-                  method="POST"
-                  submitLabel="Update" cancelLabel="Batal">
-        @method('PUT')
+<x-modal id="modalEducationCreate" title="Tambah Riwayat Pendidikan">
+    <form method="POST" action="{{ route('pencaker.education.store') }}" class="space-y-4">
+        @csrf
         <input type="hidden" name="__accordion" value="education">
-
         <div>
             <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
             <select name="tingkat"
                     class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500" required>
+                <option value="">- Pilih -</option>
                 @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
-                    <option value="{{ $tingkat }}" @selected($edu->tingkat == $tingkat)>{{ $tingkat }}</option>
+                    <option value="{{ $tingkat }}">{{ $tingkat }}</option>
                 @endforeach
             </select>
         </div>
 
         <div>
             <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
-            <input type="text" name="nama_institusi" value="{{ old('nama_institusi', $edu->nama_institusi) }}"
+            <input type="text" name="nama_institusi"
                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
         </div>
 
         <div>
             <label class="block text-sm text-slate-400">Jurusan</label>
-            <input type="text" name="jurusan" value="{{ old('jurusan', $edu->jurusan) }}"
+            <input type="text" name="jurusan"
                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-sm text-slate-400">Tahun Mulai</label>
-                <input type="number" name="tahun_mulai" value="{{ old('tahun_mulai', $edu->tahun_mulai) }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
+                <input type="number" name="tahun_mulai" placeholder="contoh: 2018"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
                 <label class="block text-sm text-slate-400">Tahun Selesai</label>
-                <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
+                <input type="number" name="tahun_selesai" placeholder="contoh: 2022"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
             </div>
         </div>
 
-    </x-modal-form>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalEducationCreate"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
+        </div>
+    </form>
+</x-modal>
+
+{{-- Modal: Edit Pendidikan --}}
+@foreach ($educations as $edu)
+    <x-modal id="modalEducationEdit{{ $edu->id }}" title="Edit Riwayat Pendidikan">
+        <form method="POST" action="{{ route('pencaker.education.update', $edu->id) }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="__accordion" value="education">
+
+            <div>
+                <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
+                <select name="tingkat"
+                        class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500" required>
+                    @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
+                        <option value="{{ $tingkat }}" @selected($edu->tingkat == $tingkat)>{{ $tingkat }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
+                <input type="text" name="nama_institusi" value="{{ old('nama_institusi', $edu->nama_institusi) }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Jurusan</label>
+                <input type="text" name="jurusan" value="{{ old('jurusan', $edu->jurusan) }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm text-slate-400">Tahun Mulai</label>
+                    <input type="number" name="tahun_mulai" value="{{ old('tahun_mulai', $edu->tahun_mulai) }}"
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400">Tahun Selesai</label>
+                    <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}"
+                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="modalEducationEdit{{ $edu->id }}"
+                        class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                    Update
+                </button>
+            </div>
+        </form>
+    </x-modal>
 @endforeach
 
 {{-- Modal: Hapus Pendidikan --}}
-<x-modal-form id="modalEducationDelete"
-              title="Konfirmasi Hapus"
-              action=""
-              method="POST"
-              submitLabel="Ya, Hapus" cancelLabel="Batal">
-    @method('DELETE')
-    <input type="hidden" name="__accordion" value="education">
-    <p class="text-slate-400">Apakah Anda yakin ingin menghapus data pendidikan ini?</p>
-</x-modal-form>
+<x-modal id="modalEducationDelete" title="Konfirmasi Hapus">
+    <form method="POST" action="" class="space-y-4" id="formEducationDelete">
+        @csrf
+        @method('DELETE')
+        <input type="hidden" name="__accordion" value="education">
+        <p class="text-slate-400">Apakah Anda yakin ingin menghapus data pendidikan ini?</p>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalEducationDelete"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold">
+                Ya, Hapus
+            </button>
+        </div>
+    </form>
+</x-modal>
 
 {{-- Modal: Tambah Pelatihan --}}
 <x-modal-form id="modalTrainingCreate"
@@ -912,22 +944,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 event.preventDefault();
                 const modalId = button.getAttribute('data-delete-modal');
                 const action = button.getAttribute('data-action');
-                const modal = document.getElementById(modalId);
-                if (!modal) return;
-
-                const form = modal.querySelector('form');
+                const form = document.querySelector(`#${modalId} form`);
                 if (form && action) {
                     form.setAttribute('action', action);
                 }
-
-                // Buka modal via komponen (tanpa duplikasi logika open)
-                modal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
+                window.dispatchEvent(new CustomEvent('open-modal', { detail: modalId }));
             });
         });
     };
 
-    registerDeleteModal('[data-delete-modal="modalEducationDelete"]');
     registerDeleteModal('[data-delete-modal="modalTrainingDelete"]');
     registerDeleteModal('[data-delete-modal="modalWorkDelete"]');
 });
