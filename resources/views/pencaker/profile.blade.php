@@ -471,7 +471,8 @@
                  x-transition:leave-start="opacity-100 translate-y-0"
                  x-transition:leave-end="opacity-0 -translate-y-2"
                  class="px-6 pt-6 pb-8 space-y-4 text-slate-300">
-                <button data-modal-open="modalPreferenceForm"
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalPreferenceForm' }))"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                     + Tambah
                 </button>
@@ -524,28 +525,19 @@
         <input type="hidden" name="__accordion" value="profile">
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-                <label class="block text-sm text-slate-400">Nama Lengkap</label>
-                <input type="text" name="nama_lengkap"
-                       value="{{ old('nama_lengkap', $profile->nama_lengkap ?? '') }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
-                       required>
-            </div>
+            <x-input-text label="Nama Lengkap"
+                          name="nama_lengkap"
+                          :value="old('nama_lengkap', $profile->nama_lengkap ?? '')"
+                          required />
 
-            <div>
-                <label class="block text-sm text-slate-400">NIK</label>
-                <input type="text" name="nik"
-                       value="{{ old('nik', $profile->nik ?? '') }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
-                       required>
-            </div>
+            <x-input-text label="NIK"
+                          name="nik"
+                          :value="old('nik', $profile->nik ?? '')"
+                          required />
 
-            <div>
-                <label class="block text-sm text-slate-400">Tempat Lahir</label>
-                <input type="text" name="tempat_lahir"
-                       value="{{ old('tempat_lahir', $profile->tempat_lahir ?? '') }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-            </div>
+            <x-input-text label="Tempat Lahir"
+                          name="tempat_lahir"
+                          :value="old('tempat_lahir', $profile->tempat_lahir ?? '')" />
 
             <div>
                 <label class="block text-sm text-slate-400">Tanggal Lahir</label>
@@ -611,12 +603,9 @@
                 </select>
             </div>
 
-            <div>
-                <label class="block text-sm text-slate-400">No. Telepon</label>
-                <input type="text" name="no_telepon"
-                       value="{{ old('no_telepon', $profile->no_telepon ?? '') }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400">
-            </div>
+            <x-input-text label="No. Telepon"
+                          name="no_telepon"
+                          :value="old('no_telepon', $profile->no_telepon ?? '')" />
 
             <div>
                 <label class="block text-sm text-slate-400">Status Disabilitas</label>
@@ -637,13 +626,10 @@
                 </select>
             </div>
 
-            <div>
-                <label class="block text-sm text-slate-400">Akun Media Sosial</label>
-                <input type="text" name="akun_media_sosial"
-                       value="{{ old('akun_media_sosial', $profile->akun_media_sosial ?? '') }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400"
-                       placeholder="@username / link profil (opsional)">
-            </div>
+            <x-input-text label="Akun Media Sosial"
+                          name="akun_media_sosial"
+                          :value="old('akun_media_sosial', $profile->akun_media_sosial ?? '')"
+                          placeholder="@username / link profil (opsional)" />
 
             <div class="md:col-span-2">
                 <label class="block text-sm text-slate-400">Alamat Lengkap</label>
@@ -683,29 +669,12 @@
             </select>
         </div>
 
-        <div>
-            <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
-            <input type="text" name="nama_institusi"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Jurusan</label>
-            <input type="text" name="jurusan"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-        </div>
+        <x-input-text label="Nama Institusi / Sekolah" name="nama_institusi" required />
+        <x-input-text label="Jurusan" name="jurusan" />
 
         <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label class="block text-sm text-slate-400">Tahun Mulai</label>
-                <input type="number" name="tahun_mulai" placeholder="contoh: 2018"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm text-slate-400">Tahun Selesai</label>
-                <input type="number" name="tahun_selesai" placeholder="contoh: 2022"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-            </div>
+            <x-input-text label="Tahun Mulai" name="tahun_mulai" type="number" placeholder="contoh: 2018" />
+            <x-input-text label="Tahun Selesai" name="tahun_selesai" type="number" placeholder="contoh: 2022" />
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
@@ -739,29 +708,17 @@
                 </select>
             </div>
 
-            <div>
-                <label class="block text-sm text-slate-400">Nama Institusi / Sekolah</label>
-                <input type="text" name="nama_institusi" value="{{ old('nama_institusi', $edu->nama_institusi) }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
-            </div>
+            <x-input-text label="Nama Institusi / Sekolah" name="nama_institusi"
+                          :value="old('nama_institusi', $edu->nama_institusi)" required />
 
-            <div>
-                <label class="block text-sm text-slate-400">Jurusan</label>
-                <input type="text" name="jurusan" value="{{ old('jurusan', $edu->jurusan) }}"
-                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-            </div>
+            <x-input-text label="Jurusan" name="jurusan"
+                          :value="old('jurusan', $edu->jurusan)" />
 
             <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm text-slate-400">Tahun Mulai</label>
-                    <input type="number" name="tahun_mulai" value="{{ old('tahun_mulai', $edu->tahun_mulai) }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
-                </div>
-                <div>
-                    <label class="block text-sm text-slate-400">Tahun Selesai</label>
-                    <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}"
-                           class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500" required>
-                </div>
+                <x-input-text label="Tahun Mulai" name="tahun_mulai" type="number"
+                              :value="old('tahun_mulai', $edu->tahun_mulai)" required />
+                <x-input-text label="Tahun Selesai" name="tahun_selesai" type="number"
+                              :value="old('tahun_selesai', $edu->tahun_selesai)" required />
             </div>
 
             <div class="flex justify-end gap-2 pt-2">
@@ -949,14 +906,12 @@
 </x-modal>
 
 {{-- Modal: Minat Kerja --}}
-<x-modal-form id="modalPreferenceForm"
-              title="Isi Minat Kerja"
-              action="{{ route('pencaker.preferences.store') }}"
-              method="POST"
-              submitLabel="Simpan" cancelLabel="Batal">
-    <input type="hidden" name="__accordion" value="preference">
+<x-modal id="modalPreferenceForm" title="Isi Minat Kerja">
+    <div class="max-h-[70vh] overflow-y-auto pr-1">
+    <form method="POST" action="{{ route('pencaker.preferences.store') }}" class="space-y-4">
+        @csrf
+        <input type="hidden" name="__accordion" value="preference">
 
-    <div class="space-y-4">
         <div>
             <label class="block text-sm text-slate-400 dark:text-slate-400 mb-1">
                 Minat Lokasi Kerja (boleh lebih dari satu)
@@ -999,8 +954,20 @@
             <textarea name="deskripsi_diri" rows="4"
                       class="w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">{{ old('deskripsi_diri', $preference->deskripsi_diri ?? '') }}</textarea>
         </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalPreferenceForm"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
+        </div>
+    </form>
     </div>
-</x-modal-form>
+</x-modal>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
