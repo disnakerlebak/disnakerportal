@@ -78,7 +78,7 @@
                             <span class="sr-only">Terkunci</span>
                         </button>
                     @else
-                        <button data-modal-open="modalProfileEdit"
+                        <button onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalProfileEdit' }))"
                                 class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition">
                             Edit Profil
                         </button>
@@ -501,142 +501,157 @@
 </div>
 
 {{-- Modal: Edit Profil (refactor ke komponen) --}}
-<x-modal-form id="modalProfileEdit"
-              title="Edit Data Diri"
-              action="{{ route('pencaker.profile.update') }}"
-              method="PUT"
-              submitLabel="Simpan" cancelLabel="Batal">
-    <input type="hidden" name="__accordion" value="profile">
+<x-modal id="modalProfileEdit" size="xl" title="Edit Data Diri">
+    <div class="max-h-[75vh] overflow-y-auto pr-1">
+    <form method="POST" action="{{ route('pencaker.profile.update') }}" class="space-y-4">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="__accordion" value="profile">
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-            <label class="block text-sm text-slate-400">Nama Lengkap</label>
-            <input type="text" name="nama_lengkap"
-                   value="{{ old('nama_lengkap', $profile->nama_lengkap ?? '') }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
-                   required>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+                <label class="block text-sm text-slate-400">Nama Lengkap</label>
+                <input type="text" name="nama_lengkap"
+                       value="{{ old('nama_lengkap', $profile->nama_lengkap ?? '') }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
+                       required>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">NIK</label>
+                <input type="text" name="nik"
+                       value="{{ old('nik', $profile->nik ?? '') }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
+                       required>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Tempat Lahir</label>
+                <input type="text" name="tempat_lahir"
+                       value="{{ old('tempat_lahir', $profile->tempat_lahir ?? '') }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Tanggal Lahir</label>
+                <input type="date" name="tanggal_lahir" lang="id"
+                       value="{{ old('tanggal_lahir', $profile->tanggal_lahir ? \Illuminate\Support\Carbon::parse($profile->tanggal_lahir)->format('Y-m-d') : '') }}"
+                       placeholder="dd/mm/yyyy"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
+                       autocomplete="bday" style="color-scheme: dark;">
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Jenis Kelamin</label>
+                <select name="jenis_kelamin"
+                        class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Pilih</option>
+                    <option value="Laki-laki" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Laki-laki')>Laki-laki</option>
+                    <option value="Perempuan" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Perempuan')>Perempuan</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Agama</label>
+                <select name="agama"
+                        class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Pilih</option>
+                    @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
+                        <option value="{{ $agama }}" @selected(old('agama', $profile->agama ?? '') == $agama)>{{ $agama }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Status Perkawinan</label>
+                <select name="status_perkawinan"
+                        class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Pilih</option>
+                    @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
+                        <option value="{{ $status }}" @selected(old('status_perkawinan', $profile->status_perkawinan ?? '') == $status)>{{ $status }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Pendidikan Terakhir</label>
+                <select name="pendidikan_terakhir"
+                        class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                    @php($listPendidikan = ['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'])
+                    <option value="">Pilih</option>
+                    @foreach ($listPendidikan as $pd)
+                        <option value="{{ $pd }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir ?? '') === $pd)>{{ $pd }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Kecamatan Domisili</label>
+                <select name="domisili_kecamatan"
+                        class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Pilih Kecamatan</option>
+                    @foreach ($kecamatan as $kec)
+                        <option value="{{ $kec }}" @selected(old('domisili_kecamatan', $profile->domisili_kecamatan ?? '') == $kec)>{{ $kec }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">No. Telepon</label>
+                <input type="text" name="no_telepon"
+                       value="{{ old('no_telepon', $profile->no_telepon ?? '') }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400">
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Status Disabilitas</label>
+                <select name="status_disabilitas"
+                        class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                    @php($opsiDisabilitas = [
+                        'Tidak',
+                        'Ya, disabilitas fisik',
+                        'Ya, disabilitas netra',
+                        'Ya, disabilitas rungu',
+                        'Ya, disabilitas intelektual',
+                        'Ya, lainnya',
+                    ])
+                    <option value="">Pilih</option>
+                    @foreach ($opsiDisabilitas as $opsi)
+                        <option value="{{ $opsi }}" @selected(old('status_disabilitas', $profile->status_disabilitas ?? '') === $opsi)>{{ $opsi }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-slate-400">Akun Media Sosial</label>
+                <input type="text" name="akun_media_sosial"
+                       value="{{ old('akun_media_sosial', $profile->akun_media_sosial ?? '') }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400"
+                       placeholder="@username / link profil (opsional)">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-sm text-slate-400">Alamat Lengkap</label>
+                <textarea name="alamat_lengkap" rows="2"
+                          class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">{{ old('alamat_lengkap', $profile->alamat_lengkap ?? '') }}</textarea>
+            </div>
         </div>
 
-        <div>
-            <label class="block text-sm text-slate-400">NIK</label>
-            <input type="text" name="nik"
-                   value="{{ old('nik', $profile->nik ?? '') }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500"
-                   required>
+        <div class="flex justify-end gap-3 pt-2">
+            <button type="button"
+                    data-close-modal="modalProfileEdit"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
         </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Tempat Lahir</label>
-            <input type="text" name="tempat_lahir"
-                   value="{{ old('tempat_lahir', $profile->tempat_lahir ?? '') }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Tanggal Lahir</label>
-            <input type="date" name="tanggal_lahir"
-                   value="{{ old('tanggal_lahir', $profile->tanggal_lahir ?? '') }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Jenis Kelamin</label>
-            <select name="jenis_kelamin"
-                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                <option value="">Pilih</option>
-                <option value="Laki-laki" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Laki-laki')>Laki-laki</option>
-                <option value="Perempuan" @selected(old('jenis_kelamin', $profile->jenis_kelamin ?? '') == 'Perempuan')>Perempuan</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Agama</label>
-            <select name="agama"
-                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                <option value="">Pilih</option>
-                @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
-                    <option value="{{ $agama }}" @selected(old('agama', $profile->agama ?? '') == $agama)>{{ $agama }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Status Perkawinan</label>
-            <select name="status_perkawinan"
-                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                <option value="">Pilih</option>
-                @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
-                    <option value="{{ $status }}" @selected(old('status_perkawinan', $profile->status_perkawinan ?? '') == $status)>{{ $status }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Pendidikan Terakhir</label>
-            <select name="pendidikan_terakhir"
-                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                @php($listPendidikan = ['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'])
-                <option value="">Pilih</option>
-                @foreach ($listPendidikan as $pd)
-                    <option value="{{ $pd }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir ?? '') === $pd)>{{ $pd }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Kecamatan Domisili</label>
-            <select name="domisili_kecamatan"
-                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                <option value="">Pilih Kecamatan</option>
-                @foreach ($kecamatan as $kec)
-                    <option value="{{ $kec }}" @selected(old('domisili_kecamatan', $profile->domisili_kecamatan ?? '') == $kec)>{{ $kec }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">No. Telepon</label>
-            <input type="text" name="no_telepon"
-                   value="{{ old('no_telepon', $profile->no_telepon ?? '') }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400">
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Status Disabilitas</label>
-            <select name="status_disabilitas"
-                    class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                @php($opsiDisabilitas = [
-                    'Tidak',
-                    'Ya, disabilitas fisik',
-                    'Ya, disabilitas netra',
-                    'Ya, disabilitas rungu',
-                    'Ya, disabilitas intelektual',
-                    'Ya, lainnya',
-                ])
-                <option value="">Pilih</option>
-                @foreach ($opsiDisabilitas as $opsi)
-                    <option value="{{ $opsi }}" @selected(old('status_disabilitas', $profile->status_disabilitas ?? '') === $opsi)>{{ $opsi }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm text-slate-400">Akun Media Sosial</label>
-            <input type="text" name="akun_media_sosial"
-                   value="{{ old('akun_media_sosial', $profile->akun_media_sosial ?? '') }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400"
-                   placeholder="@username / link profil (opsional)">
-        </div>
-
-        <div class="md:col-span-2">
-            <label class="block text-sm text-slate-400">Alamat Lengkap</label>
-            <textarea name="alamat_lengkap" rows="2"
-                      class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500">{{ old('alamat_lengkap', $profile->alamat_lengkap ?? '') }}</textarea>
-        </div>
+    </form>
     </div>
-</x-modal-form>
+</x-modal>
 
-{{-- Modal: Tambah Pendidikan --}}
 {{-- Modal: Tambah Pendidikan --}}
 <x-modal-form id="modalEducationCreate"
               title="Tambah Riwayat Pendidikan"

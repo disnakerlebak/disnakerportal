@@ -24,7 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const margin = 6;
 
     const closeAll = () => {
-        document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.add("hidden"));
+        document
+            .querySelectorAll(".dropdown-menu")
+            .forEach((menu) => menu.classList.add("hidden"));
     };
 
     document.addEventListener("click", (ev) => {
@@ -118,8 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Disable auto init modal dari Flowbite
     const disableAutoInit = () => {
-        const modalToggles = document.querySelectorAll("[data-modal-target], [data-modal-toggle], [data-modal-hide]");
-        modalToggles.forEach(el => {
+        const modalToggles = document.querySelectorAll(
+            "[data-modal-target], [data-modal-toggle], [data-modal-hide]"
+        );
+        modalToggles.forEach((el) => {
             el.removeAttribute("data-modal-target");
             el.removeAttribute("data-modal-toggle");
             el.removeAttribute("data-modal-hide");
