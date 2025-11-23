@@ -377,9 +377,10 @@
                  x-transition:leave-start="opacity-100 translate-y-0"
                  x-transition:leave-end="opacity-0 -translate-y-2"
                  class="px-6 pt-6 pb-8 space-y-4">
-                <button data-modal-open="modalWorkCreate"
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalWorkCreate' }))"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    + Tambah Riwayat Kerja
+                    + Tambah
                 </button>
 
                 <div class="bg-slate-950/40 rounded-xl p-4 shadow-inner">
@@ -419,15 +420,19 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                             </svg>
-                                        </button>
-                                        <button type="button" title="Hapus"
-                                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-red-500 hover:bg-slate-700"
-                                                data-delete-modal="modalWorkDelete"
-                                                data-action="{{ route('pencaker.work.destroy', $work) }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                                                <path fill-rule="evenodd" d="M9 3.75A1.5 1.5 0 0110.5 2.25h3A1.5 1.5 0 0115 3.75V4.5h4.5a.75.75 0 010 1.5H4.5a.75.75 0 010-1.5H9V3.75zM6.75 7.5A.75.75 0 017.5 6.75h9a.75.75 0 01.75.75v10.5A3.75 3.75 0 0113.5 21.75h-3A3.75 3.75 0 016.75 18V7.5z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </button>
+                                            </button>
+                                            <button type="button" title="Hapus"
+                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-red-500 hover:bg-slate-700"
+                                                    onclick="
+                                                        (function(){
+                                                            const form = document.getElementById('formWorkDelete');
+                                                            if (form) { form.setAttribute('action', '{{ route('pencaker.work.destroy', $work) }}'); }
+                                                            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalWorkDelete' }));
+                                                        })();">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                                    <path fill-rule="evenodd" d="M9 3.75A1.5 1.5 0 0110.5 2.25h3A1.5 1.5 0 0115 3.75V4.5h4.5a.75.75 0 010 1.5H4.5a.75.75 0 010-1.5H9V3.75zM6.75 7.5A.75.75 0 017.5 6.75h9a.75.75 0 01.75.75v10.5A3.75 3.75 0 0113.5 21.75h-3A3.75 3.75 0 016.75 18V7.5z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </button>
                                     </td>
                                 </tr>
                             @empty
@@ -468,7 +473,7 @@
                  class="px-6 pt-6 pb-8 space-y-4 text-slate-300">
                 <button data-modal-open="modalPreferenceForm"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    + Tambah / Ubah Minat Kerja
+                    + Tambah
                 </button>
 
                 <div class="bg-slate-950/40 rounded-xl p-6 shadow-inner">
@@ -865,55 +870,83 @@
 </x-modal>
 
 {{-- Modal: Tambah Riwayat Kerja --}}
-<x-modal-form id="modalWorkCreate"
-              title="Tambah Riwayat Kerja"
-              action="{{ route('pencaker.work.store') }}"
-              method="POST"
-              submitLabel="Simpan" cancelLabel="Batal">
-    <input type="hidden" name="__accordion" value="work">
-    <x-input-text label="Nama Perusahaan" name="nama_perusahaan" required />
-    <x-input-text label="Jabatan" name="jabatan" required />
-    <div class="grid grid-cols-2 gap-3">
-        <x-input-text label="Tahun Mulai" name="tahun_mulai" type="number" placeholder="2020" required />
-        <x-input-text label="Tahun Selesai" name="tahun_selesai" type="number" placeholder="2024" />
-    </div>
-    <x-input-file label="Upload Surat Pengalaman (Opsional)" name="surat_pengalaman" />
-</x-modal-form>
+<x-modal id="modalWorkCreate" title="Tambah Riwayat Kerja">
+    <form method="POST" action="{{ route('pencaker.work.store') }}" class="space-y-4">
+        @csrf
+        <input type="hidden" name="__accordion" value="work">
+        <x-input-text label="Nama Perusahaan" name="nama_perusahaan" required />
+        <x-input-text label="Jabatan" name="jabatan" required />
+        <div class="grid grid-cols-2 gap-3">
+            <x-input-text label="Tahun Mulai" name="tahun_mulai" type="number" placeholder="2020" required />
+            <x-input-text label="Tahun Selesai" name="tahun_selesai" type="number" placeholder="2024" />
+        </div>
+        <x-input-file label="Upload Surat Pengalaman (Opsional)" name="surat_pengalaman" />
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalWorkCreate"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
+        </div>
+    </form>
+</x-modal>
 
 {{-- Modal: Edit Riwayat Kerja --}}
 @foreach ($works as $work)
-    <x-modal-form id="modalWorkEdit{{ $work->id }}"
-                  title="Edit Riwayat Kerja"
-                  action="{{ route('pencaker.work.update', $work->id) }}"
-                  method="POST"
-                  submitLabel="Perbarui" cancelLabel="Batal">
-        @method('PUT')
-        <input type="hidden" name="__accordion" value="work">
-        <x-input-text label="Nama Perusahaan" name="nama_perusahaan"
-                      :value="$work->nama_perusahaan" required />
-        <x-input-text label="Jabatan" name="jabatan"
-                      :value="$work->jabatan" required />
-        <div class="grid grid-cols-2 gap-3">
-            <x-input-text label="Tahun Mulai" name="tahun_mulai" type="number"
-                          :value="$work->tahun_mulai" required />
-            <x-input-text label="Tahun Selesai" name="tahun_selesai" type="number"
-                          :value="$work->tahun_selesai" />
-        </div>
-        <x-input-file label="Upload Surat Pengalaman Baru (Opsional)"
-                      name="surat_pengalaman" />
-    </x-modal-form>
+    <x-modal id="modalWorkEdit{{ $work->id }}" title="Edit Riwayat Kerja">
+        <form method="POST" action="{{ route('pencaker.work.update', $work->id) }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="__accordion" value="work">
+            <x-input-text label="Nama Perusahaan" name="nama_perusahaan"
+                          :value="$work->nama_perusahaan" required />
+            <x-input-text label="Jabatan" name="jabatan"
+                          :value="$work->jabatan" required />
+            <div class="grid grid-cols-2 gap-3">
+                <x-input-text label="Tahun Mulai" name="tahun_mulai" type="number"
+                              :value="$work->tahun_mulai" required />
+                <x-input-text label="Tahun Selesai" name="tahun_selesai" type="number"
+                              :value="$work->tahun_selesai" />
+            </div>
+            <x-input-file label="Upload Surat Pengalaman Baru (Opsional)"
+                          name="surat_pengalaman" />
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="modalWorkEdit{{ $work->id }}"
+                        class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                    Perbarui
+                </button>
+            </div>
+        </form>
+    </x-modal>
 @endforeach
 
 {{-- Modal: Hapus Riwayat Kerja --}}
-<x-modal-form id="modalWorkDelete"
-              title="Konfirmasi Hapus"
-              action=""
-              method="POST"
-              submitLabel="Ya, Hapus" cancelLabel="Batal">
-    @method('DELETE')
-    <input type="hidden" name="__accordion" value="work">
-    <p class="text-slate-400">Apakah Anda yakin ingin menghapus data riwayat kerja ini?</p>
-</x-modal-form>
+<x-modal id="modalWorkDelete" title="Konfirmasi Hapus">
+    <form method="POST" action="" class="space-y-4" id="formWorkDelete">
+        @csrf
+        @method('DELETE')
+        <input type="hidden" name="__accordion" value="work">
+        <p class="text-slate-400">Apakah Anda yakin ingin menghapus data riwayat kerja ini?</p>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalWorkDelete"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold">
+                Ya, Hapus
+            </button>
+        </div>
+    </form>
+</x-modal>
 
 {{-- Modal: Minat Kerja --}}
 <x-modal-form id="modalPreferenceForm"
@@ -986,7 +1019,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    registerDeleteModal('[data-delete-modal="modalWorkDelete"]');
 });
 </script>
 @endsection
