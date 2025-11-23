@@ -168,7 +168,7 @@
                     <button type="button"
                             onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalEducationCreate' }))"
                             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                        + Tambah Pendidikan
+                        + Tambah
                     </button>
                 @endif
 
@@ -266,18 +266,19 @@
                 @endif
 
                 @if ($locked)
-                        <button id="openEdit" disabled
-                                title="Terkunci karena pengajuan AK1 sedang diproses/diterima"
-                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 cursor-not-allowed flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                                <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="sr-only">Terkunci</span>
-                        </button>
-                    @else
-                    <button data-modal-open="modalTrainingCreate"
+                    <button id="openEdit" disabled
+                            title="Terkunci karena pengajuan AK1 sedang diproses/diterima"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 cursor-not-allowed flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25V9a3 3 0 00-3 3v5.25A3.75 3.75 0 007.5 21h9a3.75 3.75 0 003.75-3.75V12a3 3 0 00-3-3V6.75A5.25 5.25 0 0012 1.5zm3.75 7.5V6.75a3.75 3.75 0 10-7.5 0V9h7.5z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="sr-only">Terkunci</span>
+                    </button>
+                @else
+                    <button type="button"
+                            onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalTrainingCreate' }))"
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        + Tambah Pelatihan
+                        + Tambah
                     </button>
                 @endif
 
@@ -327,8 +328,12 @@
                                             </button>
                                             <button type="button" title="Hapus"
                                                     class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-red-500 hover:bg-slate-700"
-                                                    data-delete-modal="modalTrainingDelete"
-                                                    data-action="{{ route('pencaker.training.destroy', $train) }}">
+                                                    onclick="
+                                                        (function(){
+                                                            const form = document.getElementById('formTrainingDelete');
+                                                            if (form) { form.setAttribute('action', '{{ route('pencaker.training.destroy', $train) }}'); }
+                                                            window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalTrainingDelete' }));
+                                                        })();">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                                                     <path fill-rule="evenodd" d="M9 3.75A1.5 1.5 0 0110.5 2.25h3A1.5 1.5 0 0115 3.75V4.5h4.5a.75.75 0 010 1.5H4.5a.75.75 0 010-1.5H9V3.75zM6.75 7.5A.75.75 0 017.5 6.75h9a.75.75 0 01.75.75v10.5A3.75 3.75 0 0113.5 21.75h-3A3.75 3.75 0 016.75 18V7.5z" clip-rule="evenodd"/>
                                                 </svg>
@@ -789,47 +794,75 @@
 </x-modal>
 
 {{-- Modal: Tambah Pelatihan --}}
-<x-modal-form id="modalTrainingCreate"
-              title="Tambah Riwayat Pelatihan"
-              action="{{ route('pencaker.training.store') }}"
-              method="POST"
-              submitLabel="Simpan" cancelLabel="Batal">
-    <input type="hidden" name="__accordion" value="training">
-    <x-input-text label="Jenis Pelatihan" name="jenis_pelatihan" required />
-    <x-input-text label="Lembaga Pelatihan" name="lembaga_pelatihan" required />
-    <x-input-text label="Tahun" name="tahun" type="number" placeholder="contoh: 2024" required />
-    <x-input-file label="Upload Sertifikat (PDF/JPG/PNG)" name="sertifikat_file" required />
-</x-modal-form>
+<x-modal id="modalTrainingCreate" title="Tambah Riwayat Pelatihan">
+    <form method="POST" action="{{ route('pencaker.training.store') }}" class="space-y-4">
+        @csrf
+        <input type="hidden" name="__accordion" value="training">
+        <x-input-text label="Jenis Pelatihan" name="jenis_pelatihan" required />
+        <x-input-text label="Lembaga Pelatihan" name="lembaga_pelatihan" required />
+        <x-input-text label="Tahun" name="tahun" type="number" placeholder="contoh: 2024" required />
+        <x-input-file label="Upload Sertifikat (PDF/JPG/PNG)" name="sertifikat_file" required />
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalTrainingCreate"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
+        </div>
+    </form>
+</x-modal>
 
 {{-- Modal: Edit Pelatihan --}}
 @foreach ($trainings as $train)
-    <x-modal-form id="modalTrainingEdit{{ $train->id }}"
-                  title="Edit Riwayat Pelatihan"
-                  action="{{ route('pencaker.training.update', $train->id) }}"
-                  method="POST"
-                  submitLabel="Perbarui" cancelLabel="Batal">
-        @method('PUT')
-        <input type="hidden" name="__accordion" value="training">
-        <x-input-text label="Jenis Pelatihan" name="jenis_pelatihan"
-                      :value="$train->jenis_pelatihan" required />
-        <x-input-text label="Lembaga Pelatihan" name="lembaga_pelatihan"
-                      :value="$train->lembaga_pelatihan" required />
-        <x-input-text label="Tahun" name="tahun" type="number"
-                      :value="$train->tahun" required />
-        <x-input-file label="Upload Sertifikat Baru (opsional)" name="sertifikat_file" />
-    </x-modal-form>
+    <x-modal id="modalTrainingEdit{{ $train->id }}" title="Edit Riwayat Pelatihan">
+        <form method="POST" action="{{ route('pencaker.training.update', $train->id) }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="__accordion" value="training">
+            <x-input-text label="Jenis Pelatihan" name="jenis_pelatihan"
+                          :value="$train->jenis_pelatihan" required />
+            <x-input-text label="Lembaga Pelatihan" name="lembaga_pelatihan"
+                          :value="$train->lembaga_pelatihan" required />
+            <x-input-text label="Tahun" name="tahun" type="number"
+                          :value="$train->tahun" required />
+            <x-input-file label="Upload Sertifikat Baru (opsional)" name="sertifikat_file" />
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="modalTrainingEdit{{ $train->id }}"
+                        class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                    Perbarui
+                </button>
+            </div>
+        </form>
+    </x-modal>
 @endforeach
 
 {{-- Modal: Hapus Pelatihan --}}
-<x-modal-form id="modalTrainingDelete"
-              title="Konfirmasi Hapus"
-              action=""
-              method="POST"
-              submitLabel="Ya, Hapus" cancelLabel="Batal">
-    @method('DELETE')
-    <input type="hidden" name="__accordion" value="training">
-    <p class="text-slate-400">Apakah Anda yakin ingin menghapus data pelatihan ini?</p>
-</x-modal-form>
+<x-modal id="modalTrainingDelete" title="Konfirmasi Hapus">
+    <form method="POST" action="" class="space-y-4" id="formTrainingDelete">
+        @csrf
+        @method('DELETE')
+        <input type="hidden" name="__accordion" value="training">
+        <p class="text-slate-400">Apakah Anda yakin ingin menghapus data pelatihan ini?</p>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalTrainingDelete"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold">
+                Ya, Hapus
+            </button>
+        </div>
+    </form>
+</x-modal>
 
 {{-- Modal: Tambah Riwayat Kerja --}}
 <x-modal-form id="modalWorkCreate"
@@ -953,7 +986,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    registerDeleteModal('[data-delete-modal="modalTrainingDelete"]');
     registerDeleteModal('[data-delete-modal="modalWorkDelete"]');
 });
 </script>
