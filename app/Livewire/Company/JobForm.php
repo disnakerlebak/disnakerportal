@@ -70,8 +70,6 @@ class JobForm extends Component
             $this->deskripsi = $job->deskripsi;
             $this->kualifikasi = $job->kualifikasi;
         }
-
-        $this->dispatch('open-modal', id: 'job-form-modal');
     }
 
     public function save(): void
@@ -96,7 +94,7 @@ class JobForm extends Component
         }
 
         $this->dispatch('job-updated');
-        $this->dispatch('close-modal', id: 'job-form-modal');
+        $this->dispatch('modal:close', id: 'job-form-modal');
         $this->resetForm();
     }
 

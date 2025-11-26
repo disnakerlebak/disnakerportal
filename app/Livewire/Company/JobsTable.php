@@ -50,25 +50,26 @@ class JobsTable extends Component
     public function preview(int $jobId): void
     {
         $this->dispatch('job-preview:open', jobId: $jobId);
-        $this->dispatch('open-modal', id: 'job-preview-modal');
+        $this->dispatch('modal:open', id: 'job-preview-modal');
     }
 
     public function create(): void
     {
         $this->dispatch('job-form:open');
-        $this->dispatch('open-modal', id: 'job-form-modal');
+        $this->dispatch('modal:open', id: 'job-form-modal');
     }
 
     public function edit(int $jobId): void
     {
         $this->dispatch('job-form:open', jobId: $jobId);
-        $this->dispatch('open-modal', id: 'job-form-modal');
+        $this->dispatch('modal:open', id: 'job-form-modal');
     }
 
     public function confirmAction(string $action, int $jobId): void
     {
+        // Tampilkan modal dulu agar responsif, kemudian Livewire mengisi detail
+        $this->dispatch('modal:open', id: 'job-action-modal');
         $this->dispatch('job-action:open', action: $action, jobId: $jobId);
-        $this->dispatch('open-modal', id: 'job-action-modal');
     }
 
     #[On('job-updated')]

@@ -82,7 +82,7 @@
 
     <div class="flex items-center justify-end gap-2 w-full">
         <button type="button"
-                wire:click="$dispatch('close-modal', { id: 'job-form-modal' })"
+                wire:click="$dispatch('modal:close', { id: 'job-form-modal' })"
                 class="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800">
             Batal
         </button>

@@ -34,6 +34,20 @@
         }
     };
 
+    // Helper global untuk dipakai di mana saja
+    window.modalService = {
+        open(id) {
+            if (!id) return;
+            window.dispatchEvent(new CustomEvent("modal:open", { detail: { id } }));
+        },
+        close(id) {
+            if (!id) return;
+            window.dispatchEvent(new CustomEvent("modal:close", { detail: { id } }));
+        },
+    };
+    window.openModal = window.modalService.open;
+    window.closeModal = window.modalService.close;
+
     const closeModal = (id) => {
         const modal = getModal(id);
         if (!modal) return;

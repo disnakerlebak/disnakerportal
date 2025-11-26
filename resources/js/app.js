@@ -3,7 +3,6 @@ import "flowbite";
 import { initFlowbite, Modal, Dropdown } from "flowbite";
 
 // Bridge event modal Livewire -> window
-import "./modal-bridge";
 
 // Modal manager (timeline + global modal events)
 import "./modal-manager";

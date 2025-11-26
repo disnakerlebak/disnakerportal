@@ -12,8 +12,7 @@
                 </p>
             </div>
             <button type="button"
-                    data-modal-target="modalCompanyProfile"
-                    data-modal-toggle="modalCompanyProfile"
+                    onclick="openModal('modalCompanyProfile')"
                     class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950">
                 Kelola Profil
             </button>
@@ -130,7 +129,7 @@
 
     {{-- Modal: Kelola Profil Perusahaan --}}
     <x-modal id="modalCompanyProfile" size="lg" title="Lengkapi Profil Perusahaan">
-        <form id="formCompanyProfile" method="POST" action="{{ route('company.profile.update') }}" enctype="multipart/form-data" class="space-y-4">
+        <form id="formCompanyProfile" method="POST" action="{{ route('company.profile.update') }}" enctype="multipart/form-data" class="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
             @csrf
             @method('PUT')
 
@@ -252,17 +251,24 @@
                     placeholder="Ceritakan secara singkat tentang perusahaan, budaya kerja, dan produk/layanan utama."
                 >{{ old('deskripsi', $company->deskripsi ?? '') }}</textarea>
             </div>
+            <div class="flex justify-end gap-3 pt-1 pb-1">
+                <button type="button" data-close-modal="modalCompanyProfile"
+                        class="px-4 py-2 border rounded-lg text-gray-300 bg-gray-700 hover:bg-gray-600">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white">
+                    Simpan Profil
+                </button>
+            </div>
         </form>
-
-        <x-slot name="footer">
-            <button type="button" data-modal-hide="modalCompanyProfile"
-                    class="px-4 py-2 border rounded-lg text-gray-300 bg-gray-700 hover:bg-gray-600">
-                Batal
-            </button>
-            <button type="submit" form="formCompanyProfile"
-                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white">
-                Simpan Profil
-            </button>
-        </x-slot>
     </x-modal>
+
+    @if ($errors->any())
+        @push('scripts')
+            <script>
+                document.addEventListener('DOMContentLoaded', () => openModal('modalCompanyProfile'));
+            </script>
+        @endpush
+    @endif
 @endsection

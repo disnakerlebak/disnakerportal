@@ -24,8 +24,6 @@ class JobPreview extends Component
             ->where('company_id', $companyId)
             ->withCount('applications')
             ->findOrFail($jobId);
-
-        $this->dispatch('open-modal', id: 'job-preview-modal');
     }
 
     public function publish(): void
@@ -63,7 +61,7 @@ class JobPreview extends Component
 
     public function closeModal(): void
     {
-        $this->dispatch('close-modal', id: 'job-preview-modal');
+        $this->dispatch('modal:close', id: 'job-preview-modal');
     }
 
     public function render()

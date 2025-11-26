@@ -12,7 +12,7 @@ class JobAction extends Component
     public ?int $jobId = null;
     public string $action = '';
     public string $title = 'Konfirmasi Aksi';
-    public string $message = 'Lanjutkan aksi ini?';
+    public string $message = 'Memuat konfirmasi...';
 
     protected function companyId(): ?int
     {
@@ -42,7 +42,6 @@ class JobAction extends Component
             default => "Lanjutkan aksi untuk \"{$job->judul}\"?",
         };
 
-        $this->dispatch('open-modal', id: 'job-action-modal');
     }
 
     public function confirm(): void
@@ -63,7 +62,7 @@ class JobAction extends Component
         };
 
         $this->dispatch('job-updated');
-        $this->dispatch('close-modal', id: 'job-action-modal');
+        $this->dispatch('modal:close', id: 'job-action-modal');
         $this->resetState();
     }
 
