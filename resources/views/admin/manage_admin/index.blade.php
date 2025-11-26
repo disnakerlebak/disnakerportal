@@ -3,6 +3,7 @@
 @section('title', 'Kelola Admin')
 
 @section('content')
+  @php $editModalIds = []; @endphp
   <div class="max-w-7xl mx-auto">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-semibold text-gray-100">Kelola Admin Disnaker Portal</h1>
@@ -13,19 +14,11 @@
       >+ Tambah Admin</button>
     </div>
 
-    <!-- @if(session('success'))
-      <div class="mb-4 p-3 rounded bg-green-600/20 text-green-300 border border-green-600/40">{{ session('success') }}</div>
-    @endif -->
-
-    <!-- @if($errors->any())
-      <div class="mb-4 p-3 rounded bg-red-600/20 text-red-300 border border-red-600/40">
-        <ul class="list-disc list-inside">
-          @foreach($errors->all() as $error)
-            <li>{{ $error }}</li>
-          @endforeach
-        </ul>
+    @if(session('success'))
+      <div class="mb-4 p-3 rounded bg-green-600/20 text-green-300 border border-green-600/40">
+        {{ session('success') }}
       </div>
-    @endif -->
+    @endif
 
     <div class="rounded-xl border border-slate-800 bg-slate-900/70 shadow overflow-hidden">
       <div class="overflow-x-auto">
@@ -85,14 +78,17 @@
                 </td>
               </tr>
 
+              @php $editModalIds[] = 'edit-admin-' . $admin->id; @endphp
+
               <!-- Edit Modal for this admin -->
-              <x-modal-admin-form
-                :modal-id="'edit-admin-' . $admin->id"
-                :title="'Edit Admin'"
-                :action="route('admin.manage.update', $admin->id)"
-                method="POST"
-                :admin="$admin"
-              />
+              <x-modal id="edit-admin-{{ $admin->id }}" title="Edit Admin" size="md">
+                @include('admin.manage.partials.form', [
+                    'modalId' => 'edit-admin-' . $admin->id,
+                    'action' => route('admin.manage.update', $admin->id),
+                    'method' => 'POST',
+                    'admin' => $admin,
+                ])
+              </x-modal>
             @empty
               <tr>
                 <td colspan="6" class="px-4 py-6 text-center text-slate-400">Belum ada admin.</td>
@@ -104,11 +100,36 @@
     </div>
 
     <!-- Create Modal -->
-    <x-modal-admin-form
-      modal-id="create-admin"
-      title="Tambah Admin"
-      :action="route('admin.manage.store')"
-      method="POST"
-    />
+    <x-modal id="create-admin" title="Tambah Admin" size="md">
+      @include('admin.manage.partials.form', [
+          'modalId' => 'create-admin',
+          'action' => route('admin.manage.store'),
+          'method' => 'POST',
+          'admin' => null,
+      ])
+    </x-modal>
+
+    @if ($errors->any() && old('modal_id'))
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+          const target = @json(old('modal_id'));
+          if (target) {
+            window.dispatchEvent(new CustomEvent('open-modal', { detail: target }));
+          }
+        });
+      </script>
+    @endif
+
+    @if (session('success'))
+      @php $modalIds = array_merge(['create-admin'], $editModalIds); @endphp
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+          const ids = @json($modalIds);
+          ids.forEach(id => {
+            window.dispatchEvent(new CustomEvent('close-modal', { detail: id }));
+          });
+        });
+      </script>
+    @endif
   </div>
 @endsection

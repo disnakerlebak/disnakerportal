@@ -258,6 +258,7 @@
   @yield('content')
 </main>
     </div>
+    <livewire:scripts />
     @stack('scripts')
 
     <script>

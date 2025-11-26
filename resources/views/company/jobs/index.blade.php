@@ -1,11 +1,17 @@
 @extends('layouts.company-sidebar')
 
-@section('title', 'Daftar Lowongan')
+@section('title', 'Kelola Lowongan')
 
 @section('content')
-    <div class="max-w-6xl mx-auto py-8 px-4">
-        <h2 class="text-2xl font-semibold text-slate-100 mb-4">Daftar Lowongan</h2>
-        <p class="text-slate-400 text-sm">Tabel lowongan perusahaan akan ditampilkan di sini.</p>
+    <div class="max-w-6xl mx-auto py-8 px-4 space-y-6">
+        <div>
+            <h2 class="text-2xl font-semibold text-slate-100">Kelola Lowongan</h2>
+            <p class="text-slate-400 text-sm">Pantau draft, publish, dan tutup lowongan dari satu tempat.</p>
+        </div>
+
+        <livewire:company.jobs-table />
+        @include('company.jobs.partials.job-form-modal')
+        @include('company.jobs.partials.job-action-modal')
+        @include('company.jobs.partials.job-preview-modal')
     </div>
 @endsection
-

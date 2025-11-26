@@ -2,18 +2,11 @@ import "./bootstrap";
 import "flowbite";
 import { initFlowbite, Modal, Dropdown } from "flowbite";
 
-// Integrasi Livewire v3 via ESM agar tidak ada duplikasi Alpine
-import {
-    Livewire,
-    Alpine,
-} from "../../vendor/livewire/livewire/dist/livewire.esm";
+// Bridge event modal Livewire -> window
+import "./modal-bridge";
 
 // Modal manager (timeline + global modal events)
 import "./modal-manager";
-
-window.Alpine = Alpine;
-window.FlowbiteModal = Modal;
-window.FlowbiteDropdown = Dropdown;
 
 document.addEventListener("DOMContentLoaded", () => {
     initFlowbite();
@@ -102,21 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Matikan modal engine bawaan Flowbite agar tidak override komponen modal kustom
 document.addEventListener("DOMContentLoaded", () => {
-    if (window.Modal) {
-        window.Modal = class {
-            constructor() {}
-            show() {}
-            hide() {}
-        };
-    }
-
-    if (window.Flowbite?.Modal) {
-        window.Flowbite.Modal = class {
-            constructor() {}
-            show() {}
-            hide() {}
-        };
-    }
+    window.FlowbiteModal = Modal;
+    window.FlowbiteDropdown = Dropdown;
 
     // Disable auto init modal dari Flowbite
     const disableAutoInit = () => {
@@ -132,5 +112,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
     disableAutoInit();
 });
-
-Livewire.start();

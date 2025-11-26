@@ -1,0 +1,130 @@
+<?php
+
+namespace App\Livewire\Company;
+
+use App\Models\JobPosting;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
+use Livewire\Component;
+
+class JobForm extends Component
+{
+    public bool $isEdit = false;
+    public ?int $editingId = null;
+
+    public string $judul = '';
+    public string $posisi = '';
+    public string $lokasi_kerja = '';
+    public ?string $pendidikan_minimal = null;
+    public ?string $jenis_kelamin = null;
+    public ?int $usia_min = null;
+    public ?int $usia_max = null;
+    public ?int $gaji_min = null;
+    public ?int $gaji_max = null;
+    public ?string $tanggal_expired = null;
+    public bool $menerima_disabilitas = true;
+    public ?string $deskripsi = null;
+    public ?string $kualifikasi = null;
+
+    protected function rules(): array
+    {
+        return [
+            'judul' => ['required', 'string', 'max:255'],
+            'posisi' => ['nullable', 'string', 'max:255'],
+            'lokasi_kerja' => ['required', 'string', 'max:255'],
+            'pendidikan_minimal' => ['nullable', 'string', 'max:255'],
+            'jenis_kelamin' => ['nullable', 'string', 'max:10'],
+            'usia_min' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'usia_max' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'gaji_min' => ['nullable', 'integer', 'min:0'],
+            'gaji_max' => ['nullable', 'integer', 'min:0'],
+            'tanggal_expired' => ['nullable', 'date'],
+            'menerima_disabilitas' => ['boolean'],
+            'deskripsi' => ['nullable', 'string'],
+            'kualifikasi' => ['nullable', 'string'],
+        ];
+    }
+
+    #[On('job-form:open')]
+    public function open(?int $jobId = null): void
+    {
+        $this->resetForm();
+
+        if ($jobId) {
+            $companyId = Auth::user()?->companyProfile?->id;
+            $job = JobPosting::where('company_id', $companyId)->findOrFail($jobId);
+
+            $this->isEdit = true;
+            $this->editingId = $job->id;
+            $this->judul = $job->judul ?? '';
+            $this->posisi = $job->posisi ?? '';
+            $this->lokasi_kerja = $job->lokasi_kerja ?? '';
+            $this->pendidikan_minimal = $job->pendidikan_minimal;
+            $this->jenis_kelamin = $job->jenis_kelamin;
+            $this->usia_min = $job->usia_min;
+            $this->usia_max = $job->usia_max;
+            $this->gaji_min = $job->gaji_min;
+            $this->gaji_max = $job->gaji_max;
+            $this->tanggal_expired = $job->tanggal_expired?->format('Y-m-d');
+            $this->menerima_disabilitas = (bool) $job->menerima_disabilitas;
+            $this->deskripsi = $job->deskripsi;
+            $this->kualifikasi = $job->kualifikasi;
+        }
+
+        $this->dispatch('open-modal', id: 'job-form-modal');
+    }
+
+    public function save(): void
+    {
+        $data = $this->validate();
+
+        $companyId = Auth::user()?->companyProfile?->id;
+        if (!$companyId) {
+            session()->flash('error', 'Profil perusahaan tidak ditemukan.');
+            return;
+        }
+
+        if ($this->editingId) {
+            $job = JobPosting::where('company_id', $companyId)->findOrFail($this->editingId);
+            $job->update($data);
+            session()->flash('success', 'Lowongan diperbarui.');
+        } else {
+            $data['company_id'] = $companyId;
+            $data['status'] = JobPosting::STATUS_DRAFT;
+            JobPosting::create($data);
+            session()->flash('success', 'Lowongan disimpan sebagai draft. Silakan preview lalu publikasikan.');
+        }
+
+        $this->dispatch('job-updated');
+        $this->dispatch('close-modal', id: 'job-form-modal');
+        $this->resetForm();
+    }
+
+    protected function resetForm(): void
+    {
+        $this->reset([
+            'judul',
+            'posisi',
+            'lokasi_kerja',
+            'pendidikan_minimal',
+            'jenis_kelamin',
+            'usia_min',
+            'usia_max',
+            'gaji_min',
+            'gaji_max',
+            'tanggal_expired',
+            'menerima_disabilitas',
+            'deskripsi',
+            'kualifikasi',
+        ]);
+        $this->menerima_disabilitas = true;
+        $this->isEdit = false;
+        $this->editingId = null;
+        $this->tanggal_expired = null;
+    }
+
+    public function render()
+    {
+        return view('livewire.company.job-form');
+    }
+}

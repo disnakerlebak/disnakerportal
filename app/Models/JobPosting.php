@@ -9,6 +9,10 @@ class JobPosting extends Model
 {
     use HasFactory;
 
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_ACTIVE = 'aktif';
+    public const STATUS_CLOSED = 'tutup';
+
     protected $fillable = [
         'company_id',
         'judul',
@@ -34,6 +38,15 @@ class JobPosting extends Model
         'tanggal_expired' => 'date',
     ];
 
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_DRAFT,
+            self::STATUS_ACTIVE,
+            self::STATUS_CLOSED,
+        ];
+    }
+
     public function company()
     {
         return $this->belongsTo(CompanyProfile::class, 'company_id');
@@ -44,4 +57,3 @@ class JobPosting extends Model
         return $this->hasMany(JobApplication::class);
     }
 }
-

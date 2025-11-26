@@ -1,74 +1,129 @@
 (() => {
-    console.info("[GlobalModalManager] initialized");
+    console.info("[GlobalModalManager] Modern modal manager initialized");
 
     /* ============================================================
-     *  UTILITAS GLOBAL
+     *  UTILITAS GLOBAL UNTUK <x-modal>
      * ============================================================ */
-    const toggleModal = (id, show) => {
-        if (!id) return;
-        const modal = document.getElementById(id);
-        if (!modal) return;
-        modal.classList.toggle("hidden", !show);
-    };
 
     const resolveId = (detail) => {
         if (!detail) return null;
         if (typeof detail === "string") return detail;
-        return detail.id || null;
+        if (typeof detail === "object") {
+            return detail.id || detail.modalId || null;
+        }
+        return null;
+    };
+
+    const getModal = (id) => document.getElementById(id);
+    const getPanel = (modal) => modal?.querySelector(".modal-panel");
+
+    const openModal = (id) => {
+        const modal = getModal(id);
+        if (!modal) return;
+
+        const panel = getPanel(modal);
+        modal.classList.remove("hidden");
+
+        if (panel) {
+            panel.classList.add("opacity-0", "scale-95");
+            setTimeout(() => {
+                panel.classList.remove("opacity-0", "scale-95");
+                panel.classList.add("opacity-100", "scale-100");
+            }, 10);
+        }
+    };
+
+    const closeModal = (id) => {
+        const modal = getModal(id);
+        if (!modal) return;
+
+        const panel = getPanel(modal);
+
+        if (panel) {
+            panel.classList.add("opacity-0", "scale-95");
+            panel.classList.remove("opacity-100", "scale-100");
+
+            setTimeout(() => modal.classList.add("hidden"), 200);
+        } else {
+            modal.classList.add("hidden");
+        }
+    };
+
+    const closeAllModals = () => {
+        document.querySelectorAll("[data-global-modal]").forEach((m) =>
+            m.classList.add("hidden")
+        );
+        // khusus <x-modal>
+        document.querySelectorAll(".modal-backdrop").forEach((m) =>
+            m.classList.add("hidden")
+        );
     };
 
     /* ============================================================
-     *  EVENT: modal:open
+     *  EVENT GLOBAL UNTUK <x-modal>
      * ============================================================ */
-    window.addEventListener("modal:open", (event) => {
-        const id = resolveId(event.detail);
-        if (!id) {
-            console.warn("[GlobalModalManager] Missing ID in modal:open");
-            return;
-        }
-        toggleModal(id, true);
+
+    const openEvents = ["open-modal", "modal:open"];
+    const closeEvents = ["close-modal", "modal:close"];
+
+    openEvents.forEach((ev) => {
+        window.addEventListener(ev, (e) => {
+            const id = resolveId(e.detail);
+            if (!id) return;
+            openModal(id);
+        });
+    });
+
+    closeEvents.forEach((ev) => {
+        window.addEventListener(ev, (e) => {
+            const id = resolveId(e.detail);
+            if (!id) return;
+            closeModal(id);
+        });
     });
 
     /* ============================================================
-     *  EVENT: modal:close
+     *  CLICK BACKDROP
      * ============================================================ */
-    window.addEventListener("modal:close", (event) => {
-        const id = resolveId(event.detail);
-        if (!id) {
-            console.warn("[GlobalModalManager] Missing ID in modal:close");
-            return;
-        }
-        toggleModal(id, false);
+
+    document.addEventListener("click", (e) => {
+        const backdrop = e.target.closest(".modal-backdrop");
+        if (!backdrop) return;
+
+        const modalId = backdrop.id;
+        if (!modalId) return;
+
+        closeModal(modalId);
     });
 
     /* ============================================================
-     *  EVENT: timeline:open  (VERSI BARU)
+     *  BUTTON: data-close-modal="id"
      * ============================================================ */
-    window.addEventListener("timeline:open", (event) => {
-        const detail = event.detail;
-        if (!detail?.id) return;
 
-        const modal = document.getElementById(detail.id);
-        if (!modal) return;
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-close-modal]");
+        if (!btn) return;
 
-        const alpine = Alpine?.$data ? Alpine.$data(modal) : null;
-        if (alpine?.load) alpine.load(detail);
+        const id = btn.getAttribute("data-close-modal");
+        if (!id) return;
+
+        closeModal(id);
     });
 
     /* ============================================================
-     *  ESC → TUTUP SEMUA GLOBAL MODAL
+     *  ESC → TUTUP SEMUA MODAL
      * ============================================================ */
+
     window.addEventListener("keydown", (e) => {
-        if (e.key !== "Escape") return;
-
-        document
-            .querySelectorAll("[data-global-modal]")
-            .forEach((el) => el.classList.add("hidden"));
+        if (e.key === "Escape") {
+            closeAllModals();
+        }
     });
 
     /* ============================================================
-     *  TIMELINE CONTROLLER (BARU & CLEAN)
+     *  TIMELINE CONTROLLER (TIDAK DIUBAH SAMA SEKALI)
      * ============================================================ */
+
     const actionColors = {
         submit: "bg-blue-400",
         repair_submit: "bg-yellow-400",
@@ -122,7 +177,6 @@
             open: false,
             items: [],
 
-            /* ---------- LOAD DATA TIMELINE DARI SERVER ---------- */
             load(detail) {
                 const baseTitle = detail?.title ?? "Riwayat AK1";
                 this.name = detail?.name ?? "";
@@ -178,22 +232,21 @@
                             };
                         });
 
-                        if (!this.items.length) {
-                            this.html = "<p class='text-gray-400'>Belum ada riwayat.</p>";
-                        } else {
-                            this.html = "";
-                        }
+                        this.html = this.items.length
+                            ? ""
+                            : "<p class='text-gray-400'>Belum ada riwayat.</p>";
                     })
                     .catch((err) => {
                         this.items = [];
-                        this.html = `<p class='text-red-400'>Gagal memuat riwayat: ${err?.message || 'Error'}</p>`;
+                        this.html = `<p class='text-red-400'>Gagal memuat riwayat: ${
+                            err?.message || "Error"
+                        }</p>`;
                     })
                     .finally(() => {
                         this.loading = false;
                     });
             },
 
-            /* ---------- TUTUP MODAL ---------- */
             close() {
                 this.open = false;
             },

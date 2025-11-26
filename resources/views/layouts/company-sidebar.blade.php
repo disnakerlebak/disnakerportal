@@ -21,6 +21,7 @@
         } catch (e) {}
       })();
     </script>
+    <style>[x-cloak]{display:none!important}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <livewire:styles />
 </head>
@@ -98,26 +99,15 @@
             Lowongan Kerja
         </div>
 
-        <!-- Daftar Lowongan -->
+        <!-- Kelola Lowongan -->
         <a href="{{ route('company.jobs.index') }}"
            class="{{ $linkBase }} {{ request()->routeIs('company.jobs.index') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
             <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M4 6h16M4 10h16M4 14h10M4 18h6"/>
             </svg>
-            <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Daftar Lowongan</span>
-            <span class="tooltip-text" x-show="sidebarCollapsed">Daftar Lowongan</span>
-        </a>
-
-        <!-- Tambah Lowongan -->
-        <a href="{{ route('company.jobs.create') }}"
-           class="{{ $linkBase }} {{ request()->routeIs('company.jobs.create') ? 'bg-indigo-600 text-white shadow' : 'text-slate-300' }} tooltip">
-            <svg xmlns="http://www.w3.org/2000/svg" class="{{ $iconBase }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4v16m8-8H4"/>
-            </svg>
-            <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Tambah Lowongan</span>
-            <span class="tooltip-text" x-show="sidebarCollapsed">Tambah Lowongan</span>
+            <span x-cloak x-show="!sidebarCollapsed" class="{{ $labelBase }}">Kelola Lowongan</span>
+            <span class="tooltip-text" x-show="sidebarCollapsed">Kelola Lowongan</span>
         </a>
 
         <!-- Section: Pelamar -->
@@ -210,6 +200,5 @@
 </div>
 
 <livewire:scripts />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js" integrity="sha512-6ZFAHMRqkpS2NMVzYGzYMKA+Hitzzh3u/SYh1GcU0XAiHQmmKAiozoxg2Oe8ZpMazciDJNy8FCWyKPS5YW6A9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
 </html>
