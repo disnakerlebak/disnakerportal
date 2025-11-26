@@ -16,6 +16,7 @@
 
     const getModal = (id) => document.getElementById(id);
     const getPanel = (modal) => modal?.querySelector(".modal-panel");
+    const isGlobalModal = (el) => !!el?.hasAttribute("data-global-modal");
 
     const openModal = (id) => {
         const modal = getModal(id);
@@ -50,13 +51,9 @@
     };
 
     const closeAllModals = () => {
-        document.querySelectorAll("[data-global-modal]").forEach((m) =>
-            m.classList.add("hidden")
-        );
-        // khusus <x-modal>
-        document.querySelectorAll(".modal-backdrop").forEach((m) =>
-            m.classList.add("hidden")
-        );
+        document
+            .querySelectorAll("[data-global-modal]")
+            .forEach((m) => m.classList.add("hidden"));
     };
 
     /* ============================================================
@@ -87,8 +84,10 @@
      * ============================================================ */
 
     document.addEventListener("click", (e) => {
+        // Hanya tutup jika klik tepat pada backdrop milik <x-modal> global
         const backdrop = e.target.closest(".modal-backdrop");
-        if (!backdrop) return;
+        if (!backdrop || !isGlobalModal(backdrop)) return;
+        if (e.target !== backdrop) return;
 
         const modalId = backdrop.id;
         if (!modalId) return;

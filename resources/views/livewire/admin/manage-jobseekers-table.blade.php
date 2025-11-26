@@ -479,33 +479,23 @@
         @push('scripts')
             <script>
                 (() => {
-                    const toggleModal = (id, show) => {
-                        if (!id) return;
-                        const modal = document.getElementById(id);
-                        if (!modal) return;
-                        modal.classList.toggle('hidden', !show);
-                    };
-
                     const resolveId = (detail) => {
                         if (typeof detail === 'string') return detail;
-                        return detail?.id;
+                        return detail?.id || detail?.modalId || null;
                     };
 
-                    window.addEventListener('jobseeker-admin:open', (event) => {
+                    const forward = (type, event) => {
                         const id = resolveId(event.detail);
                         if (!id) return;
                         const modal = document.getElementById(id);
-                        toggleModal(id, true);
+                        window.dispatchEvent(new CustomEvent(type, { detail: { id } }));
                         if (modal?.__x?.$data?.load) {
                             modal.__x.$data.load(event.detail || {});
                         }
-                    });
+                    };
 
-                    window.addEventListener('jobseeker-admin:close', (event) => {
-                        const id = resolveId(event.detail);
-                        if (!id) return;
-                        toggleModal(id, false);
-                    });
+                    window.addEventListener('jobseeker-admin:open', (event) => forward('modal:open', event));
+                    window.addEventListener('jobseeker-admin:close', (event) => forward('modal:close', event));
 
                     // ESC close (hanya untuk modal jobseeker-admin)
                     window.addEventListener('keydown', (e) => {

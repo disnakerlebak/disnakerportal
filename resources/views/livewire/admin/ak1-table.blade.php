@@ -579,29 +579,19 @@
 @push('scripts')
         <script>
             const ak1ModalManager = (() => {
-                const toggleModal = (id, show) => {
-                    if (!id) return;
-                    const modal = document.getElementById(id);
-                    if (!modal) return;
-                    modal.classList.toggle('hidden', !show);
-                };
-
                 const resolveId = (detail) => {
                     if (!detail) return null;
-                    return typeof detail === 'string' ? detail : detail.id;
+                    return typeof detail === 'string' ? detail : detail.id || detail.modalId || null;
                 };
 
-                window.addEventListener('ak1-admin:open', (event) => {
+                const forward = (type, event) => {
                     const id = resolveId(event.detail);
                     if (!id) return;
-                    toggleModal(id, true);
-                });
+                    window.dispatchEvent(new CustomEvent(type, { detail: { id } }));
+                };
 
-                window.addEventListener('ak1-admin:close', (event) => {
-                    const id = resolveId(event.detail);
-                    if (!id) return;
-                    toggleModal(id, false);
-                });
+                window.addEventListener('ak1-admin:open', (event) => forward('modal:open', event));
+                window.addEventListener('ak1-admin:close', (event) => forward('modal:close', event));
             })();
 
             document.addEventListener('livewire:init', () => {
