@@ -1,11 +1,11 @@
 <div>
     <div class="space-y-4">
         <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-1 flex-wrap items-center gap-2">
                 <div class="relative">
                     <input
                         type="text"
-                        wire:model.debounce.300ms="search"
+                        wire:model.defer="search"
                         placeholder="Cari judul / posisi / lokasi..."
                         class="w-64 rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
                     />
@@ -20,14 +20,70 @@
                         <option value="{{ $st }}">{{ ucfirst($st) }}</option>
                     @endforeach
                 </select>
+                <select
+                    wire:model="jobType"
+                    class="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                >
+                    <option value="">Semua tipe</option>
+                    <option value="Penuh Waktu (Full Time)">Penuh Waktu (Full Time)</option>
+                    <option value="Paruh Waktu (Part Time)">Paruh Waktu (Part Time)</option>
+                    <option value="Pekerja Harian">Pekerja Harian</option>
+                    <option value="Magang (Internship)">Magang (Internship)</option>
+                    <option value="Pekerja Lepas (Freelance)">Pekerja Lepas (Freelance)</option>
+                    <option value="Alih Daya (Outsourcing)">Alih Daya (Outsourcing)</option>
+                    <option value="Program Trainee">Program Trainee</option>
+                </select>
+                <button type="button"
+                        wire:click="applyFilters"
+                        class="inline-flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+                    </svg>
+                </button>
+                <button type="button"
+                        wire:click="resetFilters"
+                        class="inline-flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-700">
+                    Reset
+                </button>
             </div>
 
-            <button
-               type="button"
-               wire:click="create"
-               class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">
-                + Tambah Lowongan
-            </button>
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    wire:click="bulkDeleteConfirm"
+                    class="inline-flex items-center justify-center rounded-lg border border-rose-600/60 bg-rose-600/10 px-3 py-2 text-sm font-semibold text-rose-100 hover:bg-rose-700/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12m-9 4v6m6-6v6M9 3h6a2 2 0 012 2v1H7V5a2 2 0 012-2z" />
+                    </svg>
+                </button>
+                <button
+                   type="button"
+                   wire:click="create"
+                   class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">
+                    + Tambah Lowongan
+                </button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-slate-200">
+            <span class="text-slate-400">Model kerja:</span>
+            <div class="inline-flex rounded-lg border border-slate-800 bg-slate-900/70 p-1">
+                @php $models = ['', 'WFO', 'WFH/Remote', 'Hybrid']; @endphp
+                @foreach($models as $modelOpt)
+                    @php
+                        $active = $workModel === $modelOpt;
+                        $label = $modelOpt === '' ? 'Semua' : $modelOpt;
+                        $classes = $active
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-slate-200 hover:bg-slate-800';
+                    @endphp
+                    <button type="button"
+                            wire:click="setWorkModel('{{ $modelOpt }}')"
+                            class="px-3 py-1 rounded-md text-[12px] font-semibold transition {{ $classes }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
         </div>
 
         <div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 shadow">
@@ -35,18 +91,30 @@
                 <table class="min-w-full text-sm text-slate-100">
                     <thead class="bg-slate-900/80 text-slate-400 uppercase text-xs">
                         <tr>
+                            <th class="px-4 py-3 w-10 text-center">
+                                <input type="checkbox"
+                                       wire:click="toggleSelectAll(@json($jobs->pluck('id')))"
+                                       class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500">
+                            </th>
                             <th class="px-4 py-3 text-left">Judul / Posisi</th>
-                    <th class="px-4 py-3 text-left">Jenis / Model Kerja</th>
-                    <th class="px-4 py-3 text-left">Lokasi</th>
-                    <th class="px-4 py-3 text-left">Status</th>
-                    <th class="px-4 py-3 text-left">Batas Waktu</th>
-                    <th class="px-4 py-3 text-left">Pelamar</th>
-                    <th class="px-4 py-3 text-left"></th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-800">
-                @forelse($jobs as $job)
-                            <tr class="hover:bg-slate-800/40">
+                            <th class="px-4 py-3 text-left">Jenis / Model Kerja</th>
+                            <th class="px-4 py-3 text-left">Lokasi</th>
+                            <th class="px-4 py-3 text-left">Status</th>
+                            <th class="px-4 py-3 text-left">Batas Waktu</th>
+                            <th class="px-4 py-3 text-left">Pelamar</th>
+                            <th class="px-4 py-3 text-left"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                    @forelse($jobs as $job)
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="px-4 py-3 text-center align-top">
+                                <input type="checkbox"
+                                       wire:model="selected"
+                                       value="{{ $job->id }}"
+                                       @disabled($job->status === \App\Models\JobPosting::STATUS_ACTIVE)
+                                       class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500">
+                            </td>
                                 <td class="px-4 py-3">
                                     <div class="font-semibold">{{ $job->judul ?? '-' }}</div>
                                     <div class="text-xs text-slate-400">{{ $job->posisi ?? 'Posisi tidak diisi' }}</div>
@@ -202,4 +270,20 @@
         </div>
     </div>
 
+    <x-modal id="job-bulk-delete" size="md" title="Hapus Lowongan Terpilih">
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-slate-300">Anda akan menghapus lowongan non-aktif yang dipilih. Tindakan ini tidak dapat dibatalkan.</p>
+            <p class="text-xs text-slate-400">Lowongan berstatus aktif tidak akan dihapus.</p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="job-bulk-delete"
+                        class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                    Batal
+                </button>
+                <button type="button" wire:click="bulkDelete"
+                        class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white">
+                    Hapus
+                </button>
+            </div>
+        </div>
+    </x-modal>
 </div>
