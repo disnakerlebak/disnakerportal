@@ -26,6 +26,8 @@ class JobPosting extends Model
         'gaji_min',
         'gaji_max',
         'lokasi_kerja',
+        'tipe_pekerjaan',
+        'model_kerja',
         'menerima_disabilitas',
         'tanggal_posting',
         'tanggal_expired',

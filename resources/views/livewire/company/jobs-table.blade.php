@@ -36,19 +36,44 @@
                     <thead class="bg-slate-900/80 text-slate-400 uppercase text-xs">
                         <tr>
                             <th class="px-4 py-3 text-left">Judul / Posisi</th>
-                            <th class="px-4 py-3 text-left">Lokasi</th>
-                            <th class="px-4 py-3 text-left">Status</th>
-                            <th class="px-4 py-3 text-left">Batas Waktu</th>
-                            <th class="px-4 py-3 text-left">Pelamar</th>
-                            <th class="px-4 py-3 text-left"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        @forelse($jobs as $job)
+                    <th class="px-4 py-3 text-left">Jenis / Model Kerja</th>
+                    <th class="px-4 py-3 text-left">Lokasi</th>
+                    <th class="px-4 py-3 text-left">Status</th>
+                    <th class="px-4 py-3 text-left">Batas Waktu</th>
+                    <th class="px-4 py-3 text-left">Pelamar</th>
+                    <th class="px-4 py-3 text-left"></th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                @forelse($jobs as $job)
                             <tr class="hover:bg-slate-800/40">
                                 <td class="px-4 py-3">
                                     <div class="font-semibold">{{ $job->judul ?? '-' }}</div>
                                     <div class="text-xs text-slate-400">{{ $job->posisi ?? 'Posisi tidak diisi' }}</div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-200">
+                                    @php
+                                        $tipe = $job->tipe_pekerjaan ?? null;
+                                        $model = $job->model_kerja ?? null;
+                                        $modelColor = match($model) {
+                                            'WFO' => 'bg-sky-600/20 text-sky-200 border-sky-500/40',
+                                            'WFH/Remote' => 'bg-purple-600/20 text-purple-200 border-purple-500/40',
+                                            'Hybrid' => 'bg-amber-600/20 text-amber-200 border-amber-500/40',
+                                            default => 'bg-slate-700/30 text-slate-200 border-slate-600/40',
+                                        };
+                                    @endphp
+                                    <div class="flex flex-col gap-1 leading-tight">
+                    <span class="{{ $tipe ? 'text-[13px] font-semibold text-slate-100' : 'text-slate-500 text-[12px]' }}">
+                        {{ $tipe ?? '-' }}
+                    </span>
+                    <div class="flex flex-wrap gap-1 text-[10px]">
+                        @if($model)
+                            <span class="inline-flex items-center px-2 py-1 rounded border {{ $modelColor }}">{{ $model }}</span>
+                        @else
+                            <span class="text-slate-500">-</span>
+                        @endif
+                    </div>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 text-slate-200">{{ $job->lokasi_kerja ?? '-' }}</td>
                                 <td class="px-4 py-3">
@@ -59,16 +84,17 @@
                                             default => 'bg-slate-500/20 text-slate-300 border-slate-500/40',
                                         };
                                     @endphp
-                                    <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold {{ $color }}">
+                                    <span class="inline-flex items-center rounded border px-2.5 py-1 text-xs font-semibold {{ $color }}">
                                         {{ ucfirst($job->status) }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($job->tanggal_expired)
-                                        <div>{{ $job->tanggal_expired->format('d M Y') }}</div>
                                         @php
-                                            $days = now()->diffInDays($job->tanggal_expired, false);
+                                            $daysRaw = now()->startOfDay()->diffInDays(optional($job->tanggal_expired)->startOfDay(), false);
+                                            $days = (int) round($daysRaw);
                                         @endphp
+                                        <div>{{ $job->tanggal_expired->format('d M Y') }}</div>
                                         <div class="text-xs {{ $days <= 7 ? 'text-amber-300' : 'text-slate-400' }}">
                                             {{ $days >= 0 ? "Sisa {$days} hari" : 'Sudah kedaluwarsa' }}
                                         </div>
@@ -95,7 +121,7 @@
                                 </svg>
                             </button>
                             <div id="tooltip-publish-{{ $job->id }}" role="tooltip"
-                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 tooltip">
+                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 invisible tooltip">
                                 Publikasikan lowongan
                                 <div class="tooltip-arrow" data-popper-arrow></div>
                             </div>
@@ -112,7 +138,7 @@
                                 </svg>
                             </button>
                             <div id="tooltip-close-{{ $job->id }}" role="tooltip"
-                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 tooltip">
+                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 invisible tooltip">
                                 Tutup lowongan
                                 <div class="tooltip-arrow" data-popper-arrow></div>
                             </div>
@@ -129,7 +155,7 @@
                                 </svg>
                             </button>
                             <div id="tooltip-reopen-{{ $job->id }}" role="tooltip"
-                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 tooltip">
+                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 invisible tooltip">
                                 Buka lagi lowongan
                                 <div class="tooltip-arrow" data-popper-arrow></div>
                             </div>

@@ -22,6 +22,8 @@ class JobForm extends Component
     public ?int $gaji_min = null;
     public ?int $gaji_max = null;
     public ?string $tanggal_expired = null;
+    public ?string $tipe_pekerjaan = null;
+    public ?string $model_kerja = null;
     public bool $menerima_disabilitas = true;
     public ?string $deskripsi = null;
     public ?string $kualifikasi = null;
@@ -39,6 +41,8 @@ class JobForm extends Component
             'gaji_min' => ['nullable', 'integer', 'min:0'],
             'gaji_max' => ['nullable', 'integer', 'min:0'],
             'tanggal_expired' => ['nullable', 'date'],
+            'tipe_pekerjaan' => ['nullable', 'string', 'max:50'],
+            'model_kerja' => ['nullable', 'string', 'max:50'],
             'menerima_disabilitas' => ['boolean'],
             'deskripsi' => ['nullable', 'string'],
             'kualifikasi' => ['nullable', 'string'],
@@ -66,6 +70,8 @@ class JobForm extends Component
             $this->gaji_min = $job->gaji_min;
             $this->gaji_max = $job->gaji_max;
             $this->tanggal_expired = $job->tanggal_expired?->format('Y-m-d');
+            $this->tipe_pekerjaan = $job->tipe_pekerjaan;
+            $this->model_kerja = $job->model_kerja;
             $this->menerima_disabilitas = (bool) $job->menerima_disabilitas;
             $this->deskripsi = $job->deskripsi;
             $this->kualifikasi = $job->kualifikasi;
@@ -111,6 +117,8 @@ class JobForm extends Component
             'gaji_min',
             'gaji_max',
             'tanggal_expired',
+            'tipe_pekerjaan',
+            'model_kerja',
             'menerima_disabilitas',
             'deskripsi',
             'kualifikasi',

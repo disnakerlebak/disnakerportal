@@ -42,6 +42,30 @@
             </select>
             @error('jenis_kelamin') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
         </div>
+        <div class="space-y-2">
+            <label class="text-sm text-slate-300">Tipe Pekerjaan</label>
+            <select wire:model.defer="tipe_pekerjaan" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih</option>
+                <option value="Penuh Waktu (Full Time)">Penuh Waktu (Full Time)</option>
+                <option value="Paruh Waktu (Part Time)">Paruh Waktu (Part Time)</option>
+                <option value="Pekerja Harian">Pekerja Harian</option>
+                <option value="Magang (Internship)">Magang (Internship)</option>
+                <option value="Pekerja Lepas (Freelance)">Pekerja Lepas (Freelance)</option>
+                <option value="Alih Daya (Outsourcing)">Alih Daya (Outsourcing)</option>
+                <option value="Program Trainee">Program Trainee</option>
+            </select>
+            @error('tipe_pekerjaan') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+        </div>
+        <div class="space-y-2">
+            <label class="text-sm text-slate-300">Model Kerja</label>
+            <select wire:model.defer="model_kerja" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih</option>
+                <option value="WFO">WFO</option>
+                <option value="WFH/Remote">WFH/Remote</option>
+                <option value="Hybrid">Hybrid</option>
+            </select>
+            @error('model_kerja') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+        </div>
         <div class="grid grid-cols-2 gap-2">
             <div class="space-y-2">
                 <label class="text-sm text-slate-300">Usia Min</label>
