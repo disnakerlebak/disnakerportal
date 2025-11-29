@@ -166,15 +166,19 @@
                                              class="text-slate-100 hover:text-white">
                                 Preview
                             </x-dropdown-item>
-                            <x-dropdown-item wire:click="edit({{ $job->id }})"
-                                             class="text-slate-100 hover:text-white">
-                                Edit
-                            </x-dropdown-item>
+                            @if($job->status !== \App\Models\JobPosting::STATUS_ACTIVE)
+                                <x-dropdown-item wire:click="edit({{ $job->id }})"
+                                                 class="text-slate-100 hover:text-white">
+                                    Edit
+                                </x-dropdown-item>
+                            @endif
 
-                            <x-dropdown-item wire:click="confirmAction('delete', {{ $job->id }})"
-                                             class="text-rose-200 hover:text-rose-100">
-                                Hapus
-                            </x-dropdown-item>
+                            @if($job->status !== \App\Models\JobPosting::STATUS_ACTIVE)
+                                <x-dropdown-item wire:click="confirmAction('delete', {{ $job->id }})"
+                                                 class="text-rose-200 hover:text-rose-100">
+                                    Hapus
+                                </x-dropdown-item>
+                            @endif
                         </x-dropdown>
                     </div>
                 </td>

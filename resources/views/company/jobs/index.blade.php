@@ -10,9 +10,28 @@
         </div>
 
         <livewire:company.jobs-table />
-      
     </div>
+
+    @include('company.jobs.partials.job-form-modal')
+    @include('company.jobs.partials.job-action-modal')
+    @include('company.jobs.partials.job-preview-modal')
 @endsection
-@include('company.jobs.partials.job-form-modal')
-        @include('company.jobs.partials.job-action-modal')
-        @include('company.jobs.partials.job-preview-modal')
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Livewire.on('toast', (detail = {}) => {
+                if (typeof Toastify === 'undefined') return;
+                Toastify({
+                    text: detail?.message || 'Berhasil',
+                    duration: 3500,
+                    close: true,
+                    gravity: 'bottom',
+                    position: 'right',
+                    backgroundColor: detail?.type === 'error' ? '#dc2626' : '#16a34a',
+                    stopOnFocus: true,
+                }).showToast();
+            });
+        });
+    </script>
+@endpush

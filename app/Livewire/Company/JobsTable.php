@@ -61,13 +61,22 @@ class JobsTable extends Component
 
     public function edit(int $jobId): void
     {
+        $job = JobPosting::where('company_id', $this->companyId())->find($jobId);
+        if (!$job) {
+            session()->flash('error', 'Lowongan tidak ditemukan.');
+            return;
+        }
+        if ($job->status === JobPosting::STATUS_ACTIVE) {
+            session()->flash('error', 'Lowongan aktif tidak dapat diedit.');
+            return;
+        }
         $this->dispatch('job-form:open', jobId: $jobId);
         $this->dispatch('modal:open', id: 'job-form-modal');
     }
 
     public function confirmAction(string $action, int $jobId): void
     {
-        // Tampilkan modal dulu agar responsif, kemudian Livewire mengisi detail
+        // Buka modal lebih awal agar respons cepat, isi detail akan diisi oleh Livewire
         $this->dispatch('modal:open', id: 'job-action-modal');
         $this->dispatch('job-action:open', action: $action, jobId: $jobId);
     }

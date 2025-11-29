@@ -200,5 +200,75 @@
 </div>
 
 <livewire:scripts />
+
+@stack('scripts')
+
+<!-- ===== Toastify (Global Notification) ===== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    @if (session('success'))
+        Toastify({
+            text: "{{ session('success') }}",
+            duration: 3500,
+            close: true,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#16a34a",
+            stopOnFocus: true
+        }).showToast();
+    @endif
+
+    @if (session('error'))
+        Toastify({
+            text: "{{ session('error') }}",
+            duration: 3500,
+            close: true,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#dc2626",
+            stopOnFocus: true
+        }).showToast();
+    @endif
+
+    @if (session('warning'))
+        Toastify({
+            text: "{{ session('warning') }}",
+            duration: 3500,
+            close: true,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#facc15",
+            stopOnFocus: true
+        }).showToast();
+    @endif
+
+    @if (session('info'))
+        Toastify({
+            text: "{{ session('info') }}",
+            duration: 3500,
+            close: true,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#2563eb",
+            stopOnFocus: true
+        }).showToast();
+    @endif
+
+    @if (session('toast.success'))
+        Toastify({
+            text: @json(session('toast.success')),
+            duration: 3500,
+            close: true,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#16a34a",
+            stopOnFocus: true
+        }).showToast();
+    @endif
+});
+</script>
 </body>
 </html>

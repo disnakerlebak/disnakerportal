@@ -4,6 +4,7 @@ namespace App\Livewire\Company;
 
 use App\Models\JobPosting;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -91,12 +92,14 @@ class JobForm extends Component
         if ($this->editingId) {
             $job = JobPosting::where('company_id', $companyId)->findOrFail($this->editingId);
             $job->update($data);
-            session()->flash('success', 'Lowongan diperbarui.');
+            $this->logActivity($job, 'updated', "Perbarui lowongan \"{$job->judul}\"");
+            $this->dispatch('toast', message: 'Lowongan diperbarui.', type: 'success');
         } else {
             $data['company_id'] = $companyId;
             $data['status'] = JobPosting::STATUS_DRAFT;
-            JobPosting::create($data);
-            session()->flash('success', 'Lowongan disimpan sebagai draft. Silakan preview lalu publikasikan.');
+            $job = JobPosting::create($data);
+            $this->logActivity($job, 'created', "Buat lowongan \"{$job->judul}\" (draft)");
+            $this->dispatch('toast', message: 'Lowongan disimpan sebagai draft.', type: 'success');
         }
 
         $this->dispatch('job-updated');
@@ -127,6 +130,17 @@ class JobForm extends Component
         $this->isEdit = false;
         $this->editingId = null;
         $this->tanggal_expired = null;
+    }
+
+    private function logActivity(JobPosting $job, string $action, ?string $description = null): void
+    {
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => $action,
+            'model_type' => JobPosting::class,
+            'model_id' => $job->id,
+            'description' => $description,
+        ]);
     }
 
     public function render()

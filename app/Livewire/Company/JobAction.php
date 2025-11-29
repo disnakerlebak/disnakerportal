@@ -6,6 +6,7 @@ use App\Models\JobPosting;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use App\Models\ActivityLog;
 
 class JobAction extends Component
 {
@@ -25,6 +26,12 @@ class JobAction extends Component
         $companyId = $this->companyId();
         $job = JobPosting::where('company_id', $companyId)->findOrFail($jobId);
 
+        if ($action === 'delete' && $job->status === JobPosting::STATUS_ACTIVE) {
+            session()->flash('error', 'Lowongan aktif tidak dapat dihapus.');
+            $this->dispatch('modal:close', id: 'job-action-modal');
+            return;
+        }
+
         $this->jobId = $job->id;
         $this->action = $action;
         $this->title = match ($action) {
@@ -41,7 +48,6 @@ class JobAction extends Component
             'delete' => "Hapus lowongan \"{$job->judul}\" secara permanen?",
             default => "Lanjutkan aksi untuk \"{$job->judul}\"?",
         };
-
     }
 
     public function confirm(): void
@@ -71,14 +77,16 @@ class JobAction extends Component
         $job->status = JobPosting::STATUS_ACTIVE;
         $job->tanggal_posting = now();
         $job->save();
-        session()->flash('success', 'Lowongan dipublikasikan.');
+        $this->dispatch('toast', message: 'Lowongan dipublikasikan.', type: 'success');
+        $this->logActivity($job, 'published', "Publikasikan lowongan \"{$job->judul}\"");
     }
 
     protected function close(JobPosting $job): void
     {
         $job->status = JobPosting::STATUS_CLOSED;
         $job->save();
-        session()->flash('success', 'Lowongan ditutup.');
+        $this->dispatch('toast', message: 'Lowongan ditutup.', type: 'success');
+        $this->logActivity($job, 'closed', "Tutup lowongan \"{$job->judul}\"");
     }
 
     protected function reopen(JobPosting $job): void
@@ -86,13 +94,16 @@ class JobAction extends Component
         $job->status = JobPosting::STATUS_ACTIVE;
         $job->tanggal_posting = now();
         $job->save();
-        session()->flash('success', 'Lowongan dibuka kembali.');
+        $this->dispatch('toast', message: 'Lowongan dibuka kembali.', type: 'success');
+        $this->logActivity($job, 'reopened', "Buka kembali lowongan \"{$job->judul}\"");
     }
 
     protected function delete(JobPosting $job): void
     {
+        $title = $job->judul;
         $job->delete();
-        session()->flash('success', 'Lowongan dihapus.');
+        $this->dispatch('toast', message: 'Lowongan dihapus.', type: 'success');
+        $this->logActivity($job, 'deleted', "Hapus lowongan \"{$title}\"");
     }
 
     protected function resetState(): void
@@ -101,6 +112,17 @@ class JobAction extends Component
         $this->action = '';
         $this->title = 'Konfirmasi Aksi';
         $this->message = 'Lanjutkan aksi ini?';
+    }
+
+    private function logActivity(JobPosting $job, string $action, ?string $description = null): void
+    {
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => $action,
+            'model_type' => JobPosting::class,
+            'model_id' => $job->id,
+            'description' => $description,
+        ]);
     }
 
     public function render()
