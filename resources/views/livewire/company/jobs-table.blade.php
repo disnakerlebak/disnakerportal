@@ -81,35 +81,39 @@
                                     <div class="text-xs text-slate-400">pelamar</div>
                                 </td>
                 <td class="px-4 py-3">
-                    <div class="flex items-center gap-2">
-                        <button wire:click="preview({{ $job->id }})"
-                                class="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-100 hover:bg-slate-800">
-                            Preview
-                        </button>
-                        <button wire:click="edit({{ $job->id }})"
-                                class="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-100 hover:bg-slate-800">
-                            Edit
-                        </button>
-                        @if($job->status === \App\Models\JobPosting::STATUS_DRAFT)
-                            <button wire:click="confirmAction('publish', {{ $job->id }})"
-                                    class="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">
-                                Publikasikan
-                            </button>
-                        @elseif($job->status === \App\Models\JobPosting::STATUS_ACTIVE)
-                            <button wire:click="confirmAction('close', {{ $job->id }})"
-                                    class="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-600">
-                                Tutup
-                            </button>
-                        @else
-                            <button wire:click="confirmAction('reopen', {{ $job->id }})"
-                                    class="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
-                                Buka Lagi
-                            </button>
-                        @endif
-                        <button wire:click="confirmAction('delete', {{ $job->id }})"
-                                class="rounded-md border border-rose-600/60 bg-rose-600/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-700/20">
-                            Hapus
-                        </button>
+                    <div class="flex items-center justify-end">
+                        <x-dropdown :id="'job-actions-'.$job->id">
+                            <x-dropdown-item wire:click="preview({{ $job->id }})"
+                                             class="text-slate-100 hover:text-white">
+                                Preview
+                            </x-dropdown-item>
+                            <x-dropdown-item wire:click="edit({{ $job->id }})"
+                                             class="text-slate-100 hover:text-white">
+                                Edit
+                            </x-dropdown-item>
+
+                            @if($job->status === \App\Models\JobPosting::STATUS_DRAFT)
+                                <x-dropdown-item wire:click="confirmAction('publish', {{ $job->id }})"
+                                                 class="text-emerald-200 hover:text-emerald-100">
+                                    Publikasikan
+                                </x-dropdown-item>
+                            @elseif($job->status === \App\Models\JobPosting::STATUS_ACTIVE)
+                                <x-dropdown-item wire:click="confirmAction('close', {{ $job->id }})"
+                                                 class="text-amber-200 hover:text-amber-100">
+                                    Tutup
+                                </x-dropdown-item>
+                            @else
+                                <x-dropdown-item wire:click="confirmAction('reopen', {{ $job->id }})"
+                                                 class="text-emerald-200 hover:text-emerald-100">
+                                    Buka Lagi
+                                </x-dropdown-item>
+                            @endif
+
+                            <x-dropdown-item wire:click="confirmAction('delete', {{ $job->id }})"
+                                             class="text-rose-200 hover:text-rose-100">
+                                Hapus
+                            </x-dropdown-item>
+                        </x-dropdown>
                     </div>
                 </td>
             </tr>
