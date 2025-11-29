@@ -10,8 +10,9 @@
         </div>
 
         <livewire:company.jobs-table />
-        @include('company.jobs.partials.job-form-modal')
-        @include('company.jobs.partials.job-action-modal')
-        @include('company.jobs.partials.job-preview-modal')
+      
     </div>
 @endsection
+@include('company.jobs.partials.job-form-modal')
+        @include('company.jobs.partials.job-action-modal')
+        @include('company.jobs.partials.job-preview-modal')

@@ -23,7 +23,16 @@
             <div class="grid md:grid-cols-2 gap-4 text-sm text-slate-200">
                 <div class="space-y-2">
                     <div><span class="text-slate-400">Pendidikan minimal:</span> {{ $job->pendidikan_minimal ?? '-' }}</div>
-                    <div><span class="text-slate-400">Jenis kelamin:</span> {{ $job->jenis_kelamin ?? 'L/P' }}</div>
+                    @php
+                        $genderLabel = match ($job->jenis_kelamin) {
+                            'L'   => 'Laki-laki',
+                            'P'   => 'Perempuan',
+                            'LP'  => 'Laki-laki/Perempuan',
+                            null, '' => 'Laki-laki/Perempuan',
+                            default => $job->jenis_kelamin,
+                        };
+                    @endphp
+                    <div><span class="text-slate-400">Jenis kelamin:</span> {{ $genderLabel }}</div>
                     <div><span class="text-slate-400">Rentang usia:</span> {{ $job->usia_min ?? '-' }} - {{ $job->usia_max ?? '-' }}</div>
                 </div>
                 <div class="space-y-2">
@@ -35,7 +44,7 @@
                         @endif
                     </div>
                     <div><span class="text-slate-400">Disabilitas:</span> {{ $job->menerima_disabilitas ? 'Menerima' : 'Tidak' }}</div>
-                    <div><span class="text-slate-400">Expired:</span> {{ $job->tanggal_expired?->format('d M Y') ?? '-' }}</div>
+                    <div><span class="text-slate-400">Batas Waktu:</span> {{ $job->tanggal_expired?->format('d M Y') ?? '-' }}</div>
                 </div>
             </div>
             <div class="space-y-3 text-sm text-slate-200">

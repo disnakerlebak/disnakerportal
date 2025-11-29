@@ -17,7 +17,19 @@
         </div>
         <div class="space-y-2">
             <label class="text-sm text-slate-300">Pendidikan Minimal</label>
-            <input type="text" wire:model.defer="pendidikan_minimal" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+            <select wire:model.defer="pendidikan_minimal" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA/SMK">SMA/SMK</option>
+                <option value="D1">D1</option>
+                <option value="D2">D2</option>
+                <option value="D3">D3</option>
+                <option value="D4">D4</option>
+                <option value="S1">S1</option>
+                <option value="S2">S2</option>
+                <option value="S3">S3</option>
+            </select>
             @error('pendidikan_minimal') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
         </div>
         <div class="space-y-2">

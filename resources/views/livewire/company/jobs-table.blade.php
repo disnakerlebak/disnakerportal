@@ -38,7 +38,7 @@
                             <th class="px-4 py-3 text-left">Judul / Posisi</th>
                             <th class="px-4 py-3 text-left">Lokasi</th>
                             <th class="px-4 py-3 text-left">Status</th>
-                            <th class="px-4 py-3 text-left">Expired</th>
+                            <th class="px-4 py-3 text-left">Batas Waktu</th>
                             <th class="px-4 py-3 text-left">Pelamar</th>
                             <th class="px-4 py-3 text-left"></th>
                         </tr>
@@ -81,7 +81,60 @@
                                     <div class="text-xs text-slate-400">pelamar</div>
                                 </td>
                 <td class="px-4 py-3">
-                    <div class="flex items-center justify-end">
+                    <div class="flex items-center justify-end gap-2 relative">
+                        @if($job->status === \App\Models\JobPosting::STATUS_DRAFT)
+                            <button
+                                type="button"
+                                wire:click="confirmAction('publish', {{ $job->id }})"
+                                data-tooltip-target="tooltip-publish-{{ $job->id }}"
+                                data-tooltip-placement="top"
+                                aria-describedby="tooltip-publish-{{ $job->id }}"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 -rotate-[15deg]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                                </svg>
+                            </button>
+                            <div id="tooltip-publish-{{ $job->id }}" role="tooltip"
+                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 tooltip">
+                                Publikasikan lowongan
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        @elseif($job->status === \App\Models\JobPosting::STATUS_ACTIVE)
+                            <button
+                                type="button"
+                                wire:click="confirmAction('close', {{ $job->id }})"
+                                data-tooltip-target="tooltip-close-{{ $job->id }}"
+                                data-tooltip-placement="top"
+                                aria-describedby="tooltip-close-{{ $job->id }}"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-amber-600 text-white hover:bg-amber-700 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <div id="tooltip-close-{{ $job->id }}" role="tooltip"
+                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 tooltip">
+                                Tutup lowongan
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        @else
+                            <button
+                                type="button"
+                                wire:click="confirmAction('reopen', {{ $job->id }})"
+                                data-tooltip-target="tooltip-reopen-{{ $job->id }}"
+                                data-tooltip-placement="top"
+                                aria-describedby="tooltip-reopen-{{ $job->id }}"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m-7-7l7 7-7 7" />
+                                </svg>
+                            </button>
+                            <div id="tooltip-reopen-{{ $job->id }}" role="tooltip"
+                                 class="absolute z-50 inline-block px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow opacity-0 tooltip">
+                                Buka lagi lowongan
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        @endif
+
                         <x-dropdown :id="'job-actions-'.$job->id">
                             <x-dropdown-item wire:click="preview({{ $job->id }})"
                                              class="text-slate-100 hover:text-white">
@@ -91,23 +144,6 @@
                                              class="text-slate-100 hover:text-white">
                                 Edit
                             </x-dropdown-item>
-
-                            @if($job->status === \App\Models\JobPosting::STATUS_DRAFT)
-                                <x-dropdown-item wire:click="confirmAction('publish', {{ $job->id }})"
-                                                 class="text-emerald-200 hover:text-emerald-100">
-                                    Publikasikan
-                                </x-dropdown-item>
-                            @elseif($job->status === \App\Models\JobPosting::STATUS_ACTIVE)
-                                <x-dropdown-item wire:click="confirmAction('close', {{ $job->id }})"
-                                                 class="text-amber-200 hover:text-amber-100">
-                                    Tutup
-                                </x-dropdown-item>
-                            @else
-                                <x-dropdown-item wire:click="confirmAction('reopen', {{ $job->id }})"
-                                                 class="text-emerald-200 hover:text-emerald-100">
-                                    Buka Lagi
-                                </x-dropdown-item>
-                            @endif
 
                             <x-dropdown-item wire:click="confirmAction('delete', {{ $job->id }})"
                                              class="text-rose-200 hover:text-rose-100">
