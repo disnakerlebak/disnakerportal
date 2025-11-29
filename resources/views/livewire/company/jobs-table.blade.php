@@ -93,7 +93,7 @@
                         <tr>
                             <th class="px-4 py-3 w-10 text-center">
                                 <input type="checkbox"
-                                       wire:click="toggleSelectAll(@json($jobs->pluck('id')))"
+                                       wire:click="toggleSelectAll(@json($jobs->pluck('id')->values()->toArray()))"
                                        class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500">
                             </th>
                             <th class="px-4 py-3 text-left">Judul / Posisi</th>
@@ -269,21 +269,4 @@
             @endif
         </div>
     </div>
-
-    <x-modal id="job-bulk-delete" size="md" title="Hapus Lowongan Terpilih">
-        <div class="px-6 py-5 space-y-4">
-            <p class="text-sm text-slate-300">Anda akan menghapus lowongan non-aktif yang dipilih. Tindakan ini tidak dapat dibatalkan.</p>
-            <p class="text-xs text-slate-400">Lowongan berstatus aktif tidak akan dihapus.</p>
-            <div class="flex justify-end gap-2 pt-2">
-                <button type="button" data-close-modal="job-bulk-delete"
-                        class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
-                    Batal
-                </button>
-                <button type="button" wire:click="bulkDelete"
-                        class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white">
-                    Hapus
-                </button>
-            </div>
-        </div>
-    </x-modal>
 </div>

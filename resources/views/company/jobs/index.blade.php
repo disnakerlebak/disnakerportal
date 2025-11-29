@@ -33,5 +33,17 @@
                 }).showToast();
             });
         });
+
+        document.addEventListener('livewire:load', () => {
+            const reinitTooltips = () => {
+                if (typeof initFlowbite === 'function') {
+                    initFlowbite();
+                }
+            };
+
+            Livewire.hook('message.processed', () => {
+                reinitTooltips();
+            });
+        });
     </script>
 @endpush

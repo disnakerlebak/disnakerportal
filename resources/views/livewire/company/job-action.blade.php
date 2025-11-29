@@ -14,7 +14,7 @@
                 'publish' => 'bg-blue-600 hover:bg-blue-700',
                 'close'   => 'bg-amber-600 hover:bg-amber-700',
                 'reopen'  => 'bg-emerald-600 hover:bg-emerald-700',
-                'delete'  => 'bg-rose-600 hover:bg-rose-700',
+                'delete', 'bulk-delete' => 'bg-rose-600 hover:bg-rose-700',
                 default   => 'bg-indigo-600 hover:bg-indigo-700',
             };
         @endphp

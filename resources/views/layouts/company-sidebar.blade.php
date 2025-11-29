@@ -270,5 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
     @endif
 });
 </script>
+<script src="{{ asset('js/modal-manager.js') }}"></script>
 </body>
 </html>

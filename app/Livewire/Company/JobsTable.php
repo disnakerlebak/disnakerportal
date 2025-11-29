@@ -112,14 +112,12 @@ class JobsTable extends Component
 
     public function confirmAction(string $action, int $jobId): void
     {
-        // Buka modal lebih awal agar respons cepat, isi detail akan diisi oleh Livewire
-        $this->dispatch('modal:open', id: 'job-action-modal');
         $this->dispatch('job-action:open', action: $action, jobId: $jobId);
     }
 
     public function toggleSelectAll(array $ids): void
     {
-        $ids = array_map('strval', $ids);
+        $ids = array_map('intval', $ids);
         if (count($this->selected) === count($ids)) {
             $this->selected = [];
             $this->selectAll = false;
@@ -133,32 +131,10 @@ class JobsTable extends Component
     {
         $allowed = $this->getDeletableIds();
         if (empty($allowed)) {
-            $this->dispatch('toast', message: 'Pilih lowongan non-aktif untuk dihapus.', type: 'error');
+            $this->dispatch('toast', message: 'Pilih lowongan non-aktif untuk dihapus. Lowongan aktif tidak bisa dihapus.', type: 'error');
             return;
         }
-        $this->dispatch('modal:open', id: 'job-bulk-delete');
-    }
-
-    public function bulkDelete(): void
-    {
-        $ids = $this->getDeletableIds();
-        if (empty($ids)) {
-            $this->dispatch('toast', message: 'Tidak ada lowongan yang dapat dihapus.', type: 'error');
-            return;
-        }
-
-        $companyId = $this->companyId();
-        JobPosting::where('company_id', $companyId)
-            ->whereIn('id', $ids)
-            ->where('status', '!=', JobPosting::STATUS_ACTIVE)
-            ->delete();
-
-        $this->selected = [];
-        $this->selectAll = false;
-        $this->resetPage();
-
-        $this->dispatch('toast', message: 'Lowongan terpilih berhasil dihapus.', type: 'success');
-        $this->dispatch('modal:close', id: 'job-bulk-delete');
+        $this->dispatch('job-action:open', action: 'bulk-delete', ids: $allowed);
     }
 
     private function getDeletableIds(): array
@@ -169,7 +145,7 @@ class JobsTable extends Component
             ->whereIn('id', $this->selected)
             ->where('status', '!=', JobPosting::STATUS_ACTIVE)
             ->pluck('id')
-            ->map(fn($id) => (string) $id)
+            ->map(fn($id) => (int) $id)
             ->all();
     }
 
