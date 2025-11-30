@@ -3,7 +3,7 @@
 @section('title', 'Profil Perusahaan')
 
 @section('content')
-    <div class="max-w-5xl mx-auto py-8 px-4 space-y-6">
+    <div class="max-w-6xl mx-auto py-8 px-4 space-y-6">
         <div class="space-y-3">
             <x-company-breadcrumb :items="[['label' => 'Profil Perusahaan']]" />
             <div class="flex items-center justify-between gap-4">
@@ -21,53 +21,56 @@
             </div>
         </div>
 
-        <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 flex flex-col md:flex-row gap-6">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 grid gap-6 lg:grid-cols-3">
             <!-- Logo / Foto perusahaan -->
-            <div class="w-full md:w-1/3 flex flex-col items-center md:items-start gap-3">
+            <div class="w-full flex flex-col items-center gap-4 lg:col-span-1">
                 @php
                     $logoPath = $company?->logo ? asset('storage/'.$company->logo) : null;
                     $initial  = $company && $company->nama_perusahaan ? mb_substr($company->nama_perusahaan, 0, 1) : 'P';
                 @endphp
 
-                <div class="relative h-32 w-32 rounded-2xl overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center">
-                    @if($logoPath)
-                        <img src="{{ $logoPath }}" alt="Logo Perusahaan" class="h-full w-full object-cover">
-                    @else
-                        <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/80 to-slate-900">
-                            <span class="text-4xl font-bold text-white">{{ $initial }}</span>
+                <form id="logo-upload-form"
+                      method="POST"
+                      action="{{ route('company.profile.logo') }}"
+                      enctype="multipart/form-data"
+                      class="w-full max-w-sm">
+                    @csrf
+                    <div class="relative h-40 w-40 lg:h-44 lg:w-44 mx-auto rounded-2xl overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center group">
+                        @if($logoPath)
+                            <img src="{{ $logoPath }}" alt="Logo Perusahaan" class="h-full w-full object-cover pointer-events-none">
+                        @else
+                            <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/80 to-slate-900 pointer-events-none">
+                                <span class="text-5xl font-bold text-white">{{ $initial }}</span>
+                            </div>
+                        @endif
+                        <div class="absolute inset-0 rounded-2xl bg-slate-900/70 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-center px-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-indigo-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3l4.5 4.5m-9 0H9.75c.414 0 .75.336.75.75V18m0 0h4.5M12 18v-9" />
+                            </svg>
+                            <p class="text-xs text-slate-200 font-medium">Klik atau tarik file ke sini</p>
+                            <p class="text-[11px] text-slate-400">JPG/PNG, maks. 1 MB</p>
                         </div>
-                    @endif
-                </div>
+                        <input type="file"
+                               name="logo"
+                               accept="image/*"
+                               class="absolute inset-0 h-full w-full opacity-0 cursor-pointer"
+                               onchange="document.getElementById('logo-upload-form').submit()">
+                    </div>
+                </form>
 
-                <div class="text-center md:text-left">
-                    <p class="text-base font-semibold text-slate-100">
+                <div class="text-center space-y-1">
+                    <p class="text-lg font-semibold text-slate-100">
                         {{ $company->nama_perusahaan ?? 'Nama perusahaan belum diisi' }}
                     </p>
-                    <p class="text-xs text-slate-400 mt-1">
+                    <p class="text-sm text-slate-400">
                         {{ $company->jenis_usaha ?? 'Jenis usaha/bidang belum diisi' }}
                     </p>
                 </div>
 
-                <form method="POST"
-                      action="{{ route('company.profile.logo') }}"
-                      enctype="multipart/form-data"
-                      class="mt-4 w-full space-y-2">
-                    @csrf
-                    <x-input-file
-                        label="Ganti Logo Perusahaan"
-                        name="logo"
-                    />
-                    <p class="text-[11px] text-slate-500">
-                        Format: JPG/PNG, maks. 1 MB
-                    </p>
-                    <x-primary-button class="w-full md:w-auto">
-                        Simpan Logo
-                    </x-primary-button>
-                </form>
             </div>
 
             <!-- Detail perusahaan -->
-            <div class="w-full md:w-2/3 space-y-4">
+            <div class="w-full lg:col-span-2 space-y-4">
                 <!-- Card: Alamat & Kontak -->
                 <div class="rounded-xl border border-slate-800 bg-slate-900/80 p-4 grid gap-4 md:grid-cols-2">
                     <div>
