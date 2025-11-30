@@ -4,9 +4,12 @@
 
 @section('content')
     <div class="max-w-6xl mx-auto py-8 px-4 space-y-6">
-        <div>
-            <h2 class="text-2xl font-semibold text-slate-100">Kelola Lowongan</h2>
-            <p class="text-slate-400 text-sm">Pantau draft, publish, dan tutup lowongan dari satu tempat.</p>
+        <div class="space-y-3">
+            <x-company-breadcrumb :items="[['label' => 'Kelola Lowongan', 'url' => route('company.jobs.index')]]" />
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-100">Kelola Lowongan</h2>
+                <p class="text-slate-400 text-sm">Pantau draft, publish, dan tutup lowongan dari satu tempat.</p>
+            </div>
         </div>
 
         <livewire:company.jobs-table />

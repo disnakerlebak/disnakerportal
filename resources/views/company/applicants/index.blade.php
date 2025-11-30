@@ -4,8 +4,13 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto py-8 px-4">
-    <h2 class="text-2xl font-semibold text-slate-100 mb-4">Semua Pelamar</h2>
-    <p class="text-slate-400 text-sm">Daftar semua pelamar ke lowongan Anda akan ditampilkan di sini.</p>
+    <div class="space-y-3 mb-4">
+        <x-company-breadcrumb :items="[['label' => 'Semua Pelamar']]" />
+        <div>
+            <h2 class="text-2xl font-semibold text-slate-100">Semua Pelamar</h2>
+            <p class="text-slate-400 text-sm">Daftar semua pelamar ke lowongan Anda akan ditampilkan di sini.</p>
+        </div>
+    </div>
 
     <div class="relative mt-6">
         <button id="dropdownButton" data-dropdown-toggle="dropdownMenu"
@@ -22,5 +27,5 @@
         </div>
     </div>
 </div>
- 
+
 @endsection

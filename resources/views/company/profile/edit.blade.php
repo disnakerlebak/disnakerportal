@@ -4,11 +4,17 @@
 
 @section('content')
     <div class="max-w-5xl mx-auto py-8 px-4 space-y-6">
-        <div>
-            <h2 class="text-2xl font-semibold text-slate-100">Lengkapi Profil Perusahaan</h2>
-            <p class="mt-1 text-sm text-slate-400">
-                Data ini akan digunakan oleh Disnaker dan pencari kerja untuk mengenal perusahaan Anda.
-            </p>
+        <div class="space-y-3">
+            <x-company-breadcrumb :items="[
+                ['label' => 'Profil Perusahaan', 'url' => route('company.profile.show')],
+                ['label' => 'Lengkapi Profil']
+            ]" />
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-100">Lengkapi Profil Perusahaan</h2>
+                <p class="mt-1 text-sm text-slate-400">
+                    Data ini akan digunakan oleh Disnaker dan pencari kerja untuk mengenal perusahaan Anda.
+                </p>
+            </div>
         </div>
 
         <form method="POST" action="{{ route('company.profile.update') }}" class="space-y-6">
@@ -122,4 +128,3 @@
         </form>
     </div>
 @endsection
-

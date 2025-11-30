@@ -4,6 +4,7 @@
 
 @section('content')
     <div class="max-w-6xl mx-auto py-8 px-4 space-y-6">
+        <x-company-breadcrumb :items="[['label' => 'Dashboard']]" />
         @if(session('error'))
             <div class="rounded-xl border border-rose-600/50 bg-rose-600/10 px-4 py-3 text-sm text-rose-200">
                 {{ session('error') }}

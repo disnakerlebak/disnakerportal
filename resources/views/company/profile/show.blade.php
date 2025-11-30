@@ -4,18 +4,21 @@
 
 @section('content')
     <div class="max-w-5xl mx-auto py-8 px-4 space-y-6">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <h2 class="text-2xl font-semibold text-slate-100">Profil Perusahaan</h2>
-                <p class="mt-1 text-sm text-slate-400">
-                    Ringkasan data perusahaan yang terdaftar di DisnakerPortal.
-                </p>
+        <div class="space-y-3">
+            <x-company-breadcrumb :items="[['label' => 'Profil Perusahaan']]" />
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-semibold text-slate-100">Profil Perusahaan</h2>
+                    <p class="mt-1 text-sm text-slate-400">
+                        Ringkasan data perusahaan yang terdaftar di DisnakerPortal.
+                    </p>
+                </div>
+                <button type="button"
+                        onclick="openModal('modalCompanyProfile')"
+                        class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950">
+                    Kelola Profil
+                </button>
             </div>
-            <button type="button"
-                    onclick="openModal('modalCompanyProfile')"
-                    class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950">
-                Kelola Profil
-            </button>
         </div>
 
         <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 flex flex-col md:flex-row gap-6">
