@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
 use App\Models\CompanyProfile;
+use App\Models\JobPosting;
 use Illuminate\Http\Request;
 
 class JobPostingController extends Controller
@@ -24,5 +25,20 @@ class JobPostingController extends Controller
         }
 
         return view('company.jobs.create');
+    }
+
+    public function edit(Request $request, JobPosting $job)
+    {
+        $companyId = $request->user()->companyProfile?->id;
+
+        if ($job->company_id !== $companyId) {
+            return redirect()->route('company.jobs.index')->with('error', 'Lowongan tidak ditemukan.');
+        }
+
+        if ($job->status === JobPosting::STATUS_ACTIVE) {
+            return redirect()->route('company.jobs.index')->with('error', 'Lowongan aktif tidak dapat diedit.');
+        }
+
+        return view('company.jobs.edit', ['job' => $job]);
     }
 }

@@ -10,11 +10,74 @@
             <input type="text" wire:model.defer="posisi" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
             @error('posisi') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
         </div>
-        <div class="space-y-2">
-            <label class="text-sm text-slate-300">Lokasi Kerja*</label>
-            <input type="text" wire:model.defer="lokasi_kerja" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
-            @error('lokasi_kerja') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
-        </div>
+        @if($useModal)
+            <div class="space-y-2">
+                <label class="text-sm text-slate-300">Lokasi Kerja*</label>
+                <input type="text" wire:model.defer="lokasi_kerja" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                @error('lokasi_kerja') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+            </div>
+        @else
+            <div class="space-y-3 md:col-span-2">
+                <label class="text-sm text-slate-300">Lokasi Penempatan*</label>
+                <div class="inline-flex rounded-lg border border-slate-800 bg-slate-900/70 p-1">
+                    @php $isDomestic = $lokasi_mode === 'domestic'; @endphp
+                    <button type="button"
+                            wire:click="$set('lokasi_mode', 'domestic')"
+                            class="px-3 py-1 rounded-md text-[12px] font-semibold transition {{ $isDomestic ? 'bg-indigo-600 text-white' : 'text-slate-200 hover:bg-slate-800' }}">
+                        Dalam negeri
+                    </button>
+                    <button type="button"
+                            wire:click="$set('lokasi_mode', 'foreign')"
+                            class="px-3 py-1 rounded-md text-[12px] font-semibold transition {{ !$isDomestic ? 'bg-indigo-600 text-white' : 'text-slate-200 hover:bg-slate-800' }}">
+                        Luar negeri
+                    </button>
+                </div>
+
+                @if($lokasi_mode === 'foreign')
+                    <div class="space-y-2 max-w-md">
+                        <input type="text"
+                               wire:model.defer="country"
+                               placeholder="Contoh: Singapura, Jepang, Australia"
+                               class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                @else
+                    <div class="grid md:grid-cols-3 gap-3">
+                        <div class="space-y-2">
+                            <select wire:model="province_id"
+                                    wire:change="onProvinceChange($event.target.value)"
+                                    class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Pilih Provinsi</option>
+                                @foreach($provinces as $province)
+                                    <option value="{{ $province['id'] }}">{{ $province['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <select wire:model="regency_id"
+                                    wire:change="onRegencyChange($event.target.value)"
+                                    class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    @disabled(empty($regencies))>
+                                <option value="">Pilih Kabupaten/Kota</option>
+                                @foreach($regencies as $regency)
+                                    <option value="{{ $regency['id'] }}">{{ $regency['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <select wire:model="district_id"
+                                    class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    @disabled(empty($districts))>
+                                <option value="">Pilih Kecamatan</option>
+                                @foreach($districts as $district)
+                                    <option value="{{ $district['id'] }}">{{ $district['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                @endif
+                @error('lokasi_kerja') <p class="text-xs text-rose-400">{{ $message }}</p> @enderror
+            </div>
+        @endif
         <div class="space-y-2">
             <label class="text-sm text-slate-300">Pendidikan Minimal</label>
             <select wire:model.defer="pendidikan_minimal" class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">

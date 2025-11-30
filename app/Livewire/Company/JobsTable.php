@@ -106,8 +106,8 @@ class JobsTable extends Component
             session()->flash('error', 'Lowongan aktif tidak dapat diedit.');
             return;
         }
-        $this->dispatch('job-form:open', jobId: $jobId);
-        $this->dispatch('modal:open', id: 'job-form-modal');
+
+        $this->redirectRoute('company.jobs.edit', $jobId);
     }
 
     public function confirmAction(string $action, int $jobId): void

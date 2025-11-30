@@ -112,6 +112,7 @@ Route::middleware(['auth', 'role:perusahaan'])
         // Lowongan kerja
         Route::get('/jobs', [JobPostingController::class, 'index'])->name('jobs.index');
         Route::get('/jobs/create', [JobPostingController::class, 'create'])->name('jobs.create');
+        Route::get('/jobs/{job}/edit', [JobPostingController::class, 'edit'])->name('jobs.edit');
 
         // Pelamar
         Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');

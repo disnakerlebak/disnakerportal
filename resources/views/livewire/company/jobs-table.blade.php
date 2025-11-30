@@ -142,7 +142,20 @@
                     </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-slate-200">{{ $job->lokasi_kerja ?? '-' }}</td>
+                                <td class="px-4 py-3 text-slate-200">
+                                    @php
+                                        $locRaw = $job->lokasi_kerja ?? '';
+                                        $parts = $locRaw !== '' ? explode(' - ', $locRaw) : [];
+                                        $mainLoc = $parts ? array_shift($parts) : null;
+                                        $secondary = collect($parts)
+                                            ->map(fn($p) => \Illuminate\Support\Str::title(strtolower($p)))
+                                            ->implode(' - ');
+                                    @endphp
+                                    <div class="font-semibold text-slate-100">{{ $mainLoc ? \Illuminate\Support\Str::title(strtolower($mainLoc)) : '-' }}</div>
+                                    @if($secondary)
+                                        <div class="text-xs text-slate-400">{{ $secondary }}</div>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3">
                                     @php
                                         $color = match($job->status) {
