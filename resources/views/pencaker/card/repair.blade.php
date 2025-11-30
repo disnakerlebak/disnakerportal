@@ -72,7 +72,7 @@
                         </div>
                         <p class="text-center text-xs text-slate-400 sm:text-left">Format JPG/PNG &bull; Maks 1 MB</p>
                         <input id="fotoCloseup" name="foto_closeup" type="file" accept="image/*" class="hidden" onchange="previewImage(event); enableRepairButton();">
-                        <button type="button" class="text-xs text-blue-400 hover:text-blue-300" data-modal-open="modalRepairProfile">Ubah Data Diri</button>
+                        <button type="button" class="text-xs text-blue-400 hover:text-blue-300" onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalRepairProfile' }))">Ubah Data Diri</button>
                     </div>
 
                     <div class="flex-1">
@@ -81,7 +81,7 @@
                                 <h3 class="text-lg font-semibold text-white sm:text-xl">Data Diri</h3>
                                 <p class="mt-1 text-sm text-slate-400">Pastikan informasi sesuai dengan dokumen kependudukan.</p>
                             </div>
-                            <button type="button" data-modal-open="modalRepairProfile" class="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-600/30">Ubah Data</button>
+                            <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalRepairProfile' }))" class="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-600/30">Ubah Data</button>
                         </div>
 
                         <dl class="mt-6 grid grid-cols-1 gap-4 text-sm text-slate-200 sm:grid-cols-2">
@@ -133,7 +133,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-white">Riwayat Pendidikan</h3>
                     <div class="flex gap-2">
-                        <button type="button" data-modal-open="modalRepairEducationCreate" class="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-600/30">Tambah</button>
+                        <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalRepairEducationCreate' }))" class="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-600/30">Tambah</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -157,7 +157,7 @@
                                     <td class="p-3">
                                         <div class="flex items-center gap-2">
                                             <button type="button"
-                                                    data-modal-open="modalRepairEducationEdit{{ $edu->id }}"
+                                                    onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalRepairEducationEdit{{ $edu->id }}' }))"
                                                     class="p-2 rounded-full bg-slate-800 text-blue-300 hover:bg-blue-700/30"
                                                     title="Edit">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -188,7 +188,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-white">Riwayat Pelatihan</h3>
                     <div class="flex gap-2">
-                        <button type="button" data-modal-open="modalRepairTrainingCreate" class="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-600/30">Tambah</button>
+                        <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalRepairTrainingCreate' }))" class="text-xs bg-blue-600/20 text-blue-300 px-2 py-1 rounded hover:bg-blue-600/30">Tambah</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -210,7 +210,7 @@
                                     <td class="p-3">
                                         <div class="flex items-center gap-2">
                                             <button type="button"
-                                                    data-modal-open="modalRepairTrainingEdit{{ $training->id }}"
+                                                    onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'modalRepairTrainingEdit{{ $training->id }}' }))"
                                                     class="p-2 rounded-full bg-slate-800 text-blue-300 hover:bg-blue-700/30"
                                                     title="Edit">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -353,101 +353,108 @@
 
 {{-- ===================== MODALS ===================== --}}
 
-<x-modal-form id="modalRepairProfile"
-              title="Perbarui Data Diri"
-              action="{{ route('pencaker.profile.update') }}"
-              method="POST"
-              submitLabel="Simpan"
-              cancelLabel="Batal">
-    @method('PUT')
-    <input type="hidden" name="repair_mode" value="1">
+<x-modal id="modalRepairProfile" size="xl" title="Perbarui Data Diri">
+    <div class="max-h-[75vh] overflow-y-auto pr-1">
+    <form method="POST" action="{{ route('pencaker.profile.update') }}" class="space-y-4">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="repair_mode" value="1">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-            <label class="block text-sm text-slate-400">Nama Lengkap</label>
-            <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $profile->nama_lengkap) }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm text-slate-400">Nama Lengkap</label>
+                <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $profile->nama_lengkap) }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">NIK</label>
+                <input type="text" name="nik" value="{{ $profile->nik }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-400" readonly>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Tempat Lahir</label>
+                <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $profile->tempat_lahir) }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Tanggal Lahir</label>
+                <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $profile->tanggal_lahir) }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Jenis Kelamin</label>
+                <select name="jenis_kelamin" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+                    <option value="">- Pilih -</option>
+                    @foreach (['Laki-laki','Perempuan'] as $jk)
+                        <option value="{{ $jk }}" @selected($profile->jenis_kelamin === $jk)>{{ $jk }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Agama</label>
+                <select name="agama" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+                    <option value="">Pilih</option>
+                    @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
+                        <option value="{{ $agama }}" @selected(old('agama', $profile->agama) == $agama)>{{ $agama }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Status Perkawinan</label>
+                <select name="status_perkawinan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+                    <option value="">- Pilih -</option>
+                    @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
+                        <option value="{{ $status }}" @selected($profile->status_perkawinan === $status)>{{ $status }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
+                <select name="pendidikan_terakhir" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+                    <option value="">Pilih</option>
+                    @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
+                        <option value="{{ $tingkat }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir) == $tingkat)>{{ $tingkat }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-sm text-slate-400">Alamat Lengkap</label>
+                <textarea name="alamat_lengkap" rows="3" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">{{ old('alamat_lengkap', $profile->alamat_lengkap) }}</textarea>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Domisili Kecamatan</label>
+                <select name="domisili_kecamatan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+                    <option value="">- Pilih -</option>
+                    @foreach ($kecamatanList as $kecamatan)
+                        <option value="{{ $kecamatan }}" @selected($profile->domisili_kecamatan === $kecamatan)>{{ $kecamatan }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400">Nomor Telepon</label>
+                <input type="text" name="no_telepon" value="{{ old('no_telepon', $profile->no_telepon) }}"
+                       class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
+            </div>
         </div>
-        <div>
-            <label class="block text-sm text-slate-400">NIK</label>
-            <input type="text" name="nik" value="{{ $profile->nik }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-400" readonly>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalRepairProfile"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
         </div>
-        <div>
-            <label class="block text-sm text-slate-400">Tempat Lahir</label>
-            <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $profile->tempat_lahir) }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Tanggal Lahir</label>
-            <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $profile->tanggal_lahir) }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Jenis Kelamin</label>
-            <select name="jenis_kelamin" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                <option value="">- Pilih -</option>
-                @foreach (['Laki-laki','Perempuan'] as $jk)
-                    <option value="{{ $jk }}" @selected($profile->jenis_kelamin === $jk)>{{ $jk }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Agama</label>
-            <select name="agama" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                <option value="">Pilih</option>
-                @foreach (['Islam','Kristen','Katolik','Hindu','Budha','Konghucu'] as $agama)
-                    <option value="{{ $agama }}" @selected(old('agama', $profile->agama) == $agama)>{{ $agama }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Status Perkawinan</label>
-            <select name="status_perkawinan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                <option value="">- Pilih -</option>
-                @foreach (['Belum Kawin','Kawin','Cerai Hidup','Cerai Mati'] as $status)
-                    <option value="{{ $status }}" @selected($profile->status_perkawinan === $status)>{{ $status }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
-            <select name="pendidikan_terakhir" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                <option value="">Pilih</option>
-                @foreach (['SD','SMP','SMA','SMK','D1','D2','D3','D4','S1','S2','S3'] as $tingkat)
-                    <option value="{{ $tingkat }}" @selected(old('pendidikan_terakhir', $profile->pendidikan_terakhir) == $tingkat)>{{ $tingkat }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="sm:col-span-2">
-            <label class="block text-sm text-slate-400">Alamat Lengkap</label>
-            <textarea name="alamat_lengkap" rows="3" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">{{ old('alamat_lengkap', $profile->alamat_lengkap) }}</textarea>
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Domisili Kecamatan</label>
-            <select name="domisili_kecamatan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-                <option value="">- Pilih -</option>
-                @foreach ($kecamatanList as $kecamatan)
-                    <option value="{{ $kecamatan }}" @selected($profile->domisili_kecamatan === $kecamatan)>{{ $kecamatan }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block text-sm text-slate-400">Nomor Telepon</label>
-            <input type="text" name="no_telepon" value="{{ old('no_telepon', $profile->no_telepon) }}"
-                   class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100">
-        </div>
+    </form>
     </div>
-</x-modal-form>
+</x-modal>
 
-<x-modal-form id="modalRepairEducationCreate"
-              title="Tambah Riwayat Pendidikan"
-              action="{{ route('pencaker.education.store') }}"
-              method="POST"
-              submitLabel="Simpan"
-              cancelLabel="Batal">
-    <input type="hidden" name="repair_mode" value="1">
-    <div class="space-y-3">
+<x-modal id="modalRepairEducationCreate" title="Tambah Riwayat Pendidikan">
+    <form method="POST" action="{{ route('pencaker.education.store') }}" class="space-y-3">
+        @csrf
+        <input type="hidden" name="repair_mode" value="1">
         <div>
             <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
             <select name="tingkat" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
@@ -475,19 +482,26 @@
                 <input type="number" name="tahun_selesai" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" placeholder="2022">
             </div>
         </div>
-    </div>
-</x-modal-form>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalRepairEducationCreate"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
+        </div>
+    </form>
+</x-modal>
 
 @foreach ($educations as $edu)
-    <x-modal-form id="modalRepairEducationEdit{{ $edu->id }}"
-                  title="Perbarui Riwayat Pendidikan"
-                  action="{{ route('pencaker.education.update', $edu->id) }}"
-                  method="POST"
-                  submitLabel="Update"
-                  cancelLabel="Batal">
-        @method('PUT')
-        <input type="hidden" name="repair_mode" value="1">
-        <div class="space-y-3">
+    <x-modal id="modalRepairEducationEdit{{ $edu->id }}" title="Perbarui Riwayat Pendidikan">
+        <form method="POST" action="{{ route('pencaker.education.update', $edu->id) }}" class="space-y-3">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="repair_mode" value="1">
             <div>
                 <label class="block text-sm text-slate-400">Tingkat Pendidikan</label>
                 <select name="tingkat" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
@@ -514,18 +528,25 @@
                     <input type="number" name="tahun_selesai" value="{{ old('tahun_selesai', $edu->tahun_selesai) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
                 </div>
             </div>
-        </div>
-    </x-modal-form>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="modalRepairEducationEdit{{ $edu->id }}"
+                        class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                    Update
+                </button>
+            </div>
+        </form>
+    </x-modal>
 @endforeach
 
-<x-modal-form id="modalRepairTrainingCreate"
-              title="Tambah Riwayat Pelatihan"
-              action="{{ route('pencaker.training.store') }}"
-              method="POST"
-              submitLabel="Simpan"
-              cancelLabel="Batal">
-    <input type="hidden" name="repair_mode" value="1">
-    <div class="space-y-3">
+<x-modal id="modalRepairTrainingCreate" title="Tambah Riwayat Pelatihan">
+    <form method="POST" action="{{ route('pencaker.training.store') }}" class="space-y-3" enctype="multipart/form-data">
+        @csrf
+        <input type="hidden" name="repair_mode" value="1">
         <div>
             <label class="block text-sm text-slate-400">Jenis Pelatihan</label>
             <input type="text" name="jenis_pelatihan" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
@@ -542,19 +563,26 @@
             <label class="block text-sm text-slate-400">Sertifikat (PDF/JPG/PNG, maks 2MB)</label>
             <input type="file" name="sertifikat_file" accept=".pdf,.jpg,.jpeg,.png" class="mt-1 w-full text-sm text-slate-300" required>
         </div>
-    </div>
-</x-modal-form>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" data-close-modal="modalRepairTrainingCreate"
+                    class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                Batal
+            </button>
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Simpan
+            </button>
+        </div>
+    </form>
+</x-modal>
 
 @foreach ($trainings as $training)
-    <x-modal-form id="modalRepairTrainingEdit{{ $training->id }}"
-                  title="Perbarui Riwayat Pelatihan"
-                  action="{{ route('pencaker.training.update', $training->id) }}"
-                  method="POST"
-                  submitLabel="Update"
-                  cancelLabel="Batal">
-        @method('PUT')
-        <input type="hidden" name="repair_mode" value="1">
-        <div class="space-y-3">
+    <x-modal id="modalRepairTrainingEdit{{ $training->id }}" title="Perbarui Riwayat Pelatihan">
+        <form method="POST" action="{{ route('pencaker.training.update', $training->id) }}" class="space-y-3" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="repair_mode" value="1">
             <div>
                 <label class="block text-sm text-slate-400">Jenis Pelatihan</label>
                 <input type="text" name="jenis_pelatihan" value="{{ old('jenis_pelatihan', $training->jenis_pelatihan) }}" class="mt-1 w-full rounded-lg border-slate-700 bg-slate-900 text-slate-100" required>
@@ -574,8 +602,19 @@
                     <p class="text-xs text-slate-400 mt-1">Dokumen saat ini: <a href="{{ asset('storage/'.$training->sertifikat_file) }}" target="_blank" class="text-blue-300 underline">Lihat</a></p>
                 @endif
             </div>
-        </div>
-    </x-modal-form>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" data-close-modal="modalRepairTrainingEdit{{ $training->id }}"
+                        class="px-4 py-2 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                    Update
+                </button>
+            </div>
+        </form>
+    </x-modal>
 @endforeach
 
 <div id="confirmOverlay" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center">

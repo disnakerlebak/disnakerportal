@@ -1,6 +1,22 @@
 import "./bootstrap";
+import Alpine from "alpinejs";
 import "flowbite";
 import { initFlowbite, Modal, Dropdown } from "flowbite";
+
+// Init Alpine (needed untuk komponen x-*). Pastikan tidak double start saat Livewire ikut mem-boot.
+window.Alpine = Alpine;
+const startAlpine = () => {
+    if (!window.Alpine) return;
+    if (window.Alpine.__started) return;
+    window.Alpine.start();
+    window.Alpine.__started = true;
+};
+
+// Izinkan Livewire mengambil alih start Alpine, tapi tetap fallback jika halaman non-Livewire.
+window.deferLoadingAlpine = (callback) => {
+    window.addEventListener("livewire:load", () => callback());
+};
+window.deferLoadingAlpine(startAlpine);
 
 // Bridge event modal Livewire -> window
 
@@ -8,6 +24,8 @@ import { initFlowbite, Modal, Dropdown } from "flowbite";
 import "./modal-manager";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Fallback: jika Livewire tidak ada, tetap start Alpine.
+    startAlpine();
     initFlowbite();
 });
 
