@@ -1,13 +1,13 @@
 <div>
     <div class="space-y-4">
-        <div class="flex items-center justify-between gap-3">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex flex-1 flex-wrap items-center gap-2">
-                <div class="relative">
+                <div class="relative min-w-[220px] lg:min-w-[260px] flex-1 lg:flex-none">
                     <input
                         type="text"
                         wire:model.defer="search"
                         placeholder="Cari judul / posisi / lokasi..."
-                        class="w-64 rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                        class="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
                     />
                     <span class="absolute right-3 top-2.5 text-slate-500 text-sm">⌕</span>
                 </div>
@@ -47,19 +47,19 @@
                 </button>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 lg:shrink-0">
                 <button
                     type="button"
                     wire:click="bulkDeleteConfirm"
                     class="inline-flex items-center justify-center rounded-lg border border-rose-600/60 bg-rose-600/10 px-3 py-2 text-sm font-semibold text-rose-100 hover:bg-rose-700/20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12m-9 4v6m6-6v6M9 3h6a2 2 0 012 2v1H7V5a2 2 0 012-2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /> 
                     </svg>
                 </button>
                 <a
                     href="{{ route('company.jobs.create') }}"
                     class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">
-                    + Tambah Lowongan
+                    + Lowongan
                 </a>
             </div>
         </div>
@@ -282,3 +282,23 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+    <script>
+        document.addEventListener('livewire:load', () => {
+            const refreshTooltips = () => {
+                if (typeof initFlowbite === 'function') {
+                    // Sedikit delay agar DOM sudah terpasang penuh
+                    setTimeout(() => initFlowbite(), 0);
+                }
+            };
+
+            // init awal
+            refreshTooltips();
+
+            Livewire.hook('message.processed', () => {
+                refreshTooltips();
+            });
+        });
+    </script>
+@endpush
