@@ -12,6 +12,8 @@ class JobForm extends Component
 {
     public bool $isEdit = false;
     public ?int $editingId = null;
+    public bool $useModal = true;
+    public ?string $redirectTo = null;
 
     public string $judul = '';
     public string $posisi = '';
@@ -28,6 +30,12 @@ class JobForm extends Component
     public bool $menerima_disabilitas = true;
     public ?string $deskripsi = null;
     public ?string $kualifikasi = null;
+
+    public function mount(bool $useModal = true, ?string $redirectTo = null): void
+    {
+        $this->useModal = $useModal;
+        $this->redirectTo = $redirectTo;
+    }
 
     protected function rules(): array
     {
@@ -79,9 +87,10 @@ class JobForm extends Component
         }
     }
 
-    public function save(): void
+    public function save()
     {
         $data = $this->validate();
+        $successMessage = $this->editingId ? 'Lowongan diperbarui.' : 'Lowongan disimpan sebagai draft.';
 
         $companyId = Auth::user()?->companyProfile?->id;
         if (!$companyId) {
@@ -93,18 +102,26 @@ class JobForm extends Component
             $job = JobPosting::where('company_id', $companyId)->findOrFail($this->editingId);
             $job->update($data);
             $this->logActivity($job, 'updated', "Perbarui lowongan \"{$job->judul}\"");
-            $this->dispatch('toast', message: 'Lowongan diperbarui.', type: 'success');
+            $this->dispatch('toast', message: $successMessage, type: 'success');
         } else {
             $data['company_id'] = $companyId;
             $data['status'] = JobPosting::STATUS_DRAFT;
             $job = JobPosting::create($data);
             $this->logActivity($job, 'created', "Buat lowongan \"{$job->judul}\" (draft)");
-            $this->dispatch('toast', message: 'Lowongan disimpan sebagai draft.', type: 'success');
+            $this->dispatch('toast', message: $successMessage, type: 'success');
         }
 
         $this->dispatch('job-updated');
-        $this->dispatch('modal:close', id: 'job-form-modal');
         $this->resetForm();
+
+        if ($this->useModal) {
+            $this->dispatch('modal:close', id: 'job-form-modal');
+            return;
+        }
+
+        session()->flash('success', $successMessage);
+        $redirectUrl = $this->redirectTo ?? route('company.jobs.index');
+        return redirect()->to($redirectUrl);
     }
 
     protected function resetForm(): void

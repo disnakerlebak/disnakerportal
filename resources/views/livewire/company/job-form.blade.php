@@ -117,11 +117,18 @@
     </div>
 
     <div class="flex items-center justify-end gap-2 w-full">
-        <button type="button"
-                wire:click="$dispatch('modal:close', { id: 'job-form-modal' })"
-                class="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800">
-            Batal
-        </button>
+        @if($useModal)
+            <button type="button"
+                    wire:click="$dispatch('modal:close', { id: 'job-form-modal' })"
+                    class="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800">
+                Batal
+            </button>
+        @else
+            <a href="{{ $redirectTo ?? route('company.jobs.index') }}"
+               class="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800">
+                Kembali
+            </a>
+        @endif
         <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
             {{ $isEdit ? 'Simpan Perubahan' : 'Simpan Draft' }}
         </button>

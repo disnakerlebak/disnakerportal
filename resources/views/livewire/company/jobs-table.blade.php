@@ -56,12 +56,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12m-9 4v6m6-6v6M9 3h6a2 2 0 012 2v1H7V5a2 2 0 012-2z" />
                     </svg>
                 </button>
-                <button
-                   type="button"
-                   wire:click="create"
-                   class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">
+                <a
+                    href="{{ route('company.jobs.create') }}"
+                    class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">
                     + Tambah Lowongan
-                </button>
+                </a>
             </div>
         </div>
 
